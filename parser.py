@@ -1,29 +1,12 @@
 from dataclasses import dataclass
-import pprint
-from typing import Any, Callable, Self, TypeVar
+from typing import Callable, TypeVar
+from expr import *
+from stmt import *
+from copy import copy
 import sys
+from pprint import pprint
 
-
-@dataclass
-class Int:
-    i: int
-
-
-Expr = Int
-
-
-@dataclass
-class VarDecl:
-    v: str
-    e: Expr
-
-
-@dataclass
-class Print:
-    s: str
-
-
-Stmt = VarDecl | Print
+type Parser[T] = Callable[[str], tuple[T, str]]
 
 
 @dataclass
@@ -31,98 +14,114 @@ class ParseError(Exception):
     message: str
 
 
-@dataclass
-class Input:
-    input: str
+def symbol(kw: str, input: str) -> tuple[str, str]:
+    input = input.strip()
+    if input.startswith(kw):
+        return kw, input.removeprefix(kw)
+    raise ParseError(f"Expected keyword {kw}, got {input[:10]}")
 
-    def sat(self, pred: Callable[[str], bool]) -> str:
-        if not self.input:
-            raise ParseError("Empty input")
 
-        c = self.input[0]
-        if not pred(c):
-            raise ParseError("Not satisfied")
-
-        self.input = self.input.removeprefix(c)
-        return c
-
-    T = TypeVar("T")
-
-    def many(self, p: Callable[[], T]) -> list[T]:
-        results = []
-        while True:
-            try:
-                results.append(p())
-            except ParseError:
-                break
-        return results
-
-    def some(self, p: Callable[[], T]) -> list[T]:
-        results = self.many(p)
-        if not results:
-            raise ParseError("Expected at least one")
-        return results
-
-    def alnum(self) -> str:
-        return self.sat(str.isalnum)
-
-    def identifier(self) -> str:
-        self.spaces()
-        first = self.sat(str.isalpha)
-        rest: list[str] = self.many(self.alnum)
-        return first + "".join(rest)
-
-    def space(self) -> str:
-        return self.sat(str.isspace)
-
-    def spaces(self) -> str:
-        spaces = self.many(self.space)
-        return "".join(spaces)
-
-    def pad(self, p: Callable[[], T]):
-        self.spaces()
-        return p()
-
-    def digit(self) -> str:
-        return self.tag("Expected digit", lambda: self.sat(str.isdecimal))
-
-    def int(self) -> int:
-        return int(self.pad(self.digit))
-
-    def string(self, s: str) -> str:
-        input = self.input.removeprefix(s)
-        if len(self.input) - len(input) != len(s):
-            raise ParseError(f'Expected string "{s}" but got "{self.input[:5]}"')
-        self.input = input
-        return s
-
-    def symbol(self, s: str) -> str:
-        return self.tag(
-            f'Expected symbol "{s}" but got "{self.input[:5]}"',
-            lambda: self.pad(lambda: self.string(s)),
+def variable(input: str) -> tuple[Var, str]:
+    input = input.strip()
+    # Count characters that match filter
+    i = 0
+    for c in input:
+        if not c.isalnum() or c.isspace():
+            break
+        i += 1
+    # Take matching prefix
+    name = input[:i]
+    # Check that it starts with an alphabetic character
+    if not name or not name[0].isalpha():
+        raise ParseError(
+            f"Var must start with alphabetic character, but got {input[:10]}"
         )
+    return Var(name), input[i:]
 
-    def number(self) -> Expr:
-        i = self.int()
-        return Int(i)
 
-    def vardecl(self) -> Stmt:
-        self.symbol("let")
-        ident = self.identifier()
-        self.symbol("=")
-        expr = self.number()
-        return VarDecl(ident, expr)
+def integer(input: str) -> tuple[Int, str]:
+    input = input.strip()
 
-    def tag(self, msg: str, p: Callable[[], T]) -> T:
+    # Take digits
+    i = 0
+    for c in input:
+        if not c.isdigit():
+            break
+        i += 1
+
+    # Take matching prefix
+    digits, rest = input[:i], input[i:]
+
+    # Make sure it's not empty
+    if not digits or (rest and rest[0].isalpha()):
+        raise ParseError(f"Expected integer, got {input[:10]}")
+
+    # Make sure it's not followed by an alphabetic character
+    if rest and rest[0].isalpha():
+        raise ParseError(f"Integer cannot be followed by alphabetic character")
+
+    return Int(int(digits)), rest
+
+
+T = TypeVar("T")
+
+
+def any_of(parsers: list[Parser[T]], input: str) -> tuple[T, str]:
+    for parser in parsers:
         try:
-            return p()
+            return parser(input)
         except ParseError:
-            raise ParseError(f"{msg}")
+            pass
+    raise ParseError("No parsers matched")
 
-def main() -> None:
-    input = Input(sys.argv[1])
-    pprint.pprint(input.many(lambda: input.vardecl(); input.vardecl()))
+
+def expression(input: str) -> tuple[Expr, str]:
+    return any_of([variable, integer], input)
+
+
+def variable_declaration(input: str) -> tuple[VarDecl, str]:
+    _, input = symbol("let", input)
+    v, input = variable(input)
+    _, input = symbol("=", input)
+    e, input = expression(input)
+    return VarDecl(v, e), input
+
+
+def print_statement(input: str) -> tuple[Print, str]:
+    _, input = symbol("print", input)
+    e, input = expression(input)
+    return Print(e), input
+
+
+def statement(input: str) -> tuple[Stmt, str]:
+    stmt, input = any_of([variable_declaration, print_statement], input)
+    _, input = symbol(";", input)
+    return stmt, input
+
+
+def many(parser: Parser[T], input: str) -> tuple[list[T], str]:
+    results = []
+    while True:
+        try:
+            result, input = parser(input)
+            results.append(result)
+        except ParseError:
+            break
+    return results, input
+
+
+def statements(input: str) -> tuple[list[Stmt], str]:
+    return many(statement, input)
+
+
+def program(input: str) -> list[Stmt]:
+    stmts, input = statements(input)
+    if input:
+        raise ParseError(f"Expected end of input, got {input[:10]}")
+    return stmts
 
 
 if __name__ == "__main__":
-    main()
+    input = sys.argv[1]
+    prog = program(input)
+    pprint(prog)
