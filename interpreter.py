@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from expr import *
-from stmt import *
+from expression import *
+from statement import *
 import parser
 from pprint import pprint
 import sys

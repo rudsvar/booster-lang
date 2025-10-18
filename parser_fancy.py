@@ -1,9 +1,9 @@
 from dataclasses import dataclass
-import pprint
-from typing import Any, Callable, Self, TypeVar
+from pprint import pprint
+from typing import Callable, TypeVar
 import sys
-import expr
-from stmt import *
+from expression import *
+from statement import *
 
 
 @dataclass
@@ -84,7 +84,7 @@ class Input:
 
     def number(self) -> Expr:
         i = self.int()
-        return expr.Int(i)
+        return Int(i)
 
     def vardecl(self) -> Stmt:
         self.symbol("let")
@@ -102,7 +102,7 @@ class Input:
 
 def main() -> None:
     input = Input(sys.argv[1])
-    pprint.pprint(input.many(lambda: input.vardecl()))
+    pprint(input.many(lambda: input.vardecl()))
 
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Callable, TypeVar
-from expr import *
-from stmt import *
+from expression import *
+from statement import *
 from copy import copy
 import sys
 from pprint import pprint
