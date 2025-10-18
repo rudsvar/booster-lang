@@ -16,4 +16,16 @@ class Str:
     s: str
 
 
-type Expr = Int | Str | Var
+type Expr = Int | Str | Var | Add | Mul
+
+
+@dataclass
+class Add:
+    e1: Expr
+    e2: Expr
+
+
+@dataclass
+class Mul:
+    e1: Expr
+    e2: Expr

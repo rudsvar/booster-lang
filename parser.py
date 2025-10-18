@@ -63,6 +63,16 @@ def integer(input: str) -> tuple[Int, str]:
     return Int(int(digits)), rest
 
 
+def string_literal(input: str) -> tuple[Str, str]:
+    _, input = symbol('"', input)
+    i = 0
+    for c in input:
+        if c != '"':
+            i += 1
+    _, input = symbol('"', input)
+    return Str(input[:i]), input[i:]
+
+
 T = TypeVar("T")
 
 
@@ -76,7 +86,28 @@ def any_of(parsers: list[Parser[T]], input: str) -> tuple[T, str]:
 
 
 def expression(input: str) -> tuple[Expr, str]:
-    return any_of([variable, integer], input)
+    return any_of([variable, integer, string_literal, subexpression, add, mul], input)
+
+
+def subexpression(input: str) -> tuple[Expr, str]:
+    _, input = symbol("(", input)
+    e, input = expression(input)
+    _, input = symbol(")", input)
+    return e, input
+
+
+def add(input: str) -> tuple[Expr, str]:
+    _, input = symbol("+", input)
+    e1, input = expression(input)
+    e2, input = expression(input)
+    return Add(e1, e2), input
+
+
+def mul(input: str) -> tuple[Expr, str]:
+    _, input = symbol("*", input)
+    e1, input = expression(input)
+    e2, input = expression(input)
+    return Mul(e1, e2), input
 
 
 def variable_declaration(input: str) -> tuple[VarDecl, str]:
@@ -123,5 +154,10 @@ def program(input: str) -> list[Stmt]:
 
 if __name__ == "__main__":
     input = sys.argv[1]
+    try:
+        with open(input) as f:
+            input = f.read()
+    except FileNotFoundError:
+        pass
     prog = program(input)
     pprint(prog)

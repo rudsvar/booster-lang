@@ -6,10 +6,10 @@ from pprint import pprint
 import sys
 
 
-type Val = int | str
+type Value = int | str
 
 
-def eval(e: Expr, env: dict[str, Val]) -> Val:
+def eval(e: Expr, env: dict[str, Value]) -> Value:
     match e:
         case Int(i):
             return i
@@ -17,9 +17,13 @@ def eval(e: Expr, env: dict[str, Val]) -> Val:
             return s
         case Var(v):
             return env[v]
+        case Add(e1, e2):
+            return int(eval(e1, env)) + int(eval(e2, env))
+        case Mul(e1, e2):
+            return int(eval(e1, env)) * int(eval(e2, env))
 
 
-def exec_one(statement: Stmt, env: dict[str, Val]):
+def exec_one(statement: Stmt, env: dict[str, Value]):
     match statement:
         case VarDecl(v, e):
             env[v.name] = eval(e, env)
@@ -27,13 +31,18 @@ def exec_one(statement: Stmt, env: dict[str, Val]):
             print(eval(e, env))
 
 
-def exec(statements: list[Stmt], env: dict[str, Val]):
+def exec(statements: list[Stmt], env: dict[str, Value]):
     for statement in statements:
         exec_one(statement, env)
 
 
 if __name__ == "__main__":
     input = sys.argv[1]
+    try:
+        with open(input) as f:
+            input = f.read()
+    except FileNotFoundError:
+        pass
     prog = parser.program(input)
     env = {}
     exec(prog, env)
