@@ -12,11 +12,11 @@ class Var:
 
 
 @dataclass
-class Str:
+class StrLit:
     s: str
 
 
-type Expr = Int | Str | Var | Add | Mul
+type Expr = Int | StrLit | Var | Add | Mul
 
 
 @dataclass

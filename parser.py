@@ -63,14 +63,14 @@ def integer(input: str) -> tuple[Int, str]:
     return Int(int(digits)), rest
 
 
-def string_literal(input: str) -> tuple[Str, str]:
+def string_literal(input: str) -> tuple[StrLit, str]:
     _, input = symbol('"', input)
     i = 0
     for c in input:
         if c != '"':
             i += 1
     _, input = symbol('"', input)
-    return Str(input[:i]), input[i:]
+    return StrLit(input[:i]), input[i:]
 
 
 T = TypeVar("T")

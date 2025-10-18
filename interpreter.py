@@ -13,7 +13,7 @@ def eval(e: Expr, env: dict[str, Value]) -> Value:
     match e:
         case Int(i):
             return i
-        case Str(s):
+        case StrLit(s):
             return s
         case Var(v):
             return env[v]
