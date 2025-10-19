@@ -5,6 +5,8 @@ import sys
 from expression import *
 from statement import *
 
+type Parser[T] = Callable[[], T]
+
 
 @dataclass
 class ParseError(Exception):
@@ -28,7 +30,7 @@ class Input:
 
     T = TypeVar("T")
 
-    def many(self, p: Callable[[], T]) -> list[T]:
+    def many(self, p: Parser[T]) -> list[T]:
         results = []
         while True:
             try:
@@ -37,7 +39,7 @@ class Input:
                 break
         return results
 
-    def some(self, p: Callable[[], T]) -> list[T]:
+    def some(self, p: Parser[T]) -> list[T]:
         results = self.many(p)
         if not results:
             raise ParseError("Expected at least one")
@@ -59,15 +61,16 @@ class Input:
         spaces = self.many(self.space)
         return "".join(spaces)
 
-    def pad(self, p: Callable[[], T]):
+    def pad(self, p: Parser[T]) -> Parser[T]:
         self.spaces()
-        return p()
+        return p
 
     def digit(self) -> str:
         return self.tag("Expected digit", lambda: self.sat(str.isdecimal))
 
     def int(self) -> int:
-        return int(self.pad(self.digit))
+        digits = self.pad(self.digit)()
+        return int(digits)
 
     def string(self, s: str) -> str:
         input = self.input.removeprefix(s)
@@ -79,7 +82,7 @@ class Input:
     def symbol(self, s: str) -> str:
         return self.tag(
             f'Expected symbol "{s}" but got "{self.input[:5]}"',
-            lambda: self.pad(lambda: self.string(s)),
+            lambda: self.pad(lambda: self.string(s))(),
         )
 
     def number(self) -> Expr:
@@ -93,7 +96,7 @@ class Input:
         expr = self.number()
         return VarDecl(Var(ident), expr)
 
-    def tag(self, msg: str, p: Callable[[], T]) -> T:
+    def tag(self, msg: str, p: Parser[T]) -> T:
         try:
             return p()
         except ParseError:
