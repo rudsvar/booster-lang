@@ -15,62 +15,44 @@ class ParseError(Exception):
 
 
 def symbol(kw: str, input: str) -> tuple[str, str]:
-    input = input.strip()
+    input = input.lstrip()
     if input.startswith(kw):
         return kw, input.removeprefix(kw)
     raise ParseError(f"Expected keyword {kw}, got {input[:10]}")
 
 
-def variable(input: str) -> tuple[Var, str]:
-    input = input.strip()
-    # Count characters that match filter
-    i = 0
+def take_while(check: Callable[[str], bool], input: str) -> tuple[str, str]:
+    match = ""
     for c in input:
-        if not c.isalnum() or c.isspace():
+        if not check(c):
             break
-        i += 1
-    # Take matching prefix
-    name = input[:i]
-    # Check that it starts with an alphabetic character
-    if not name or not name[0].isalpha():
-        raise ParseError(
-            f"Var must start with alphabetic character, but got {input[:10]}"
-        )
-    return Var(name), input[i:]
+        match += c
+    input = input.removeprefix(match)
+    return match, input
+
+
+def variable(input: str) -> tuple[Var, str]:
+    input = input.lstrip()
+    name, input = take_while(str.isalnum, input)
+    if not name:
+        raise ParseError(f"Variable name cannot be empty")
+    if not name[0].isalpha():
+        raise ParseError(f"Variable must start with an alphabetic character")
+    return Var(name), input
 
 
 def integer(input: str) -> tuple[Int, str]:
-    input = input.strip()
-
-    # Take digits
-    i = 0
-    for c in input:
-        if not c.isdigit():
-            break
-        i += 1
-
-    # Take matching prefix
-    digits, rest = input[:i], input[i:]
-
-    # Make sure it's not empty
-    if not digits or (rest and rest[0].isalpha()):
+    digits, input = take_while(str.isnumeric, input)
+    if not digits:
         raise ParseError(f"Expected integer, got {input[:10]}")
-
-    # Make sure it's not followed by an alphabetic character
-    if rest and rest[0].isalpha():
-        raise ParseError(f"Integer cannot be followed by alphabetic character")
-
-    return Int(int(digits)), rest
+    if input and input[0].isalpha():
+        raise ParseError("Integer cannot be followed by alphabetic character")
+    return Int(int(digits)), input
 
 
 def string_literal(input: str) -> tuple[StrLit, str]:
     _, input = symbol('"', input)
-    i = 0
-    for c in input:
-        if c == '"':
-            break
-        i += 1
-    str_lit, input = input[:i], input[i:]
+    str_lit, input = take_while(lambda c: c != '"', input)
     _, input = symbol('"', input)
     return StrLit(str_lit), input
 
@@ -88,6 +70,7 @@ def any_of(parsers: list[Parser[T]], input: str) -> tuple[T, str]:
 
 
 def expression(input: str) -> tuple[Expr, str]:
+    input = input.lstrip()
     return any_of([variable, integer, string_literal, subexpression, add, mul], input)
 
 
@@ -157,7 +140,7 @@ def statements(input: str) -> tuple[list[Stmt], str]:
 def program(input: str) -> list[Stmt]:
     stmts, input = statements(input)
     if input:
-        raise ParseError(f"Expected end of input, got {input[:10]}")
+        raise ParseError(f'Expected end of input, got "{input[:10]}"')
     return stmts
 
 
