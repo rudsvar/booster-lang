@@ -67,10 +67,12 @@ def string_literal(input: str) -> tuple[StrLit, str]:
     _, input = symbol('"', input)
     i = 0
     for c in input:
-        if c != '"':
-            i += 1
+        if c == '"':
+            break
+        i += 1
+    str_lit, input = input[:i], input[i:]
     _, input = symbol('"', input)
-    return StrLit(input[:i]), input[i:]
+    return StrLit(str_lit), input
 
 
 T = TypeVar("T")
@@ -115,19 +117,26 @@ def variable_declaration(input: str) -> tuple[VarDecl, str]:
     v, input = variable(input)
     _, input = symbol("=", input)
     e, input = expression(input)
+    _, input = symbol(";", input)
     return VarDecl(v, e), input
 
 
 def print_statement(input: str) -> tuple[Print, str]:
     _, input = symbol("print", input)
     e, input = expression(input)
+    _, input = symbol(";", input)
     return Print(e), input
 
 
+def block(input: str) -> tuple[Block, str]:
+    _, input = symbol("{", input)
+    stmts, input = statements(input)
+    _, input = symbol("}", input)
+    return Block(stmts), input
+
+
 def statement(input: str) -> tuple[Stmt, str]:
-    stmt, input = any_of([variable_declaration, print_statement], input)
-    _, input = symbol(";", input)
-    return stmt, input
+    return any_of([variable_declaration, print_statement, block], input)
 
 
 def many(parser: Parser[T], input: str) -> tuple[list[T], str]:
@@ -152,7 +161,7 @@ def program(input: str) -> list[Stmt]:
     return stmts
 
 
-if __name__ == "__main__":
+def main():
     input = sys.argv[1]
     try:
         with open(input) as f:
@@ -161,3 +170,7 @@ if __name__ == "__main__":
         pass
     prog = program(input)
     pprint(prog)
+
+
+if __name__ == "__main__":
+    main()

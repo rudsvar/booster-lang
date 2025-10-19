@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+type Expr = Int | StrLit | Var | Add | Mul
+
 
 @dataclass
 class Int:
@@ -14,9 +16,6 @@ class Var:
 @dataclass
 class StrLit:
     s: str
-
-
-type Expr = Int | StrLit | Var | Add | Mul
 
 
 @dataclass

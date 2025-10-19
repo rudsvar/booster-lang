@@ -21,6 +21,8 @@ def eval(e: Expr, env: dict[str, Value]) -> Value:
             return int(eval(e1, env)) + int(eval(e2, env))
         case Mul(e1, e2):
             return int(eval(e1, env)) * int(eval(e2, env))
+        case _:
+            raise Exception("eval not implemented for " + str(e))
 
 
 def exec_one(statement: Stmt, env: dict[str, Value]):
@@ -29,6 +31,10 @@ def exec_one(statement: Stmt, env: dict[str, Value]):
             env[v.name] = eval(e, env)
         case Print(e):
             print(eval(e, env))
+        case Block(statements):
+            exec(statements, env)
+        case _:
+            raise Exception("exec not implemented for " + str(statement))
 
 
 def exec(statements: list[Stmt], env: dict[str, Value]):

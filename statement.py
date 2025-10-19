@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from expression import Expr, Var
 
+type Stmt = VarDecl | Print | Block
+
 
 @dataclass
 class VarDecl:
@@ -13,4 +15,6 @@ class Print:
     e: Expr
 
 
-type Stmt = VarDecl | Print | list[Stmt]
+@dataclass
+class Block:
+    statements: list[Stmt]
