@@ -31,14 +31,19 @@ def take_while(check: Callable[[str], bool], input: str) -> tuple[str, str]:
     return match, input
 
 
-def variable(input: str) -> tuple[Var, str]:
+def identifier(input: str) -> tuple[str, str]:
     input = input.lstrip()
-    name, input = take_while(str.isalnum, input)
-    if not name:
+    ident, input = take_while(str.isalnum, input)
+    if not ident:
         raise ParseError(f"Variable name cannot be empty")
-    if not name[0].isalpha():
+    if not ident[0].isalpha():
         raise ParseError(f"Variable must start with an alphabetic character")
-    return Var(name), input
+    return ident, input
+
+
+def variable(input: str) -> tuple[Var, str]:
+    ident, input = identifier(input)
+    return Var(ident), input
 
 
 def integer(input: str) -> tuple[Int, str]:
@@ -97,7 +102,7 @@ def mul(input: str) -> tuple[Expr, str]:
 
 def variable_declaration(input: str) -> tuple[VarDecl, str]:
     _, input = symbol("let", input)
-    v, input = variable(input)
+    v, input = identifier(input)
     _, input = symbol("=", input)
     e, input = expression(input)
     _, input = symbol(";", input)
@@ -137,7 +142,7 @@ def statements(input: str) -> tuple[list[Stmt], str]:
     return many(statement, input)
 
 
-def program(input: str) -> list[Stmt]:
+def parse_program(input: str) -> list[Stmt]:
     stmts, input = statements(input)
     if input:
         raise ParseError(f'Expected end of input, got "{input[:10]}"')
@@ -151,8 +156,12 @@ def main():
             input = f.read()
     except FileNotFoundError:
         pass
-    prog = program(input)
-    pprint(prog)
+    # Parse and execute
+    try:
+        program = parse_program(input)
+        pprint(program)
+    except ParseError as e:
+        print(e.message)
 
 
 if __name__ == "__main__":

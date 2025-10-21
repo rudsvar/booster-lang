@@ -94,7 +94,7 @@ class Input:
         ident = self.identifier()
         self.symbol("=")
         expr = self.number()
-        return VarDecl(Var(ident), expr)
+        return VarDecl(ident, expr)
 
     def tag(self, msg: str, p: Parser[T]) -> T:
         try:

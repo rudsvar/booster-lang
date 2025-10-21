@@ -1,54 +1,81 @@
 from dataclasses import dataclass
 from expression import *
 from statement import *
-import parser
+from parser import ParseError, parse_program
 from pprint import pprint
 import sys
+import copy
 
 
 type Value = int | str
 
+type Env = list[dict[str, Value]]
 
-def eval(e: Expr, env: dict[str, Value]) -> Value:
+
+@dataclass
+class EvalException(Exception):
+    message: str
+
+
+def lookup(env: Env, var: str) -> Value:
+    for scope in reversed(env):
+        val = scope.get(var)
+        if val:
+            return val
+    raise EvalException(f'Variable "{var}" not defined')
+
+
+def eval(e: Expr, env: Env) -> Value:
     match e:
         case Int(i):
             return i
         case StrLit(s):
             return s
         case Var(v):
-            return env[v]
+            return lookup(env, v)
         case Add(e1, e2):
             return int(eval(e1, env)) + int(eval(e2, env))
         case Mul(e1, e2):
             return int(eval(e1, env)) * int(eval(e2, env))
         case _:
-            raise Exception("eval not implemented for " + str(e))
+            raise EvalException("eval not implemented for " + str(e))
 
 
-def exec_one(statement: Stmt, env: dict[str, Value]):
+def exec_one(statement: Stmt, env: Env):
     match statement:
         case VarDecl(v, e):
-            env[v.name] = eval(e, env)
+            scope = env[-1]
+            scope[v] = eval(e, env)
         case Print(e):
             print(eval(e, env))
         case Block(statements):
+            env.append({})
             exec(statements, env)
+            env.pop()
         case _:
-            raise Exception("exec not implemented for " + str(statement))
+            raise EvalException("exec not implemented for " + str(statement))
 
 
-def exec(statements: list[Stmt], env: dict[str, Value]):
+def exec(statements: list[Stmt], env: Env):
     for statement in statements:
         exec_one(statement, env)
 
 
 if __name__ == "__main__":
+    # Read file or use arg as program
     input = sys.argv[1]
     try:
         with open(input) as f:
             input = f.read()
     except FileNotFoundError:
         pass
-    prog = parser.program(input)
-    env = {}
-    exec(prog, env)
+
+    # Parse and execute
+    try:
+        program = parse_program(input)
+        env = [{}]
+        exec(program, env)
+    except ParseError as e:
+        print(e.message)
+    except EvalException as e:
+        print(e.message)

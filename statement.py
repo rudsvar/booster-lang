@@ -6,7 +6,7 @@ type Stmt = VarDecl | Print | Block
 
 @dataclass
 class VarDecl:
-    v: Var
+    v: str
     e: Expr
 
 
