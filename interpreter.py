@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from expression import *
 from statement import *
-from parser import ParseError, parse_program
+from parser import Input, ParseError, parse_program
 from pprint import pprint
 import sys
 import copy
