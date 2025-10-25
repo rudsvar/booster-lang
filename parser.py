@@ -1,11 +1,12 @@
 from dataclasses import dataclass
-from typing import Callable, Self, TypeVar
+from typing import Callable, TypeVar
 from expression import *
 from statement import *
-import copy
 from functools import wraps
 import sys
 from pprint import pprint
+
+T = TypeVar("T")
 
 type Parser[T] = Callable[[], T]
 
@@ -47,8 +48,6 @@ def debug_parser(func: Callable):
 @dataclass
 class Input:
     data: str
-
-    T = TypeVar("T")
 
     def preview(self) -> str:
         return self.data[: self.data.find("\n")]
@@ -123,16 +122,33 @@ class Input:
         )
 
     @debug_parser
-    def expression(self) -> Expr:
+    def factor(self) -> Expr:
         self.lstrip()
         return self.one_of(
-            self.variable,
-            self.integer,
-            self.string_literal,
-            self.subexpression,
-            self.add,
-            self.mul,
+            self.integer, self.string_literal, self.variable, self.subexpression
         )
+
+    @debug_parser
+    def term(self) -> Expr:
+        factor = self.factor()
+        if self.optional(lambda: self.symbol("*")):
+            term2 = self.term()
+            return Mul(factor, term2)
+        if self.optional(lambda: self.symbol("/")):
+            term2 = self.term()
+            return Div(factor, term2)
+        return factor
+
+    @debug_parser
+    def expression(self) -> Expr:
+        term = self.term()
+        if self.optional(lambda: self.symbol("+")):
+            expression2 = self.expression()
+            return Mul(term, expression2)
+        if self.optional(lambda: self.symbol("-")):
+            expression2 = self.expression()
+            return Sub(term, expression2)
+        return term
 
     @debug_parser
     def subexpression(self) -> Expr:
@@ -140,20 +156,6 @@ class Input:
         e = self.expression()
         _ = self.symbol(")")
         return e
-
-    @debug_parser
-    def add(self) -> Expr:
-        _ = self.symbol("+")
-        e1 = self.expression()
-        e2 = self.expression()
-        return Add(e1, e2)
-
-    @debug_parser
-    def mul(self) -> Expr:
-        _ = self.symbol("*")
-        e1 = self.expression()
-        e2 = self.expression()
-        return Mul(e1, e2)
 
     @debug_parser
     def variable_declaration(self) -> VarDecl:
@@ -185,7 +187,9 @@ class Input:
 
     @debug_parser
     def statement(self) -> Stmt:
-        return self.one_of(self.variable_declaration, self.print_statement, self.block)
+        return self.one_of(
+            self.variable_declaration, self.print_statement, self.block, self.expression
+        )
 
     @debug_parser
     def statements(self) -> list[Stmt]:
@@ -196,6 +200,29 @@ class Input:
             except ParseError:
                 break
         return stmts
+
+    @debug_parser
+    def many(self, parser: Parser[T]):
+        results = []
+        while True:
+            # Store a backup of the state
+            self_data = self.data
+            try:
+                results.append(parser())
+            except ParseError:
+                # Restore the backup
+                self.data = self_data
+                break
+        return results
+
+    @debug_parser
+    def optional(self, parser: Parser[T]):
+        self_data = self.data
+        try:
+            return parser()
+        except ParseError:
+            self.data = self_data
+            return None
 
 
 @debug_parser
