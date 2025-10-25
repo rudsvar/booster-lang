@@ -170,7 +170,9 @@ class Input:
     @debug_parser
     def print_statement(self) -> Print:
         _ = self.symbol("print")
+        _ = self.symbol("(")
         e = self.expression()
+        _ = self.symbol(")")
         _ = self.symbol(";")
         return Print(e)
 
