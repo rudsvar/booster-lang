@@ -1,10 +1,8 @@
 from dataclasses import dataclass
 from expression import *
 from statement import *
-from parser import Input, ParseError, parse_program
-from pprint import pprint
+from parser import ParseError, parse_program
 import sys
-import copy
 
 
 type Value = int | str
