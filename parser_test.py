@@ -1,4 +1,3 @@
-from dataclasses import dataclass
 import unittest
 from expression import *
 from parser import *

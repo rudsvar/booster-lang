@@ -11,7 +11,7 @@ type Env = list[dict[str, Value]]
 
 
 @dataclass
-class EvalException(Exception):
+class InterpretException(Exception):
     message: str
 
 
@@ -20,7 +20,7 @@ def lookup(env: Env, var: str) -> Value:
         val = scope.get(var)
         if val:
             return val
-    raise EvalException(f'Variable "{var}" not defined')
+    raise InterpretException(f'Undefined variable "{var}"')
 
 
 def eval(e: Expr, env: Env) -> Value:
@@ -32,11 +32,17 @@ def eval(e: Expr, env: Env) -> Value:
         case Var(v):
             return lookup(env, v)
         case Add(e1, e2):
-            return int(eval(e1, env)) + int(eval(e2, env))
+            v1 = eval(e1, env)
+            v2 = eval(e2, env)
+            if type(v1) == int and type(v2) == int:
+                return int(v1) + int(v2)
+            if type(v1) == str and type(v2) == str:
+                return str(v1) + str(v2)
+            raise InterpretException(f"Cannot add {v1} and {v2}")
         case Mul(e1, e2):
             return int(eval(e1, env)) * int(eval(e2, env))
         case _:
-            raise EvalException("eval not implemented for " + str(e))
+            raise InterpretException("eval not implemented for " + str(e))
 
 
 def exec_one(statement: Stmt, env: Env):
@@ -51,7 +57,7 @@ def exec_one(statement: Stmt, env: Env):
             exec(statements, env)
             env.pop()
         case _:
-            raise EvalException("exec not implemented for " + str(statement))
+            raise InterpretException("exec not implemented for " + str(statement))
 
 
 def exec(statements: list[Stmt], env: Env):
@@ -76,5 +82,5 @@ if __name__ == "__main__":
         exec(program, env)
     except ParseException as e:
         print(f"{e.message} at {e.line}:{e.column}")
-    except EvalException as e:
+    except InterpretException as e:
         print(e.message)

@@ -1,0 +1,71 @@
+import unittest
+from expression import *
+from parser import *
+from interpreter import *
+
+
+class InterpreterTest(unittest.TestCase):
+
+    def test_empty_program(self):
+        program = ProgramParser("").program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual([{}], env)
+
+    def test_variable_declaration(self):
+        program = ProgramParser('let x = 10; let y = "Test";').program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual([{"x": 10}, {"y": "Test"}], env)
+
+    def test_print(self):
+        program = ProgramParser("print + 2 3;").program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual([{}], env)
+
+    def test_block(self):
+        program = ProgramParser('let x = 10; { let y = "Test"; }').program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual([{"x": 10}], env)
+
+    def test_undeclared_variable(self):
+        program = ProgramParser("print + 2 a;").program()
+        self.assertRaisesRegex(
+            InterpretException, 'Undefined variable "a"', lambda: exec(program, [{}])
+        )
+
+    def test_variables_are_removed_after_exiting_scope(self):
+        program = ProgramParser(
+            """
+            let a = 3;
+            {
+                let b = 3;
+                print(b);
+            }
+            print(a);
+            print(b);
+        """
+        ).program()
+        self.assertRaisesRegex(
+            InterpretException, 'Undefined variable "b"', lambda: exec(program, [{}])
+        )
+
+    def test_addition(self):
+        program = ProgramParser("let x = 10; let y = 20; let z = + x y;").program()
+        env = [{}]
+        exec(program, env)
+        self.assertTrue(30, lookup(env, "z"))
+
+    def test_concatenation(self):
+        program = ProgramParser(
+            'let x = "Hello "; let y = " world!"; let z = + x y;'
+        ).program()
+        env = [{}]
+        exec(program, env)
+        self.assertTrue("Hello world!", lookup(env, "z"))
+
+
+if __name__ == "__main__":
+    unittest.main()
