@@ -23,7 +23,7 @@ class Parser:
 
     def peek(self) -> str:
         if not self.input:
-            raise ParseException("No more input", self.line, self.column)
+            raise ParseException("Unexpected end of input", self.line, self.column)
         return self.input[0]
 
     def sat(self, check: Callable[[str], bool]) -> str:
@@ -31,7 +31,7 @@ class Parser:
         # Check if check is satisfied
         if not check(c):
             raise ParseException(
-                f"{check.__name__}('{c}') failed", self.line, self.column
+                f"Check {check.__name__}('{c}') failed", self.line, self.column
             )
         # Remove c from input
         self.input = self.input[1:]
@@ -73,12 +73,17 @@ class Parser:
         return self.one_or_more(str.isalnum)
 
     def whitespace(self) -> str:
-        return self.zero_or_more(lambda c: c.isspace() or c == "\n")
+        return self.zero_or_more(str.isspace)
 
     def identifier(self) -> str:
-        alpha = self.sat(str.isalpha)
-        alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
-        return alpha + alnums
+        try:
+            alpha = self.sat(str.isalpha)
+            alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
+            return alpha + alnums
+        except ParseException as e:
+            raise ParseException(
+                f"Expected identifier: {e.message}", self.line, self.column
+            )
 
     def exactly(self, target: str) -> str:
         actual = self.input[: len(target)]
@@ -88,9 +93,14 @@ class Parser:
                 s += self.sat(lambda c: c == target_c)
             return s
         except ParseException as e:
-            raise ParseException(
-                f'Expected "{target}", got "{actual}"', self.line, self.column
-            )
+            if actual:
+                raise ParseException(
+                    f'Expected "{target}", got "{actual}"', self.line, self.column
+                )
+            else:
+                raise ParseException(
+                    f'Expected "{target}": {e.message}', self.line, self.column
+                )
 
     def symbol(self, target: str) -> str:
         s = self.exactly(target)

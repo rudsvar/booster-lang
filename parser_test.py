@@ -137,7 +137,9 @@ class ExpressionParserTest(unittest.TestCase):
     def test_str_lit_without_end(self):
         parser = ExpressionParser('"string $ literal %')
         self.assertRaisesRegex(
-            ParseException, 'Expected """, got ""', lambda: parser.str_lit()
+            ParseException,
+            'Expected """: Unexpected end of input',
+            lambda: parser.str_lit(),
         )
 
     def test_add(self):
@@ -199,7 +201,7 @@ class StatementParserTest(unittest.TestCase):
         )
 
     def test_print(self):
-        parser = StatementParser("+ 2 a;")
+        parser = StatementParser("print + 2 a;")
         self.assertEqual(Print(Add(Int(2), Var("a"))), parser.print())
 
 

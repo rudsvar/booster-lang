@@ -75,6 +75,6 @@ if __name__ == "__main__":
         env = [{}]
         exec(program, env)
     except ParseException as e:
-        print(e.message)
+        print(f"{e.message} at {e.line}:{e.column}")
     except EvalException as e:
         print(e.message)
