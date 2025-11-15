@@ -66,6 +66,12 @@ class InterpreterTest(unittest.TestCase):
         exec(program, env)
         self.assertTrue("Hello world!", lookup(env, "z"))
 
+    def test_list(self):
+        program = ProgramParser('let x = [1, "a", true];').program()
+        env = [{}]
+        exec(program, env)
+        self.assertTrue([1, "a", True], lookup(env, "x"))
+
 
 if __name__ == "__main__":
     unittest.main()

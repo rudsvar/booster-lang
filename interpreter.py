@@ -5,7 +5,7 @@ from parser import *
 import sys
 
 
-type Value = int | str
+type Value = int | float | str | bool | list[Value]
 
 type Env = list[dict[str, Value]]
 
@@ -33,6 +33,8 @@ def eval(e: Expr, env: Env) -> Value:
             return b
         case Var(v):
             return lookup(env, v)
+        case List(elements):
+            return map(lambda e: eval(e, env), elements)
         case Add(e1, e2):
             v1 = eval(e1, env)
             v2 = eval(e2, env)
@@ -41,8 +43,24 @@ def eval(e: Expr, env: Env) -> Value:
             if type(v1) == str and type(v2) == str:
                 return str(v1) + str(v2)
             raise InterpretException(f"Cannot add {v1} and {v2}")
+        case Sub(e1, e2):
+            v1 = eval(e1, env)
+            v2 = eval(e2, env)
+            if type(v1) == int and type(v2) == int:
+                return int(v1) - int(v2)
+            raise InterpretException(f"Cannot subtract {v1} and {v2}")
         case Mul(e1, e2):
-            return int(eval(e1, env)) * int(eval(e2, env))
+            v1 = eval(e1, env)
+            v2 = eval(e2, env)
+            if type(v1) == int and type(v2) == int:
+                return int(v1) * int(v2)
+            raise InterpretException(f"Cannot multiply {v1} and {v2}")
+        case Div(e1, e2):
+            v1 = eval(e1, env)
+            v2 = eval(e2, env)
+            if type(v1) == int and type(v2) == int:
+                return int(v1) / int(v2)
+            raise InterpretException(f"Cannot divide {v1} and {v2}")
         case _:
             raise InterpretException("eval not implemented for " + str(e))
 
