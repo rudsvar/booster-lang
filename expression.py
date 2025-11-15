@@ -45,3 +45,8 @@ class Mul:
 class Div:
     e1: Expr
     e2: Expr
+
+
+@dataclass
+class List:
+    elements: list[Expr]

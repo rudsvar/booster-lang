@@ -183,6 +183,29 @@ class ExpressionParserTest(unittest.TestCase):
             parser.expr(),
         )
 
+    def test_list(self):
+        parser = ExpressionParser('[1, "a", b, true]')
+        self.assertEqual(
+            List([Int(1), StrLit("a"), Var("b"), Var("true")]),
+            parser.expr(),
+        )
+
+    def test_list_missing_end_str_lit_fail(self):
+        parser = ExpressionParser('[1, "a, b, true]')
+        self.assertRaisesRegex(
+            ParseException,
+            'Expected "]": Unexpected end of input',
+            lambda: parser.expr(),
+        )
+
+    def test_list_missing_comma_fail(self):
+        parser = ExpressionParser('[1, "a" b, true]')
+        self.assertRaisesRegex(
+            ParseException,
+            'Expected "]", got "b"',
+            lambda: parser.expr(),
+        )
+
 
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):

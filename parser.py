@@ -131,6 +131,15 @@ class Parser:
             f"None of {[p.__name__ for p in parsers]} matched", self.line, self.column
         )
 
+    def optional(self, parser) -> Any | None:
+        self.has_consumed = False
+        try:
+            return parser()
+        except ParseException as e:
+            if self.has_consumed:
+                raise e
+            return None
+
 
 class ExpressionParser(Parser):
 
@@ -178,6 +187,7 @@ class ExpressionParser(Parser):
                     self.mul,
                     self.div,
                     self.sub_expr,
+                    self.lst,
                 ]
             )
         except ParseException as e:
@@ -209,6 +219,23 @@ class ExpressionParser(Parser):
     def div(self) -> Div:
         _ = self.symbol("/")
         return Div(self.expr(), self.expr())
+
+    def lst(self) -> List:
+        _ = self.symbol("[")
+        elements = []
+        # Try to get first element
+        element = self.optional(self.expr)
+        if element:
+            elements.append(element)
+        # Further elements require comma
+        while True:
+            try:
+                _ = self.symbol(",")
+                elements.append(self.expr())
+            except ParseException:
+                break
+        _ = self.symbol("]")
+        return List(elements)
 
 
 class StatementParser(ExpressionParser):
