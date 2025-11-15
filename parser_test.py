@@ -192,11 +192,19 @@ class StatementParserTest(unittest.TestCase):
             ParseException, "Failed to parse expression", lambda: parser.var_decl()
         )
 
-    def test_var_decl_fail_2(self):
-        parser = StatementParser("let x = (+ 2 3a)")
+    def test_var_decl_deep_error_is_included(self):
+        parser = StatementParser("let x = (+ 2 3a);")
         self.assertRaisesRegex(
             ParseException,
             r'at "\(\+ 2 3a".*at "\+ 2 3a".*at "3a"',
+            lambda: parser.var_decl(),
+        )
+
+    def test_var_decl_keyword_cannot_be_followed_by_alnum(self):
+        parser = StatementParser("letx = (+ 2 3);")
+        self.assertRaisesRegex(
+            ParseException,
+            'Keyword "let" cannot be followed by "x"',
             lambda: parser.var_decl(),
         )
 

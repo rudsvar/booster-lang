@@ -107,6 +107,17 @@ class Parser:
         _ = self.whitespace()
         return s
 
+    def keyword(self, keyword: str) -> str:
+        s = self.exactly(keyword)
+        if self.input and self.peek().isalnum():
+            raise ParseException(
+                f'Keyword "{s}" cannot be followed by "{self.peek()}"',
+                self.line,
+                self.column,
+            )
+        _ = self.whitespace()
+        return s
+
     def one_of(self, parsers) -> Any:
         self.has_consumed = False
         for parser in parsers:
@@ -196,7 +207,7 @@ class ExpressionParser(Parser):
 class StatementParser(ExpressionParser):
 
     def var_decl(self) -> VarDecl:
-        _ = self.symbol("let")
+        _ = self.keyword("let")
         v = self.var()
         _ = self.symbol("=")
         e = self.expr()
@@ -204,7 +215,7 @@ class StatementParser(ExpressionParser):
         return VarDecl(v.name, e)
 
     def print(self) -> Print:
-        _ = self.symbol("print")
+        _ = self.keyword("print")
         e = self.expr()
         _ = self.symbol(";")
         return Print(e)
