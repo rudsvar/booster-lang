@@ -19,6 +19,11 @@ class StrLit:
 
 
 @dataclass
+class Bool:
+    b: bool
+
+
+@dataclass
 class Add:
     e1: Expr
     e2: Expr

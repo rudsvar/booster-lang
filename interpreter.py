@@ -29,6 +29,8 @@ def eval(e: Expr, env: Env) -> Value:
             return i
         case StrLit(s):
             return s
+        case Bool(b):
+            return b
         case Var(v):
             return lookup(env, v)
         case Add(e1, e2):

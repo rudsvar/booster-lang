@@ -141,6 +141,10 @@ class ExpressionParserTest(unittest.TestCase):
             lambda: parser.str_lit(),
         )
 
+    def test_bool(self):
+        parser = ExpressionParser("true")
+        self.assertEqual(Bool(True), parser.bool())
+
     def test_add(self):
         parser = ExpressionParser("+ a 2")
         self.assertEqual(Add(Var("a"), Int(2)), parser.add())

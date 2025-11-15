@@ -146,9 +146,9 @@ class ExpressionParser(Parser):
         return i
 
     def var(self) -> Var:
-        v = Var(self.identifier())
+        ident = self.identifier()
         self.whitespace()
-        return v
+        return Var(ident)
 
     def str_lit(self) -> StrLit:
         _ = self.exactly('"')
@@ -156,6 +156,13 @@ class ExpressionParser(Parser):
         _ = self.exactly('"')
         _ = self.whitespace()
         return StrLit(s)
+
+    def bool(self) -> Bool:
+        true = lambda: self.keyword("true")
+        false = lambda: self.keyword("false")
+        b = self.one_of([true, false])
+        _ = self.whitespace()
+        return Bool(bool(b))
 
     def expr(self) -> Expr:
         input_at_start = self.input

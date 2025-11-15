@@ -16,7 +16,7 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser('let x = 10; let y = "Test";').program()
         env = [{}]
         exec(program, env)
-        self.assertEqual([{"x": 10}, {"y": "Test"}], env)
+        self.assertEqual([{"x": 10, "y": "Test"}], env)
 
     def test_print(self):
         program = ProgramParser("print + 2 3;").program()
