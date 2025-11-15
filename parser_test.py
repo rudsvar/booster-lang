@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import unittest
 from expression import *
-from parser2 import *
+from parser import *
 
 
 class ParserTest(unittest.TestCase):
@@ -148,7 +148,7 @@ class ExpressionParserTest(unittest.TestCase):
         parser = ExpressionParser("+ a (2a)")
         self.assertRaisesRegex(
             ParseException,
-            "cannot be followed by alphabetic character in 2a",
+            'cannot be followed by alphabetic character at "2a"',
             lambda: parser.add(),
         )
 
@@ -177,6 +177,30 @@ class ExpressionParserTest(unittest.TestCase):
             ),
             parser.expr(),
         )
+
+
+class StatementParserTest(unittest.TestCase):
+    def test_var_decl(self):
+        parser = StatementParser("let x = 10;")
+        self.assertEqual(VarDecl("x", Int(10)), parser.var_decl())
+
+    def test_var_decl_fail(self):
+        parser = StatementParser("let x =")
+        self.assertRaisesRegex(
+            ParseException, "Failed to parse expression", lambda: parser.var_decl()
+        )
+
+    def test_var_decl_fail_2(self):
+        parser = StatementParser("let x = (+ 2 3a)")
+        self.assertRaisesRegex(
+            ParseException,
+            r'at "\(\+ 2 3a".*at "\+ 2 3a".*at "3a"',
+            lambda: parser.var_decl(),
+        )
+
+    def test_print(self):
+        parser = StatementParser("+ 2 a;")
+        self.assertEqual(Print(Add(Int(2), Var("a"))), parser.print())
 
 
 if __name__ == "__main__":

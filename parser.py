@@ -1,152 +1,235 @@
 from dataclasses import dataclass
-from typing import Callable, TypeVar
+from typing import Any, Callable
 from expression import *
 from statement import *
-from copy import copy
-import sys
 from pprint import pprint
-
-type Parser[T] = Callable[[str], tuple[T, str]]
+import sys
 
 
 @dataclass
-class ParseError(Exception):
+class ParseException(BaseException):
     message: str
+    line: int
+    column: int
 
 
-def symbol(kw: str, input: str) -> tuple[str, str]:
-    input = input.lstrip()
-    if input.startswith(kw):
-        return kw, input.removeprefix(kw)
-    raise ParseError(f"Expected keyword {kw}, got {input[:10]}")
+@dataclass
+class Parser:
+    input: str
+    pos: int = 0
+    line: int = 1
+    column: int = 1
+    has_consumed: bool = False
 
+    def peek(self) -> str:
+        if not self.input:
+            raise ParseException("No more input", self.line, self.column)
+        return self.input[0]
 
-def take_while(check: Callable[[str], bool], input: str) -> tuple[str, str]:
-    match = ""
-    for c in input:
+    def sat(self, check: Callable[[str], bool]) -> str:
+        c = self.peek()
+        # Check if check is satisfied
         if not check(c):
-            break
-        match += c
-    input = input.removeprefix(match)
-    return match, input
+            raise ParseException(
+                f"{check.__name__}('{c}') failed", self.line, self.column
+            )
+        # Remove c from input
+        self.input = self.input[1:]
+        self.pos += 1
+        self.has_consumed = True
+        if c == "\n":
+            # Go to the next line, and remember to reset column
+            self.line += 1
+            self.column = 1
+        else:
+            # Go to the next column
+            self.column += 1
+        return c
 
+    def zero_or_more(self, check: Callable[[str], bool]) -> str:
+        chars = ""
+        while True:
+            try:
+                chars += self.sat(check)
+            except ParseException:
+                break
+        return chars
 
-def identifier(input: str) -> tuple[str, str]:
-    input = input.lstrip()
-    ident, input = take_while(str.isalnum, input)
-    if not ident:
-        raise ParseError(f"Variable name cannot be empty")
-    if not ident[0].isalpha():
-        raise ParseError(f"Variable must start with an alphabetic character")
-    return ident, input
+    def one_or_more(self, check: Callable[[str], bool]) -> str:
+        chars = self.zero_or_more(check)
+        if not chars:
+            raise ParseException(
+                f"Expected some {check.__name__}", self.line, self.column
+            )
+        return chars
 
+    def digits(self) -> str:
+        return self.one_or_more(str.isdigit)
 
-def variable(input: str) -> tuple[Var, str]:
-    ident, input = identifier(input)
-    return Var(ident), input
+    def alphas(self) -> str:
+        return self.one_or_more(str.isalpha)
 
+    def alnums(self) -> str:
+        return self.one_or_more(str.isalnum)
 
-def integer(input: str) -> tuple[Int, str]:
-    digits, input = take_while(str.isnumeric, input)
-    if not digits:
-        raise ParseError(f"Expected integer, got {input[:10]}")
-    if input and input[0].isalpha():
-        raise ParseError("Integer cannot be followed by alphabetic character")
-    return Int(int(digits)), input
+    def whitespace(self) -> str:
+        return self.zero_or_more(lambda c: c.isspace() or c == "\n")
 
+    def identifier(self) -> str:
+        alpha = self.sat(str.isalpha)
+        alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
+        return alpha + alnums
 
-def string_literal(input: str) -> tuple[StrLit, str]:
-    _, input = symbol('"', input)
-    str_lit, input = take_while(lambda c: c != '"', input)
-    _, input = symbol('"', input)
-    return StrLit(str_lit), input
-
-
-T = TypeVar("T")
-
-
-def any_of(parsers: list[Parser[T]], input: str) -> tuple[T, str]:
-    for parser in parsers:
+    def exactly(self, target: str) -> str:
+        actual = self.input[: len(target)]
         try:
-            return parser(input)
-        except ParseError:
-            pass
-    raise ParseError("No parsers matched")
+            s = ""
+            for target_c in target:
+                s += self.sat(lambda c: c == target_c)
+            return s
+        except ParseException as e:
+            raise ParseException(
+                f'Expected "{target}", got "{actual}"', self.line, self.column
+            )
+
+    def symbol(self, target: str) -> str:
+        s = self.exactly(target)
+        _ = self.whitespace()
+        return s
+
+    def one_of(self, parsers) -> Any:
+        self.has_consumed = False
+        for parser in parsers:
+            try:
+                return parser()
+            except ParseException as e:
+                if self.has_consumed:
+                    raise e
+                continue
+        raise ParseException(
+            f"None of {[p.__name__ for p in parsers]} matched", self.line, self.column
+        )
 
 
-def expression(input: str) -> tuple[Expr, str]:
-    input = input.lstrip()
-    return any_of([variable, integer, string_literal, subexpression, add, mul], input)
+class ExpressionParser(Parser):
 
+    def int(self) -> Int:
+        i = Int(int(self.digits()))
+        if self.input and self.peek().isalpha():
+            raise ParseException(
+                f'Int cannot be followed by alphabetic character at "{i.i}{self.peek()}"',
+                self.line,
+                self.column,
+            )
+        self.whitespace()
+        return i
 
-def subexpression(input: str) -> tuple[Expr, str]:
-    _, input = symbol("(", input)
-    e, input = expression(input)
-    _, input = symbol(")", input)
-    return e, input
+    def var(self) -> Var:
+        v = Var(self.identifier())
+        self.whitespace()
+        return v
 
+    def str_lit(self) -> StrLit:
+        _ = self.exactly('"')
+        s = self.zero_or_more(lambda c: c != '"')
+        _ = self.exactly('"')
+        _ = self.whitespace()
+        return StrLit(s)
 
-def add(input: str) -> tuple[Expr, str]:
-    _, input = symbol("+", input)
-    e1, input = expression(input)
-    e2, input = expression(input)
-    return Add(e1, e2), input
-
-
-def mul(input: str) -> tuple[Expr, str]:
-    _, input = symbol("*", input)
-    e1, input = expression(input)
-    e2, input = expression(input)
-    return Mul(e1, e2), input
-
-
-def variable_declaration(input: str) -> tuple[VarDecl, str]:
-    _, input = symbol("let", input)
-    v, input = identifier(input)
-    _, input = symbol("=", input)
-    e, input = expression(input)
-    _, input = symbol(";", input)
-    return VarDecl(v, e), input
-
-
-def print_statement(input: str) -> tuple[Print, str]:
-    _, input = symbol("print", input)
-    e, input = expression(input)
-    _, input = symbol(";", input)
-    return Print(e), input
-
-
-def block(input: str) -> tuple[Block, str]:
-    _, input = symbol("{", input)
-    stmts, input = statements(input)
-    _, input = symbol("}", input)
-    return Block(stmts), input
-
-
-def statement(input: str) -> tuple[Stmt, str]:
-    return any_of([variable_declaration, print_statement, block], input)
-
-
-def many(parser: Parser[T], input: str) -> tuple[list[T], str]:
-    results = []
-    while True:
+    def expr(self) -> Expr:
+        input_at_start = self.input
+        pos_at_start = self.pos
         try:
-            result, input = parser(input)
-            results.append(result)
-        except ParseError:
-            break
-    return results, input
+            return self.one_of(
+                [
+                    self.int,
+                    self.var,
+                    self.str_lit,
+                    self.add,
+                    self.sub,
+                    self.mul,
+                    self.div,
+                    self.sub_expr,
+                ]
+            )
+        except ParseException as e:
+            pos_diff = self.pos - pos_at_start + 1
+            raise ParseException(
+                f'Failed to parse expression at "{input_at_start[:pos_diff]}": {e.message}',
+                self.line,
+                self.column,
+            )
+
+    def sub_expr(self) -> Expr:
+        _ = self.symbol("(")
+        e = self.expr()
+        _ = self.symbol(")")
+        return e
+
+    def add(self) -> Add:
+        _ = self.symbol("+")
+        return Add(self.expr(), self.expr())
+
+    def sub(self) -> Sub:
+        _ = self.symbol("-")
+        return Sub(self.expr(), self.expr())
+
+    def mul(self) -> Mul:
+        _ = self.symbol("*")
+        return Mul(self.expr(), self.expr())
+
+    def div(self) -> Div:
+        _ = self.symbol("/")
+        return Div(self.expr(), self.expr())
 
 
-def statements(input: str) -> tuple[list[Stmt], str]:
-    return many(statement, input)
+class StatementParser(ExpressionParser):
+
+    def var_decl(self) -> VarDecl:
+        _ = self.symbol("let")
+        v = self.var()
+        _ = self.symbol("=")
+        e = self.expr()
+        _ = self.symbol(";")
+        return VarDecl(v.name, e)
+
+    def print(self) -> Print:
+        _ = self.symbol("print")
+        e = self.expr()
+        _ = self.symbol(";")
+        return Print(e)
+
+    def statement(self) -> Stmt:
+        return self.one_of([self.var_decl, self.print, self.block])
+
+    def statements(self) -> list[Stmt]:
+        stmts = []
+        while True:
+            try:
+                stmts.append(self.statement())
+            except ParseException as e:
+                if self.has_consumed:
+                    raise e
+                break
+        return stmts
+
+    def block(self) -> Block:
+        _ = self.symbol("{")
+        stmts = self.statements()
+        _ = self.symbol("}")
+        return Block(stmts)
 
 
-def parse_program(input: str) -> list[Stmt]:
-    stmts, input = statements(input)
-    if input:
-        raise ParseError(f'Expected end of input, got "{input[:10]}"')
-    return stmts
+class ProgramParser(StatementParser):
+
+    def program(self) -> list[Stmt]:
+        self.whitespace()
+        stmts = self.statements()
+        if self.input:
+            raise ParseException(
+                f"Expected end of input at {self.input[:20]}", self.line, self.column
+            )
+        return stmts
 
 
 def main():
@@ -158,10 +241,11 @@ def main():
         pass
     # Parse and execute
     try:
-        program = parse_program(input)
+        parser = ProgramParser(input)
+        program = parser.program()
         pprint(program)
-    except ParseError as e:
-        print(e.message)
+    except ParseException as e:
+        print(f"{e.message} at {e.line}:{e.column}")
 
 
 if __name__ == "__main__":

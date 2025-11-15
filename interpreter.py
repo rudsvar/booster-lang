@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from expression import *
 from statement import *
-from parser import ParseError, parse_program
+from parser import *
 import sys
 
 
@@ -70,10 +70,11 @@ if __name__ == "__main__":
 
     # Parse and execute
     try:
-        program = parse_program(input)
+        parser = ProgramParser(input)
+        program = parser.program()
         env = [{}]
         exec(program, env)
-    except ParseError as e:
+    except ParseException as e:
         print(e.message)
     except EvalException as e:
         print(e.message)
