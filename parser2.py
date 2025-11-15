@@ -1,6 +1,8 @@
 from dataclasses import dataclass
 from typing import Callable
-import expression
+from expression import *
+from pprint import pprint
+import sys
 
 
 @dataclass
@@ -68,12 +70,11 @@ class Parser:
         return self.one_or_more(str.isalnum)
 
     def whitespace(self) -> str:
-        return self.zero_or_more(str.isspace)
+        return self.zero_or_more(lambda c: c.isspace() or c == "\n")
 
     def identifier(self) -> str:
         alpha = self.sat(str.isalpha)
         alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
-        _ = self.whitespace()
         return alpha + alnums
 
     def exactly(self, target: str) -> str:
@@ -83,7 +84,7 @@ class Parser:
             for target_c in target:
                 s += self.sat(lambda c: c == target_c)
             return s
-        except:
+        except ParseException as e:
             raise ParseException(
                 f'Expected "{target}", got "{actual}"', self.line, self.column
             )
@@ -93,70 +94,100 @@ class Parser:
         _ = self.whitespace()
         return s
 
+    def one_of(self, parsers) -> Expr:
+        self.has_consumed = False
+        for parser in parsers:
+            try:
+                return parser()
+            except ParseException as e:
+                if self.has_consumed:
+                    raise ParseException(
+                        f"Failed to parse {parser.__name__}: {e.message}",
+                        self.line,
+                        self.column,
+                    )
+                else:
+                    continue
+        raise ParseException(
+            f"None of {[p.__name__ for p in parsers]} matched", self.line, self.column
+        )
+
 
 class ExpressionParser(Parser):
 
-    def int(self) -> expression.Int:
-        i = expression.Int(int(self.digits()))
+    def int(self) -> Int:
+        i = Int(int(self.digits()))
         if self.input and self.peek().isalpha():
             raise ParseException(
-                "Int cannot be followed by alphabetic character", self.line, self.column
+                f"Int cannot be followed by alphabetic character in {i.i}{self.peek()}",
+                self.line,
+                self.column,
             )
-        _ = self.whitespace()
         return i
 
-    def var(self) -> expression.Var:
-        v = expression.Var(self.identifier())
-        _ = self.whitespace()
-        return v
+    def var(self) -> Var:
+        return Var(self.identifier())
 
-    def str_lit(self) -> expression.StrLit:
+    def str_lit(self) -> StrLit:
         _ = self.exactly('"')
         s = self.zero_or_more(lambda c: c != '"')
         _ = self.exactly('"')
-        _ = self.whitespace()
-        return expression.StrLit(s)
+        return StrLit(s)
 
-    def expr(self) -> expression.Expr:
-        expr_parsers = [
-            self.int,
-            self.var,
-            self.str_lit,
-            self.add,
-            self.sub,
-            self.mul,
-            self.div,
-            self.sub_expr,
-        ]
-        self.has_consumed = False
-        for p in expr_parsers:
-            try:
-                return p()
-            except ParseException as e:
-                if self.has_consumed:
-                    raise e
-                else:
-                    continue
-        raise ParseException(f"None of {expr_parsers} matched", self.line, self.column)
+    def expr(self) -> Expr:
+        e = self.one_of(
+            [
+                self.int,
+                self.var,
+                self.str_lit,
+                self.add,
+                self.sub,
+                self.mul,
+                self.div,
+                self.sub_expr,
+            ]
+        )
+        self.whitespace()
+        return e
 
-    def sub_expr(self) -> expression.Expr:
+    def sub_expr(self) -> Expr:
         _ = self.symbol("(")
         e = self.expr()
         _ = self.symbol(")")
         return e
 
-    def add(self) -> expression.Add:
+    def add(self) -> Add:
         _ = self.symbol("+")
-        return expression.Add(self.expr(), self.expr())
+        return Add(self.expr(), self.expr())
 
-    def sub(self) -> expression.Sub:
+    def sub(self) -> Sub:
         _ = self.symbol("-")
-        return expression.Sub(self.expr(), self.expr())
+        return Sub(self.expr(), self.expr())
 
-    def mul(self) -> expression.Mul:
+    def mul(self) -> Mul:
         _ = self.symbol("*")
-        return expression.Mul(self.expr(), self.expr())
+        return Mul(self.expr(), self.expr())
 
-    def div(self) -> expression.Div:
+    def div(self) -> Div:
         _ = self.symbol("/")
-        return expression.Div(self.expr(), self.expr())
+        return Div(self.expr(), self.expr())
+
+
+def main():
+    input = sys.argv[1]
+    try:
+        with open(input) as f:
+            input = f.read()
+    except FileNotFoundError:
+        pass
+    # Parse and execute
+    try:
+        parser = ExpressionParser(input)
+        program = parser.expr()
+        pprint(program)
+    except ParseException as e:
+        print(f"{e.message} at {e.line}:{e.column}")
+
+
+if __name__ == "__main__":
+    main()

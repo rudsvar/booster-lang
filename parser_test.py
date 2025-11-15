@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import unittest
-import expression
-from parser2 import Parser, ParseException, ExpressionParser
+from expression import *
+from parser2 import *
 
 
 class ParserTest(unittest.TestCase):
@@ -68,6 +68,13 @@ class ParserTest(unittest.TestCase):
         parser = Parser("123abc")
         self.assertRaisesRegex(ParseException, "Expected some isalpha", parser.alphas)
 
+    def test_whitespace(self):
+        parser = Parser(" \n ; ")
+        self.assertEqual(" \n ", parser.whitespace())
+        self.assertEqual(2, parser.line)
+        self.assertEqual(2, parser.column)
+        self.assertEqual("; ", parser.input)
+
     def test_identifier(self):
         parser = ExpressionParser("my_identifier3")
         self.assertEqual("my_identifier3", parser.identifier())
@@ -101,7 +108,7 @@ class ParserTest(unittest.TestCase):
 class ExpressionParserTest(unittest.TestCase):
     def test_integer(self):
         parser = ExpressionParser("123")
-        self.assertEqual(expression.Int(123), parser.int())
+        self.assertEqual(Int(123), parser.int())
 
     def test_integer_fails(self):
         parser = ExpressionParser("abc")
@@ -121,11 +128,11 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_var(self):
         parser = ExpressionParser("my_identifier3")
-        self.assertEqual(expression.Var("my_identifier3"), parser.var())
+        self.assertEqual(Var("my_identifier3"), parser.var())
 
     def test_str_lit(self):
         parser = ExpressionParser('"string $ literal %"')
-        self.assertEqual(expression.StrLit("string $ literal %"), parser.str_lit())
+        self.assertEqual(StrLit("string $ literal %"), parser.str_lit())
 
     def test_str_lit_without_end(self):
         parser = ExpressionParser('"string $ literal %')
@@ -135,20 +142,26 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_add(self):
         parser = ExpressionParser("+ a 2")
-        self.assertEqual(
-            expression.Add(expression.Var("a"), expression.Int(2)), parser.add()
+        self.assertEqual(Add(Var("a"), Int(2)), parser.add())
+
+    def test_add_failure(self):
+        parser = ExpressionParser("+ a (2a)")
+        self.assertRaisesRegex(
+            ParseException,
+            "cannot be followed by alphabetic character in 2a",
+            lambda: parser.add(),
         )
 
     def test_math_expr(self):
         parser = ExpressionParser("+ a - b * c / d e")
         self.assertEqual(
-            expression.Add(
-                expression.Var("a"),
-                expression.Sub(
-                    expression.Var("b"),
-                    expression.Mul(
-                        expression.Var("c"),
-                        expression.Div(expression.Var("d"), expression.Var("e")),
+            Add(
+                Var("a"),
+                Sub(
+                    Var("b"),
+                    Mul(
+                        Var("c"),
+                        Div(Var("d"), Var("e")),
                     ),
                 ),
             ),
@@ -158,9 +171,9 @@ class ExpressionParserTest(unittest.TestCase):
     def test_math_sub_expr(self):
         parser = ExpressionParser("- (+ a b) c")
         self.assertEqual(
-            expression.Sub(
-                expression.Add(expression.Var("a"), expression.Var("b")),
-                expression.Var("c"),
+            Sub(
+                Add(Var("a"), Var("b")),
+                Var("c"),
             ),
             parser.expr(),
         )
