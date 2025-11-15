@@ -255,14 +255,31 @@ class StatementParser(ExpressionParser):
         _ = self.symbol(";")
         return VarDecl(v.name, e)
 
-    def print(self) -> Print:
-        _ = self.keyword("print")
+    def assignment(self) -> Assignment:
+        print("Trying assignment")
+        v = self.var()
+        _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")
-        return Print(e)
+        return Assignment(v.name, e)
+
+    def print(self) -> Print:
+        print("Trying print")
+        self_input = self.input
+        try:
+            _ = self.keyword("print")
+            e = self.expr()
+            _ = self.symbol(";")
+            return Print(e)
+        except ParseException as e:
+            self.has_consumed = False
+            self.input = self_input
+            raise e
 
     def statement(self) -> Stmt:
-        return self.one_of([self.var_decl, self.print, self.block, self.if_statement])
+        return self.one_of(
+            [self.var_decl, self.if_statement, self.print, self.block, self.assignment]
+        )
 
     def statements(self) -> list[Stmt]:
         stmts = []

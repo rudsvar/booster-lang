@@ -1,11 +1,17 @@
 from dataclasses import dataclass
 from expression import Expr, Var
 
-type Stmt = VarDecl | Print | Block | If
+type Stmt = VarDecl | Assignment | Print | Block | If
 
 
 @dataclass
 class VarDecl:
+    v: str
+    e: Expr
+
+
+@dataclass
+class Assignment:
     v: str
     e: Expr
 

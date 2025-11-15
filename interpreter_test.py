@@ -100,6 +100,18 @@ class InterpreterTest(unittest.TestCase):
         env = [{}]
         exec(program, env)
 
+    def test_assignment(self):
+        program = ProgramParser("let x = 3; { x = 4; }").program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual(4, lookup(env, "x"))
+
+    def test_assignment_undefined_var(self):
+        program = ProgramParser("let x = 3; { y = 4; }").program()
+        self.assertRaisesRegex(
+            InterpretException, 'Undefined variable "y"', lambda: exec(program, [{}])
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

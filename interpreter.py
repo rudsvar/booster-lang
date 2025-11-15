@@ -23,6 +23,14 @@ def lookup(env: Env, var: str) -> Value:
     raise InterpretException(f'Undefined variable "{var}"')
 
 
+def assign(env: Env, var: str, value: Value):
+    for scope in reversed(env):
+        if scope.get(var) is not None:
+            scope[var] = value
+            return
+    raise InterpretException(f'Undefined variable "{var}"')
+
+
 def eval(e: Expr, env: Env) -> Value:
     match e:
         case Int(i):
@@ -70,6 +78,8 @@ def exec_one(statement: Stmt, env: Env):
         case VarDecl(v, e):
             scope = env[-1]
             scope[v] = eval(e, env)
+        case Assignment(v, e):
+            assign(env, v, eval(e, env))
         case Print(e):
             print(eval(e, env))
         case Block(statements):
