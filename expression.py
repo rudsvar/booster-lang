@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-type Expr = Int | StrLit | Var | Add | Sub | Mul | Div
+type Expr = Int | StrLit | Bool | Var | Add | Sub | Mul | Div
 
 
 @dataclass

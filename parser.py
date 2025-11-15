@@ -167,11 +167,34 @@ class ExpressionParser(Parser):
         return StrLit(s)
 
     def bool(self) -> Bool:
-        true = lambda: self.keyword("true")
-        false = lambda: self.keyword("false")
-        b = self.one_of([true, false])
-        _ = self.whitespace()
-        return Bool(bool(b))
+        self_input = self.input
+        try:
+            true = lambda: self.keyword("true")
+            false = lambda: self.keyword("false")
+            b = self.one_of([true, false])
+            _ = self.whitespace()
+            return Bool(b == "true")
+        except ParseException as e:
+            self.has_consumed = False
+            self.input = self_input
+            raise e
+
+    def lst(self) -> List:
+        _ = self.symbol("[")
+        elements = []
+        # Try to get first element
+        element = self.optional(self.expr)
+        if element:
+            elements.append(element)
+        # Further elements require comma
+        while True:
+            try:
+                _ = self.symbol(",")
+                elements.append(self.expr())
+            except ParseException:
+                break
+        _ = self.symbol("]")
+        return List(elements)
 
     def expr(self) -> Expr:
         input_at_start = self.input
@@ -180,8 +203,9 @@ class ExpressionParser(Parser):
             return self.one_of(
                 [
                     self.int,
-                    self.var,
                     self.str_lit,
+                    self.bool,
+                    self.var,
                     self.add,
                     self.sub,
                     self.mul,
@@ -220,23 +244,6 @@ class ExpressionParser(Parser):
         _ = self.symbol("/")
         return Div(self.expr(), self.expr())
 
-    def lst(self) -> List:
-        _ = self.symbol("[")
-        elements = []
-        # Try to get first element
-        element = self.optional(self.expr)
-        if element:
-            elements.append(element)
-        # Further elements require comma
-        while True:
-            try:
-                _ = self.symbol(",")
-                elements.append(self.expr())
-            except ParseException:
-                break
-        _ = self.symbol("]")
-        return List(elements)
-
 
 class StatementParser(ExpressionParser):
 
@@ -255,7 +262,7 @@ class StatementParser(ExpressionParser):
         return Print(e)
 
     def statement(self) -> Stmt:
-        return self.one_of([self.var_decl, self.print, self.block])
+        return self.one_of([self.var_decl, self.print, self.block, self.if_statement])
 
     def statements(self) -> list[Stmt]:
         stmts = []
@@ -273,6 +280,17 @@ class StatementParser(ExpressionParser):
         stmts = self.statements()
         _ = self.symbol("}")
         return Block(stmts)
+
+    def if_statement(self) -> If:
+        _ = self.keyword("if")
+        condition = self.expr()
+        then_branch = self.block()
+        else_branch = self.optional(lambda: self.else_branch())
+        return If(condition, then_branch, else_branch)
+
+    def else_branch(self) -> Block:
+        _ = self.keyword("else")
+        return self.block()
 
 
 class ProgramParser(StatementParser):

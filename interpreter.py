@@ -18,7 +18,7 @@ class InterpretException(Exception):
 def lookup(env: Env, var: str) -> Value:
     for scope in reversed(env):
         val = scope.get(var)
-        if val:
+        if val is not None:
             return val
     raise InterpretException(f'Undefined variable "{var}"')
 
@@ -76,6 +76,12 @@ def exec_one(statement: Stmt, env: Env):
             env.append({})
             exec(statements, env)
             env.pop()
+        case If(condition, then_block, else_block):
+            condition = eval(condition, env)
+            if condition:
+                exec_one(then_block, env)
+            elif else_block:
+                exec_one(else_block, env)
         case _:
             raise InterpretException("exec not implemented for " + str(statement))
 

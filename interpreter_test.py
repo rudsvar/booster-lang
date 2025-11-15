@@ -72,6 +72,34 @@ class InterpreterTest(unittest.TestCase):
         exec(program, env)
         self.assertTrue([1, "a", True], lookup(env, "x"))
 
+    def test_if_true_then(self):
+        program = ProgramParser("let b = true; if b { print b; }").program()
+        print(program)
+        env = [{}]
+        exec(program, env)
+
+    def test_if_false_then(self):
+        program = ProgramParser("let b = false; if b { print b; }").program()
+        print(program)
+        env = [{}]
+        exec(program, env)
+
+    def test_if_true_then_else(self):
+        program = ProgramParser(
+            "let b = true; if b { print b; } else { print undefined; }"
+        ).program()
+        print(program)
+        env = [{}]
+        exec(program, env)
+
+    def test_if_false_then_else(self):
+        program = ProgramParser(
+            "let b = false; if b { print undefined; } else { print b; }"
+        ).program()
+        print(program)
+        env = [{}]
+        exec(program, env)
+
 
 if __name__ == "__main__":
     unittest.main()

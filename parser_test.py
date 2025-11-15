@@ -141,9 +141,13 @@ class ExpressionParserTest(unittest.TestCase):
             lambda: parser.str_lit(),
         )
 
-    def test_bool(self):
+    def test_bool_true(self):
         parser = ExpressionParser("true")
         self.assertEqual(Bool(True), parser.bool())
+
+    def test_bool_false(self):
+        parser = ExpressionParser("false")
+        self.assertEqual(Bool(False), parser.bool())
 
     def test_add(self):
         parser = ExpressionParser("+ a 2")
@@ -212,6 +216,10 @@ class StatementParserTest(unittest.TestCase):
         parser = StatementParser("let x = 10;")
         self.assertEqual(VarDecl("x", Int(10)), parser.var_decl())
 
+    def test_var_decl_bool(self):
+        parser = StatementParser("let x = true;")
+        self.assertEqual(VarDecl("x", Bool(True)), parser.var_decl())
+
     def test_var_decl_fail(self):
         parser = StatementParser("let x =")
         self.assertRaisesRegex(
@@ -237,6 +245,19 @@ class StatementParserTest(unittest.TestCase):
     def test_print(self):
         parser = StatementParser("print + 2 a;")
         self.assertEqual(Print(Add(Int(2), Var("a"))), parser.print())
+
+    def test_if_then(self):
+        parser = StatementParser('if b { print "Yes!"; }')
+        self.assertEqual(
+            If(Var("b"), Block([Print(StrLit("Yes!"))]), None), parser.if_statement()
+        )
+
+    def test_if_then_else(self):
+        parser = StatementParser('if b { print "Yes!"; } else { print "Nah"; }')
+        self.assertEqual(
+            If(Var("b"), Block([Print(StrLit("Yes!"))]), Block([Print(StrLit("Nah"))])),
+            parser.if_statement(),
+        )
 
 
 if __name__ == "__main__":
