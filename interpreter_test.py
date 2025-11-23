@@ -112,6 +112,33 @@ class InterpreterTest(unittest.TestCase):
             InterpretException, 'Undefined variable "y"', lambda: exec(program, [{}])
         )
 
+    def test_fun_decl(self):
+        program = ProgramParser(
+            "fun foo(x, y) { return + x y; } let x = foo(1, 2);"
+        ).program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual(3, lookup(env, "x"))
+
+    def test_fun_decl_fibonacci(self):
+        program = ProgramParser(
+            """
+        fun fibonacci(x) {
+            if == x 0 {
+                return 0;
+            }
+            if == x 1 {
+                return 1;
+            }
+            return + fibonacci(- x 1) fibonacci(- x 2);
+        }
+        let x = fibonacci(10);
+        """
+        ).program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual(55, lookup(env, "x"))
+
 
 if __name__ == "__main__":
     unittest.main()

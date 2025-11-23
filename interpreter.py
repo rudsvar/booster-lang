@@ -5,7 +5,7 @@ from parser import *
 import sys
 
 
-type Value = int | float | str | bool | list[Value]
+type Value = int | float | str | bool | list[Value] | FunDef | None
 
 type Env = list[dict[str, Value]]
 
@@ -42,7 +42,7 @@ def eval(e: Expr, env: Env) -> Value:
         case Var(v):
             return lookup(env, v)
         case List(elements):
-            return map(lambda e: eval(e, env), elements)
+            return list(map(lambda e: eval(e, env), elements))
         case Add(e1, e2):
             v1 = eval(e1, env)
             v2 = eval(e2, env)
@@ -69,11 +69,33 @@ def eval(e: Expr, env: Env) -> Value:
             if type(v1) == int and type(v2) == int:
                 return int(v1) / int(v2)
             raise InterpretException(f"Cannot divide {v1} and {v2}")
+        case Eq(e1, e2):
+            v1 = eval(e1, env)
+            v2 = eval(e2, env)
+            return v1 == v2
+        case FunCall(name, args):
+            # Look up function in scope
+            f = lookup(env, name)
+            if type(f) != FunDef:
+                raise InterpretException(f"{f} is not callable")
+            # Check argument length matches parameter length
+            params = f.params
+            if len(params) != len(args):
+                raise InterpretException(
+                    f"{name} expects {len(params)} arguments, but got {len(args)}"
+                )
+            # Create a scope where the parameters are set to the argument values
+            # Also include itself to allow recursion
+            function_env: Env = [{name: f}]
+            for param, arg in zip(params, args):
+                function_env[0][param] = eval(arg, env)
+            # Run body with function env
+            return exec_one(f.body, function_env)
         case _:
             raise InterpretException("eval not implemented for " + str(e))
 
 
-def exec_one(statement: Stmt, env: Env):
+def exec_one(statement: Stmt, env: Env) -> Value | None:
     match statement:
         case VarDecl(v, e):
             scope = env[-1]
@@ -84,35 +106,45 @@ def exec_one(statement: Stmt, env: Env):
             print(eval(e, env))
         case Block(statements):
             env.append({})
-            exec(statements, env)
+            return_value = exec(statements, env)
             env.pop()
+            return return_value
         case If(condition, then_block, else_block):
             condition = eval(condition, env)
             if condition:
-                exec_one(then_block, env)
+                return exec_one(then_block, env)
             elif else_block:
-                exec_one(else_block, env)
+                return exec_one(else_block, env)
+        case FunDef(name, _, _) as f:
+            scope = env[-1]
+            scope[name] = f
+        case Return(e):
+            if e:
+                return eval(e, env)
         case _:
             raise InterpretException("exec not implemented for " + str(statement))
+    return None
 
 
-def exec(statements: list[Stmt], env: Env):
+def exec(statements: list[Stmt], env: Env) -> Value | None:
     for statement in statements:
-        exec_one(statement, env)
+        return_value = exec_one(statement, env)
+        if return_value is not None:
+            return return_value
 
 
 if __name__ == "__main__":
     # Read file or use arg as program
-    input = sys.argv[1]
+    inp = sys.argv[1]
     try:
-        with open(input) as f:
-            input = f.read()
+        with open(inp) as f:
+            inp = f.read()
     except FileNotFoundError:
         pass
 
     # Parse and execute
     try:
-        parser = ProgramParser(input)
+        parser = ProgramParser(inp)
         program = parser.program()
         env = [{}]
         exec(program, env)

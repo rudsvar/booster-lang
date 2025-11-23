@@ -232,6 +232,7 @@ class ExpressionParser(Parser):
                     self.sub,
                     self.mul,
                     self.div,
+                    self.eq,
                     self.sub_expr,
                     self.lst,
                 ]
@@ -266,6 +267,10 @@ class ExpressionParser(Parser):
         _ = self.symbol("/")
         return Div(self.expr(), self.expr())
 
+    def eq(self) -> Eq:
+        _ = self.symbol("==")
+        return Eq(self.expr(), self.expr())
+
 
 class StatementParser(ExpressionParser):
 
@@ -278,7 +283,6 @@ class StatementParser(ExpressionParser):
         return VarDecl(v.name, e)
 
     def assignment(self) -> Assignment:
-        print("Trying assignment")
         v = self.var_or_function_call()
         _ = self.symbol("=")
         e = self.expr()
@@ -286,7 +290,6 @@ class StatementParser(ExpressionParser):
         return Assignment(v.name, e)
 
     def print(self) -> Print:
-        print("Trying print")
         self_input = self.input
         try:
             _ = self.keyword("print")
