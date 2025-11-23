@@ -300,7 +300,15 @@ class StatementParser(ExpressionParser):
 
     def statement(self) -> Stmt:
         return self.one_of(
-            [self.var_decl, self.if_statement, self.print, self.block, self.assignment]
+            [
+                self.var_decl,
+                self.if_statement,
+                self.print,
+                self.block,
+                self.function_definition,
+                self.return_statement,
+                self.assignment,
+            ]
         )
 
     def statements(self) -> list[Stmt]:
@@ -330,6 +338,21 @@ class StatementParser(ExpressionParser):
     def else_branch(self) -> Block:
         _ = self.keyword("else")
         return self.block()
+
+    def function_definition(self) -> FunDef:
+        _ = self.keyword("fun")
+        name = self.identifier()
+        _ = self.symbol("(")
+        parameters = self.separated_by(self.identifier, ",")
+        _ = self.symbol(")")
+        body = self.block()
+        return FunDef(name, parameters, body)
+
+    def return_statement(self) -> Return:
+        _ = self.keyword("return")
+        e = self.optional(self.expr)
+        _ = self.symbol(";")
+        return Return(e)
 
 
 class ProgramParser(StatementParser):

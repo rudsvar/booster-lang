@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from expression import Expr, Var
 
-type Stmt = VarDecl | Assignment | Print | Block | If
+type Stmt = VarDecl | Assignment | Print | Block | If | FunDef | Return
 
 
 @dataclass
@@ -31,3 +31,15 @@ class If:
     condition: Expr
     then_block: Block
     else_block: Block | None
+
+
+@dataclass
+class FunDef:
+    name: str
+    params: list[str]
+    body: Block
+
+
+@dataclass
+class Return:
+    expr: Expr | None

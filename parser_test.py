@@ -162,7 +162,7 @@ class ExpressionParserTest(unittest.TestCase):
         self.assertEqual(Add(Var("a"), Int(2)), parser.add())
 
     def test_add_failure(self):
-        parser = ExpressionParser("+ a (2a)")
+        parser = ExpressionParser("+ a 2a")
         self.assertRaisesRegex(
             ParseException,
             'cannot be followed by alphabetic character at "2a"',
@@ -272,6 +272,18 @@ class StatementParserTest(unittest.TestCase):
         self.assertEqual(
             If(Var("b"), Block([Print(StrLit("Yes!"))]), Block([Print(StrLit("Nah"))])),
             parser.if_statement(),
+        )
+
+    def test_fun_decl(self):
+        program = ProgramParser(
+            "fun foo(x, y) { return + x y; } let x = foo(1, 2);"
+        ).program()
+        self.assertEqual(
+            [
+                FunDef("foo", ["x", "y"], Block([Return(Add(Var("x"), Var("y")))])),
+                VarDecl("x", FunCall("foo", [Int(1), Int(2)])),
+            ],
+            program,
         )
 
 
