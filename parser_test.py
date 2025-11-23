@@ -218,6 +218,13 @@ class ExpressionParserTest(unittest.TestCase):
             lambda: parser.expr(),
         )
 
+    def test_function_call(self):
+        parser = ExpressionParser('foo(1, a, true, "hello")')
+        self.assertEqual(
+            FunCall("foo", [Int(1), Var("a"), Bool(True), StrLit("hello")]),
+            parser.var_or_function_call(),
+        )
+
 
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):

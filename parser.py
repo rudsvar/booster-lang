@@ -170,6 +170,17 @@ class ExpressionParser(Parser):
         self.whitespace()
         return Var(ident)
 
+    def var_or_function_call(self) -> Var | FunCall:
+        v = self.var()
+        # Check if it's a function call
+        if self.input and self.peek() == "(":
+            _ = self.symbol("(")
+            args = self.separated_by(self.expr, ",")
+            _ = self.symbol(")")
+            return FunCall(v.name, args)
+        # Wasn't a function call, return identifier as variable
+        return v
+
     def str_lit(self) -> StrLit:
         _ = self.exactly('"')
         s = self.zero_or_more(lambda c: c != '"')
@@ -216,7 +227,7 @@ class ExpressionParser(Parser):
                     self.int,
                     self.str_lit,
                     self.bool,
-                    self.var,
+                    self.var_or_function_call,
                     self.add,
                     self.sub,
                     self.mul,
@@ -260,7 +271,7 @@ class StatementParser(ExpressionParser):
 
     def var_decl(self) -> VarDecl:
         _ = self.keyword("let")
-        v = self.var()
+        v = self.var_or_function_call()
         _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")
@@ -268,7 +279,7 @@ class StatementParser(ExpressionParser):
 
     def assignment(self) -> Assignment:
         print("Trying assignment")
-        v = self.var()
+        v = self.var_or_function_call()
         _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")

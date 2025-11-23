@@ -50,3 +50,9 @@ class Div:
 @dataclass
 class List:
     elements: list[Expr]
+
+
+@dataclass
+class FunCall:
+    name: str
+    args: list[Expr]
