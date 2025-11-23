@@ -103,6 +103,14 @@ class ParserTest(unittest.TestCase):
         self.assertEqual("(", parser.symbol("("))
         self.assertEqual("a )", parser.input)
 
+    def test_separated_by(self):
+        parser = Parser("a, b, c")
+        self.assertEqual(["a", "b", "c"], parser.separated_by(parser.identifier, ","))
+
+    def test_separated_by_trailing(self):
+        parser = Parser("a, b, c,")
+        self.assertEqual(["a", "b", "c"], parser.separated_by(parser.identifier, ","))
+
 
 class ExpressionParserTest(unittest.TestCase):
     def test_integer(self):

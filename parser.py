@@ -140,6 +140,17 @@ class Parser:
                 raise e
             return None
 
+    def separated_by(self, parser, separator: str) -> list[Any]:
+        elements = []
+        while True:
+            try:
+                element = parser()
+                elements.append(element)
+                _ = self.symbol(separator)
+            except ParseException:
+                break
+        return elements
+
 
 class ExpressionParser(Parser):
 
