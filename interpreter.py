@@ -84,11 +84,13 @@ def eval(e: Expr, env: Env) -> Value:
                 raise InterpretException(
                     f"{name} expects {len(params)} arguments, but got {len(args)}"
                 )
-            # Create a scope where the parameters are set to the argument values
-            # Also include itself to allow recursion
-            function_env: Env = [{name: f}]
+            # Pass a custom env with two scopes:
+            # 1. The top level scope
+            # 2. A fresh one to bind arguments to parameter names
+            function_env: Env = [env[0], {}]
             for param, arg in zip(params, args):
-                function_env[0][param] = eval(arg, env)
+                # Put parameters in the fresh scope
+                function_env[-1][param] = eval(arg, env)
             # Run body with function env
             return exec_one(f.body, function_env)
         case _:

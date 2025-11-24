@@ -121,23 +121,18 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual(3, lookup(env, "x"))
 
     def test_fun_decl_fibonacci(self):
-        program = ProgramParser(
-            """
-        fun fibonacci(x) {
-            if == x 0 {
-                return 0;
-            }
-            if == x 1 {
-                return 1;
-            }
-            return + fibonacci(- x 1) fibonacci(- x 2);
-        }
-        let x = fibonacci(10);
-        """
-        ).program()
+        input = open("examples/fibonacci.blang").read()
+        program = ProgramParser(input).program()
         env = [{}]
         exec(program, env)
         self.assertEqual(55, lookup(env, "x"))
+
+    def test_fun_decl_mutual_recursion(self):
+        input = open("examples/mutual_recursion.blang").read()
+        program = ProgramParser(input).program()
+        env = [{}]
+        exec(program, env)
+        self.assertEqual(5, lookup(env, "x"))
 
 
 if __name__ == "__main__":
