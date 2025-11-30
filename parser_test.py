@@ -111,6 +111,25 @@ class ParserTest(unittest.TestCase):
         parser = Parser("a, b, c,")
         self.assertEqual(["a", "b", "c"], parser.separated_by(parser.identifier, ","))
 
+    def test_keyword(self):
+        parser = Parser("let ")
+        self.assertEqual("let", parser.keyword("let"))
+        self.assertEqual("", parser.input)
+
+    def test_keyword_alternatives(self):
+        parser = Parser("lettuce ")
+        self.assertEqual(
+            "lettuce",
+            parser.one_of(
+                [
+                    lambda: parser.keyword("let"),
+                    lambda: parser.keyword("lettuce"),
+                    lambda: parser.keyword("tomato"),
+                ]
+            ),
+        )
+        self.assertEqual("", parser.input)
+
 
 class ExpressionParserTest(unittest.TestCase):
     def test_integer(self):

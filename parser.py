@@ -108,15 +108,22 @@ class Parser:
         return s
 
     def keyword(self, keyword: str) -> str:
-        s = self.exactly(keyword)
-        if self.input and self.peek().isalnum():
-            raise ParseException(
-                f'Keyword "{s}" cannot be followed by "{self.peek()}"',
-                self.line,
-                self.column,
-            )
-        _ = self.whitespace()
-        return s
+        self_input = self.input
+        try:
+            s = self.exactly(keyword)
+            if self.input and self.peek().isalnum():
+                raise ParseException(
+                    f'Keyword "{s}" cannot be followed by "{self.peek()}"',
+                    self.line,
+                    self.column,
+                )
+            _ = self.whitespace()
+            return s
+        except ParseException as e:
+            # Allow keyword failures to continue
+            self.input = self_input
+            self.has_consumed = False
+            raise e
 
     def one_of(self, parsers: list[Callable[[], Any]]) -> Any:
         self.has_consumed = False
@@ -248,7 +255,6 @@ class ExpressionParser(Parser):
         return e
 
     def bin_op(self) -> Expr:
-        print("Trying binop")
         op = self.one_of(
             [
                 lambda: self.keyword("+"),
@@ -258,7 +264,6 @@ class ExpressionParser(Parser):
                 lambda: self.keyword("=="),
             ]
         )
-        print(op)
         e1 = self.expr()
         e2 = self.expr()
         return BinOp(op, e1, e2)
