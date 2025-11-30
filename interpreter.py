@@ -42,37 +42,24 @@ def eval(e: Expr, env: Env) -> Value:
         case Var(v):
             return lookup(env, v)
         case List(elements):
-            return list(map(lambda e: eval(e, env), elements))
-        case Add(e1, e2):
+            return [eval(e, env) for e in elements]
+        case BinOp(op, e1, e2):
             v1 = eval(e1, env)
             v2 = eval(e2, env)
-            if type(v1) == int and type(v2) == int:
-                return int(v1) + int(v2)
-            if type(v1) == str and type(v2) == str:
-                return str(v1) + str(v2)
-            raise InterpretException(f"Cannot add {v1} and {v2}")
-        case Sub(e1, e2):
-            v1 = eval(e1, env)
-            v2 = eval(e2, env)
-            if type(v1) == int and type(v2) == int:
-                return int(v1) - int(v2)
-            raise InterpretException(f"Cannot subtract {v1} and {v2}")
-        case Mul(e1, e2):
-            v1 = eval(e1, env)
-            v2 = eval(e2, env)
-            if type(v1) == int and type(v2) == int:
-                return int(v1) * int(v2)
-            raise InterpretException(f"Cannot multiply {v1} and {v2}")
-        case Div(e1, e2):
-            v1 = eval(e1, env)
-            v2 = eval(e2, env)
-            if type(v1) == int and type(v2) == int:
-                return int(v1) / int(v2)
-            raise InterpretException(f"Cannot divide {v1} and {v2}")
-        case Eq(e1, e2):
-            v1 = eval(e1, env)
-            v2 = eval(e2, env)
-            return v1 == v2
+            match op:
+                case "+" if type(v1) == int and type(v2) == int:
+                    return int(v1) + int(v2)
+                case "+" if type(v1) == str and type(v2) == str:
+                    return str(v1) + str(v2)
+                case "-" if type(v1) == int and type(v2) == int:
+                    return int(v1) - int(v2)
+                case "*" if type(v1) == int and type(v2) == int:
+                    return int(v1) * int(v2)
+                case "/" if type(v1) == int and type(v2) == int:
+                    return int(v1) / int(v2)
+                case "==" if type(v1) == type(v2):
+                    return v1 == v2
+            raise InterpretException(f"Operator {op} does not work on {v1} and {v2}")
         case FunCall(name, args):
             # Look up function in scope
             f = lookup(env, name)

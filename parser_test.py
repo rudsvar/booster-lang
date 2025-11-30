@@ -159,26 +159,29 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_add(self):
         parser = ExpressionParser("+ a 2")
-        self.assertEqual(Add(Var("a"), Int(2)), parser.add())
+        self.assertEqual(BinOp("+", Var("a"), Int(2)), parser.bin_op())
 
     def test_add_failure(self):
         parser = ExpressionParser("+ a 2a")
         self.assertRaisesRegex(
             ParseException,
             'cannot be followed by alphabetic character at "2a"',
-            lambda: parser.add(),
+            lambda: parser.bin_op(),
         )
 
     def test_math_expr(self):
         parser = ExpressionParser("+ a - b * c / d e")
         self.assertEqual(
-            Add(
+            BinOp(
+                "+",
                 Var("a"),
-                Sub(
+                BinOp(
+                    "-",
                     Var("b"),
-                    Mul(
+                    BinOp(
+                        "*",
                         Var("c"),
-                        Div(Var("d"), Var("e")),
+                        BinOp("/", Var("d"), Var("e")),
                     ),
                 ),
             ),
@@ -188,8 +191,9 @@ class ExpressionParserTest(unittest.TestCase):
     def test_math_sub_expr(self):
         parser = ExpressionParser("- (+ a b) c")
         self.assertEqual(
-            Sub(
-                Add(Var("a"), Var("b")),
+            BinOp(
+                "-",
+                BinOp("+", Var("a"), Var("b")),
                 Var("c"),
             ),
             parser.expr(),
@@ -259,7 +263,7 @@ class StatementParserTest(unittest.TestCase):
 
     def test_print(self):
         parser = StatementParser("print + 2 a;")
-        self.assertEqual(Print(Add(Int(2), Var("a"))), parser.print())
+        self.assertEqual(Print(BinOp("+", Int(2), Var("a"))), parser.print())
 
     def test_if_then(self):
         parser = StatementParser('if b { print "Yes!"; }')
@@ -280,7 +284,9 @@ class StatementParserTest(unittest.TestCase):
         ).program()
         self.assertEqual(
             [
-                FunDef("foo", ["x", "y"], Block([Return(Add(Var("x"), Var("y")))])),
+                FunDef(
+                    "foo", ["x", "y"], Block([Return(BinOp("+", Var("x"), Var("y")))])
+                ),
                 VarDecl("x", FunCall("foo", [Int(1), Int(2)])),
             ],
             program,

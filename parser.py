@@ -118,7 +118,7 @@ class Parser:
         _ = self.whitespace()
         return s
 
-    def one_of(self, parsers) -> Any:
+    def one_of(self, parsers: list[Callable[[], Any]]) -> Any:
         self.has_consumed = False
         for parser in parsers:
             try:
@@ -228,11 +228,7 @@ class ExpressionParser(Parser):
                     self.str_lit,
                     self.bool,
                     self.var_or_function_call,
-                    self.add,
-                    self.sub,
-                    self.mul,
-                    self.div,
-                    self.eq,
+                    self.bin_op,
                     self.sub_expr,
                     self.lst,
                 ]
@@ -251,25 +247,21 @@ class ExpressionParser(Parser):
         _ = self.symbol(")")
         return e
 
-    def add(self) -> Add:
-        _ = self.symbol("+")
-        return Add(self.expr(), self.expr())
-
-    def sub(self) -> Sub:
-        _ = self.symbol("-")
-        return Sub(self.expr(), self.expr())
-
-    def mul(self) -> Mul:
-        _ = self.symbol("*")
-        return Mul(self.expr(), self.expr())
-
-    def div(self) -> Div:
-        _ = self.symbol("/")
-        return Div(self.expr(), self.expr())
-
-    def eq(self) -> Eq:
-        _ = self.symbol("==")
-        return Eq(self.expr(), self.expr())
+    def bin_op(self) -> Expr:
+        print("Trying binop")
+        op = self.one_of(
+            [
+                lambda: self.keyword("+"),
+                lambda: self.keyword("-"),
+                lambda: self.keyword("*"),
+                lambda: self.keyword("/"),
+                lambda: self.keyword("=="),
+            ]
+        )
+        print(op)
+        e1 = self.expr()
+        e2 = self.expr()
+        return BinOp(op, e1, e2)
 
 
 class StatementParser(ExpressionParser):
