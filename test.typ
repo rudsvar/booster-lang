@@ -42,6 +42,7 @@
     - 10:50: Interpreting a program
     - 11:20: Implementing more advanced control structures
     - 11:50: Making your own language constructs
+    - 12:20: End of workshop
 ]
 
 #slide("Parsing")[
@@ -186,3 +187,14 @@
       ```
     ]
 ]
+
+#slide("Tasks")[
+  - Extend interpreter to support boolean expressions
+  - Extend interpreter to support block statements
+  - Extend interpreter to support variable declaration statements
+  - Extend interpreter to support assignment?
+  - Extend interpreter to support a while-loop
+  - Extend interpreter to support if-statements
+]
+
+#slide("Break")[Starting again at 10:50]
