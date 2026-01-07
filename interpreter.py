@@ -125,21 +125,30 @@ def exec(statements: list[Stmt], env: Env) -> Value | None:
             return return_value
 
 
+def exec_string(input: str) -> Value | None:
+    parser = ProgramParser(input)
+    program = parser.program()
+    env: Env = [{}]
+    exec(program, env)
+
+
+def exec_file(path: str) -> Value | None:
+    with open(path) as f:
+        inp = f.read()
+        exec_string(inp)
+
+
 if __name__ == "__main__":
     # Read file or use arg as program
-    inp = sys.argv[1]
+    input = sys.argv[1]
     try:
-        with open(inp) as f:
-            inp = f.read()
+        exec_file(input)
     except FileNotFoundError:
         pass
 
     # Parse and execute
     try:
-        parser = ProgramParser(inp)
-        program = parser.program()
-        env: Env = [{}]
-        exec(program, env)
+        exec_string(input)
     except ParseException as e:
         print(f"{e.message} at {e.line}:{e.column}")
     except InterpretException as e:
