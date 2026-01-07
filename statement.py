@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from expression import Expr, Var
+from expression import Expr
 
 type Stmt = VarDecl | Assignment | Print | Block | If | FunDef | Return
 

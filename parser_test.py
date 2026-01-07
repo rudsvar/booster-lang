@@ -84,7 +84,7 @@ class ParserTest(unittest.TestCase):
 
     def test_exactly(self):
         parser = Parser("Hello123")
-        self.assertEqual("Hello1", parser.exactly("Hello1"))
+        self.assertEqual("Hello1", parser.string("Hello1"))
         self.assertEqual(1, parser.line)
         self.assertEqual(7, parser.column)
         self.assertEqual("23", parser.input)
@@ -95,7 +95,7 @@ class ParserTest(unittest.TestCase):
         self.assertRaisesRegex(
             ParseException,
             'Expected "Hello1", got "Hel8lo"',
-            lambda: parser.exactly("Hello1"),
+            lambda: parser.string("Hello1"),
         )
 
     def test_symbol(self):

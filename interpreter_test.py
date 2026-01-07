@@ -8,25 +8,25 @@ class InterpreterTest(unittest.TestCase):
 
     def test_empty_program(self):
         program = ProgramParser("").program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual([{}], env)
 
     def test_variable_declaration(self):
         program = ProgramParser('let x = 10; let y = "Test";').program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual([{"x": 10, "y": "Test"}], env)
 
     def test_print(self):
         program = ProgramParser("print + 2 3;").program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual([{}], env)
 
     def test_block(self):
         program = ProgramParser('let x = 10; { let y = "Test"; }').program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual([{"x": 10}], env)
 
@@ -54,7 +54,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_addition(self):
         program = ProgramParser("let x = 10; let y = 20; let z = + x y;").program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertTrue(30, lookup(env, "z"))
 
@@ -62,26 +62,26 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser(
             'let x = "Hello "; let y = " world!"; let z = + x y;'
         ).program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertTrue("Hello world!", lookup(env, "z"))
 
     def test_list(self):
         program = ProgramParser('let x = [1, "a", true];').program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertTrue([1, "a", True], lookup(env, "x"))
 
     def test_if_true_then(self):
         program = ProgramParser("let b = true; if b { print b; }").program()
         print(program)
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
 
     def test_if_false_then(self):
         program = ProgramParser("let b = false; if b { print b; }").program()
         print(program)
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
 
     def test_if_true_then_else(self):
@@ -89,7 +89,7 @@ class InterpreterTest(unittest.TestCase):
             "let b = true; if b { print b; } else { print undefined; }"
         ).program()
         print(program)
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
 
     def test_if_false_then_else(self):
@@ -97,12 +97,12 @@ class InterpreterTest(unittest.TestCase):
             "let b = false; if b { print undefined; } else { print b; }"
         ).program()
         print(program)
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
 
     def test_assignment(self):
         program = ProgramParser("let x = 3; { x = 4; }").program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual(4, lookup(env, "x"))
 
@@ -116,21 +116,21 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser(
             "fun foo(x, y) { return + x y; } let x = foo(1, 2);"
         ).program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual(3, lookup(env, "x"))
 
     def test_fun_decl_fibonacci(self):
         input = open("examples/fibonacci.blang").read()
         program = ProgramParser(input).program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual(55, lookup(env, "x"))
 
     def test_fun_decl_mutual_recursion(self):
         input = open("examples/mutual_recursion.blang").read()
         program = ProgramParser(input).program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
         self.assertEqual(5, lookup(env, "x"))
 

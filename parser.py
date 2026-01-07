@@ -95,7 +95,8 @@ class Parser:
                 f"Expected identifier: {e.message}", self.line, self.column
             )
 
-    def exactly(self, target: str) -> str:
+    def string(self, target: str) -> str:
+        """Parses an exact string"""
         actual = self.input[: len(target)]
         try:
             s = ""
@@ -113,14 +114,19 @@ class Parser:
                 )
 
     def symbol(self, target: str) -> str:
-        s = self.exactly(target)
+        """Parses an exact string followed by optional whitespace"""
+        s = self.string(target)
         _ = self.whitespace()
         return s
 
     def keyword(self, keyword: str) -> str:
+        """
+        Parses an exact string followed by optional whitespace, but does not partially consume input.
+        This is required to not abort parsing if a variable starts with a prefix that looks like a keyword, like `true_var`.
+        """
         self_input = self.input
         try:
-            s = self.exactly(keyword)
+            s = self.string(keyword)
             if self.input and self.peek().isalnum():
                 raise ParseException(
                     f'Keyword "{s}" cannot be followed by "{self.peek()}"',
@@ -199,9 +205,9 @@ class ExpressionParser(Parser):
         return v
 
     def str_lit(self) -> StrLit:
-        _ = self.exactly('"')
+        _ = self.string('"')
         s = self.zero_or_more(lambda c: c != '"')
-        _ = self.exactly('"')
+        _ = self.string('"')
         _ = self.whitespace()
         return StrLit(s)
 

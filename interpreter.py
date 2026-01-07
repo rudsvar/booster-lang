@@ -59,7 +59,10 @@ def eval(e: Expr, env: Env) -> Value:
                     return int(v1) / int(v2)
                 case "==" if type(v1) == type(v2):
                     return v1 == v2
-            raise InterpretException(f"Operator {op} does not work on {v1} and {v2}")
+                case _:
+                    raise InterpretException(
+                        f"Operator {op} does not work on {v1} and {v2}"
+                    )
         case FunCall(name, args):
             # Look up function in scope
             f = lookup(env, name)
@@ -135,7 +138,7 @@ if __name__ == "__main__":
     try:
         parser = ProgramParser(inp)
         program = parser.program()
-        env = [{}]
+        env: Env = [{}]
         exec(program, env)
     except ParseException as e:
         print(f"{e.message} at {e.line}:{e.column}")
