@@ -193,16 +193,16 @@ class ExpressionParser(Parser):
         self.whitespace()
         return Var(ident)
 
-    def var_or_function_call(self) -> Var | FunCall:
+    def function_call(self) -> FunCall:
+        # Keyword `call`
+        _ = self.keyword("call")
+        # Function name
         v = self.var()
-        # Check if it's a function call
-        if self.input and self.peek() == "(":
-            _ = self.symbol("(")
-            args = self.separated_by(self.expr, ",")
-            _ = self.symbol(")")
-            return FunCall(v.name, args)
-        # Wasn't a function call, return identifier as variable
-        return v
+        # Argument list
+        _ = self.symbol("(")
+        args = self.separated_by(self.expr, ",")
+        _ = self.symbol(")")
+        return FunCall(v.name, args)
 
     def str_lit(self) -> StrLit:
         _ = self.string('"')
@@ -250,10 +250,11 @@ class ExpressionParser(Parser):
                     self.int,
                     self.str_lit,
                     self.bool,
-                    self.var_or_function_call,
+                    self.function_call,
                     self.bin_op,
                     self.sub_expr,
                     self.lst,
+                    self.var,
                 ]
             )
         except ParseException as e:
@@ -289,14 +290,14 @@ class StatementParser(ExpressionParser):
 
     def var_decl(self) -> VarDecl:
         _ = self.keyword("let")
-        v = self.var_or_function_call()
+        v = self.var()
         _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")
         return VarDecl(v.name, e)
 
     def assignment(self) -> Assignment:
-        v = self.var_or_function_call()
+        v = self.var()
         _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")

@@ -242,10 +242,10 @@ class ExpressionParserTest(unittest.TestCase):
         )
 
     def test_function_call(self):
-        parser = ExpressionParser('foo(1, a, true, "hello")')
+        parser = ExpressionParser('call foo(1, a, true, "hello")')
         self.assertEqual(
             FunCall("foo", [Int(1), Var("a"), Bool(True), StrLit("hello")]),
-            parser.var_or_function_call(),
+            parser.function_call(),
         )
 
 
@@ -299,7 +299,7 @@ class StatementParserTest(unittest.TestCase):
 
     def test_fun_decl(self):
         program = ProgramParser(
-            "fun foo(x, y) { return + x y; } let x = foo(1, 2);"
+            "fun foo(x, y) { return + x y; } let x = call foo(1, 2);"
         ).program()
         self.assertEqual(
             [

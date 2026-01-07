@@ -114,7 +114,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_fun_decl(self):
         program = ProgramParser(
-            "fun foo(x, y) { return + x y; } let x = foo(1, 2);"
+            "fun foo(x, y) { return + x y; } let x = call foo(1, 2);"
         ).program()
         env: Env = [{}]
         exec(program, env)
