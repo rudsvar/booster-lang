@@ -1,9 +1,19 @@
 from dataclasses import dataclass
-from typing import Any, Callable
+from typing import Callable, TypeVar
 from expression import *
 from statement import *
 from pprint import pprint
 import sys
+
+"""
+The output of a parser.
+"""
+Output = TypeVar("Output")
+
+"""
+Describes the type signature of parser functions.
+"""
+type ParserFun[Output] = Callable[[], Output]
 
 
 @dataclass
@@ -125,7 +135,7 @@ class Parser:
             self.has_consumed = False
             raise e
 
-    def one_of(self, parsers: list[Callable[[], Any]]) -> Any:
+    def one_of(self, parsers: list[ParserFun[Output]]) -> Output:
         self.has_consumed = False
         for parser in parsers:
             try:
@@ -138,7 +148,7 @@ class Parser:
             f"None of {[p.__name__ for p in parsers]} matched", self.line, self.column
         )
 
-    def optional(self, parser) -> Any | None:
+    def optional(self, parser: ParserFun[Output]) -> Output | None:
         self.has_consumed = False
         try:
             return parser()
@@ -147,8 +157,8 @@ class Parser:
                 raise e
             return None
 
-    def separated_by(self, parser, separator: str) -> list[Any]:
-        elements = []
+    def separated_by(self, parser: ParserFun[Output], separator: str) -> list[Output]:
+        elements: list[Output] = []
         while True:
             try:
                 element = parser()
@@ -210,7 +220,7 @@ class ExpressionParser(Parser):
 
     def lst(self) -> List:
         _ = self.symbol("[")
-        elements = []
+        elements: list[Expr] = []
         # Try to get first element
         element = self.optional(self.expr)
         if element:
@@ -312,7 +322,7 @@ class StatementParser(ExpressionParser):
         )
 
     def statements(self) -> list[Stmt]:
-        stmts = []
+        stmts: list[Stmt] = []
         while True:
             try:
                 stmts.append(self.statement())
