@@ -1,0 +1,132 @@
+import unittest
+from parser.expression import *
+
+
+class ExpressionParserTest(unittest.TestCase):
+    def test_identifier(self):
+        parser = ExpressionParser("my_identifier3")
+        self.assertEqual("my_identifier3", parser.identifier())
+
+    def test_identifier_one_char(self):
+        parser = ExpressionParser("a")
+        self.assertEqual("a", parser.identifier())
+
+    def test_integer(self):
+        parser = ExpressionParser("123")
+        self.assertEqual(Int(123), parser.int())
+
+    def test_integer_fails(self):
+        parser = ExpressionParser("abc")
+        self.assertRaisesRegex(
+            ParseException,
+            "Expected some isdigit",
+            lambda: parser.int(),
+        )
+
+    def test_integer_followed_by_alpha_fails(self):
+        parser = ExpressionParser("123a")
+        self.assertRaisesRegex(
+            ParseException,
+            "Int cannot be followed by alphabetic character",
+            lambda: parser.int(),
+        )
+
+    def test_var(self):
+        parser = ExpressionParser("my_identifier3")
+        self.assertEqual(Var("my_identifier3"), parser.var())
+
+    def test_str_lit(self):
+        parser = ExpressionParser('"string $ literal %"')
+        self.assertEqual(StrLit("string $ literal %"), parser.str_lit())
+
+    def test_str_lit_without_end(self):
+        parser = ExpressionParser('"string $ literal %')
+        self.assertRaisesRegex(
+            ParseException,
+            'Expected """: Unexpected end of input',
+            lambda: parser.str_lit(),
+        )
+
+    def test_bool_true(self):
+        parser = ExpressionParser("true")
+        self.assertEqual(Bool(True), parser.bool())
+
+    def test_bool_false(self):
+        parser = ExpressionParser("false")
+        self.assertEqual(Bool(False), parser.bool())
+
+    def test_add(self):
+        parser = ExpressionParser("+ a 2")
+        self.assertEqual(BinOp("+", Var("a"), Int(2)), parser.bin_op())
+
+    def test_add_failure(self):
+        parser = ExpressionParser("+ a 2a")
+        self.assertRaisesRegex(
+            ParseException,
+            'cannot be followed by alphabetic character at "2a"',
+            lambda: parser.bin_op(),
+        )
+
+    def test_math_expr(self):
+        parser = ExpressionParser("+ a - b * c / d e")
+        self.assertEqual(
+            BinOp(
+                "+",
+                Var("a"),
+                BinOp(
+                    "-",
+                    Var("b"),
+                    BinOp(
+                        "*",
+                        Var("c"),
+                        BinOp("/", Var("d"), Var("e")),
+                    ),
+                ),
+            ),
+            parser.expr(),
+        )
+
+    def test_math_sub_expr(self):
+        parser = ExpressionParser("- (+ a b) c")
+        self.assertEqual(
+            BinOp(
+                "-",
+                BinOp("+", Var("a"), Var("b")),
+                Var("c"),
+            ),
+            parser.expr(),
+        )
+
+    def test_list(self):
+        parser = ExpressionParser('[1, "a", b, true]')
+        self.assertEqual(
+            List([Int(1), StrLit("a"), Var("b"), Bool(True)]),
+            parser.expr(),
+        )
+
+    def test_list_missing_end_str_lit_fail(self):
+        parser = ExpressionParser('[1, "a, b, true]')
+        self.assertRaisesRegex(
+            ParseException,
+            'Expected "]": Unexpected end of input',
+            lambda: parser.expr(),
+        )
+
+    def test_list_missing_comma_fail(self):
+        parser = ExpressionParser('[1, "a" b, true]')
+        self.assertRaisesRegex(
+            ParseException,
+            'Expected "]", got "b"',
+            lambda: parser.expr(),
+        )
+
+    def test_function_call(self):
+        parser = ExpressionParser('call foo(1, a, true, "hello")')
+        self.assertEqual(
+            FunCall("foo", [Int(1), Var("a"), Bool(True), StrLit("hello")]),
+            parser.function_call(),
+        )
+
+
+if __name__ == "__main__":
+    unittest.main()
