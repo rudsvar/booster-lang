@@ -1,7 +1,6 @@
 import unittest
-from expression import *
-from parser import *
-from interpreter import *
+from parser.program import *
+from interpreter.interpreter import *
 
 
 class InterpreterTest(unittest.TestCase):

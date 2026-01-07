@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from expression import *
-from statement import *
-from parser import *
+from parser.program import *
 import sys
 
 
