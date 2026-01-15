@@ -7,32 +7,32 @@ class InterpreterTest(unittest.TestCase):
 
     def test_empty_program(self):
         program = ProgramParser("").program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual([{}], env)
+        self.assertEqual(Env(), env)
 
     def test_variable_declaration(self):
         program = ProgramParser('let x = 10; let y = "Test";').program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual([{"x": 10, "y": "Test"}], env)
+        self.assertEqual([{"x": 10, "y": "Test"}], env.scopes)
 
     def test_print(self):
         program = ProgramParser("print + 2 3;").program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual([{}], env)
+        self.assertEqual(Env(), env)
 
     def test_block(self):
         program = ProgramParser('let x = 10; { let y = "Test"; }').program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual([{"x": 10}], env)
+        self.assertEqual([{"x": 10}], env.scopes)
 
     def test_undeclared_variable(self):
         program = ProgramParser("print + 2 a;").program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "a"', lambda: exec(program, [{}])
+            InterpretException, 'Undefined variable "a"', lambda: exec(program, Env())
         )
 
     def test_variables_are_removed_after_exiting_scope(self):
@@ -48,39 +48,39 @@ class InterpreterTest(unittest.TestCase):
         """
         ).program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "b"', lambda: exec(program, [{}])
+            InterpretException, 'Undefined variable "b"', lambda: exec(program, Env())
         )
 
     def test_addition(self):
         program = ProgramParser("let x = 10; let y = 20; let z = + x y;").program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertTrue(30, lookup(env, "z"))
+        self.assertTrue(30, env.lookup("z"))
 
     def test_concatenation(self):
         program = ProgramParser(
             'let x = "Hello "; let y = " world!"; let z = + x y;'
         ).program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertTrue("Hello world!", lookup(env, "z"))
+        self.assertTrue("Hello world!", env.lookup("z"))
 
     def test_list(self):
         program = ProgramParser('let x = [1, "a", true];').program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertTrue([1, "a", True], lookup(env, "x"))
+        self.assertTrue([1, "a", True], env.lookup("x"))
 
     def test_if_true_then(self):
         program = ProgramParser("let b = true; if b { print b; }").program()
         print(program)
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
 
     def test_if_false_then(self):
         program = ProgramParser("let b = false; if b { print b; }").program()
         print(program)
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
 
     def test_if_true_then_else(self):
@@ -88,7 +88,7 @@ class InterpreterTest(unittest.TestCase):
             "let b = true; if b { print b; } else { print undefined; }"
         ).program()
         print(program)
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
 
     def test_if_false_then_else(self):
@@ -96,44 +96,44 @@ class InterpreterTest(unittest.TestCase):
             "let b = false; if b { print undefined; } else { print b; }"
         ).program()
         print(program)
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
 
     def test_assignment(self):
         program = ProgramParser("let x = 3; { x = 4; }").program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual(4, lookup(env, "x"))
+        self.assertEqual(4, env.lookup("x"))
 
     def test_assignment_undefined_var(self):
         program = ProgramParser("let x = 3; { y = 4; }").program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "y"', lambda: exec(program, [{}])
+            InterpretException, 'Undefined variable "y"', lambda: exec(program, Env())
         )
 
     def test_fun_decl(self):
         program = ProgramParser(
             "fun foo(x, y) { return + x y; } let x = call foo(1, 2);"
         ).program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual(3, lookup(env, "x"))
+        self.assertEqual(3, env.lookup("x"))
 
     def test_fun_decl_fibonacci(self):
         with open("examples/fibonacci.blang") as f:
             input = f.read()
         program = ProgramParser(input).program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual(55, lookup(env, "x"))
+        self.assertEqual(55, env.lookup("x"))
 
     def test_fun_decl_mutual_recursion(self):
         with open("examples/mutual_recursion.blang") as f:
             input = f.read()
         program = ProgramParser(input).program()
-        env: Env = [{}]
+        env: Env = Env()
         exec(program, env)
-        self.assertEqual(5, lookup(env, "x"))
+        self.assertEqual(5, env.lookup("x"))
 
 
 if __name__ == "__main__":

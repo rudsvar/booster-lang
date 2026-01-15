@@ -5,16 +5,16 @@ from parser.statement import *
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):
         parser = StatementParser("let x = 10;")
-        self.assertEqual(VarDecl("x", Int(10)), parser.var_decl())
+        self.assertEqual(VarDef("x", Int(10)), parser.var_def())
 
     def test_var_decl_bool(self):
         parser = StatementParser("let x = true;")
-        self.assertEqual(VarDecl("x", Bool(True)), parser.var_decl())
+        self.assertEqual(VarDef("x", Bool(True)), parser.var_def())
 
     def test_var_decl_fail(self):
         parser = StatementParser("let x =")
         self.assertRaisesRegex(
-            ParseException, "Failed to parse expression", lambda: parser.var_decl()
+            ParseException, "Failed to parse expression", lambda: parser.var_def()
         )
 
     def test_var_decl_deep_error_is_included(self):
@@ -22,7 +22,7 @@ class StatementParserTest(unittest.TestCase):
         self.assertRaisesRegex(
             ParseException,
             r'at "\(\+ 2 3a".*at "\+ 2 3a".*at "3a"',
-            lambda: parser.var_decl(),
+            lambda: parser.var_def(),
         )
 
     def test_var_decl_keyword_cannot_be_followed_by_alnum(self):
@@ -30,7 +30,7 @@ class StatementParserTest(unittest.TestCase):
         self.assertRaisesRegex(
             ParseException,
             'Keyword "let" cannot be followed by "x"',
-            lambda: parser.var_decl(),
+            lambda: parser.var_def(),
         )
 
     def test_print(self):

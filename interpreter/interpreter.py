@@ -5,28 +5,56 @@ import sys
 
 type Value = int | float | str | bool | list[Value] | FunDef | None
 
-type Env = list[dict[str, Value]]
-
 
 @dataclass
 class InterpretException(Exception):
     message: str
 
 
-def lookup(env: Env, var: str) -> Value:
-    for scope in reversed(env):
-        val = scope.get(var)
-        if val is not None:
-            return val
-    raise InterpretException(f'Undefined variable "{var}"')
+@dataclass
+class Env:
+    scopes: list[dict[str, Value]]
 
+    def __init__(self):
+        """Initialize an environment with one initial top-level scope"""
+        self.scopes = [{}]
 
-def assign(env: Env, var: str, value: Value):
-    for scope in reversed(env):
-        if scope.get(var) is not None:
-            scope[var] = value
-            return
-    raise InterpretException(f'Undefined variable "{var}"')
+    def open_scope(self):
+        """Open a new, empty scope"""
+        self.scopes.append({})
+
+    def close_scope(self):
+        """Close the nearest scope"""
+        self.scopes.pop()
+
+    def inner_scope(self) -> dict[str, Value]:
+        """Get a reference to the closest/nearest/inner scope"""
+        return self.scopes[-1]
+
+    def top_level_scope(self) -> dict[str, Value]:
+        """Get a reference to the top level scope"""
+        return self.scopes[0]
+
+    def define(self, var: str, value: Value):
+        """Define a new variable in the nearest scope"""
+        inner_scope = self.inner_scope()
+        inner_scope[var] = value
+
+    def lookup(self, var: str) -> Value:
+        """Look up a variable's value from the environment"""
+        for scope in reversed(self.scopes):
+            val = scope.get(var)
+            if val is not None:
+                return val
+        raise InterpretException(f'Undefined variable "{var}"')
+
+    def assign(self, var: str, value: Value):
+        """Assign a new value to an existing variable"""
+        for scope in reversed(self.scopes):
+            if scope.get(var) is not None:
+                scope[var] = value
+                return
+        raise InterpretException(f'Undefined variable "{var}"')
 
 
 def eval(e: Expr, env: Env) -> Value:
@@ -38,7 +66,7 @@ def eval(e: Expr, env: Env) -> Value:
         case Bool(b):
             return b
         case Var(v):
-            return lookup(env, v)
+            return env.lookup(v)
         case List(elements):
             return [eval(e, env) for e in elements]
         case BinOp(op, e1, e2):
@@ -63,22 +91,27 @@ def eval(e: Expr, env: Env) -> Value:
                     )
         case FunCall(name, args):
             # Look up function in scope
-            f = lookup(env, name)
+            f = env.lookup(name)
             if type(f) != FunDef:
                 raise InterpretException(f"{f} is not callable")
+
             # Check argument length matches parameter length
             params = f.params
             if len(params) != len(args):
                 raise InterpretException(
                     f"{name} expects {len(params)} arguments, but got {len(args)}"
                 )
+
             # Pass a custom env with two scopes:
             # 1. The top level scope
             # 2. A fresh one to bind arguments to parameter names
-            function_env: Env = [env[0], {}]
+            function_env: Env = Env()
+            function_env.scopes = [env.top_level_scope()]
+            function_env.open_scope()
             for param, arg in zip(params, args):
                 # Put parameters in the fresh scope
-                function_env[-1][param] = eval(arg, env)
+                function_env.define(param, eval(arg, env))
+
             # Run body with function env
             return exec_one(f.body, function_env)
         case _:
@@ -87,17 +120,16 @@ def eval(e: Expr, env: Env) -> Value:
 
 def exec_one(statement: Stmt, env: Env) -> Value | None:
     match statement:
-        case VarDecl(v, e):
-            scope = env[-1]
-            scope[v] = eval(e, env)
+        case VarDef(v, e):
+            env.define(v, eval(e, env))
         case Assignment(v, e):
-            assign(env, v, eval(e, env))
+            env.assign(v, eval(e, env))
         case Print(e):
             print(eval(e, env))
         case Block(statements):
-            env.append({})
+            env.open_scope()
             return_value = exec(statements, env)
-            env.pop()
+            env.close_scope()
             return return_value
         case If(condition, then_block, else_block):
             condition = eval(condition, env)
@@ -106,11 +138,10 @@ def exec_one(statement: Stmt, env: Env) -> Value | None:
             elif else_block:
                 return exec_one(else_block, env)
         case FunDef(name, _, _) as f:
-            scope = env[-1]
-            scope[name] = f
-        case Return(e):
-            if e:
-                return eval(e, env)
+            env.define(name, f)
+        case Return(return_value):
+            if return_value:
+                return eval(return_value, env)
         case _:
             raise InterpretException("exec not implemented for " + str(statement))
     return None
@@ -126,7 +157,7 @@ def exec(statements: list[Stmt], env: Env) -> Value | None:
 def exec_string(input: str) -> Value | None:
     parser = ProgramParser(input)
     program = parser.program()
-    env: Env = [{}]
+    env: Env = Env()
     exec(program, env)
 
 

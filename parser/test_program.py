@@ -15,7 +15,7 @@ class ProgramParserTest(unittest.TestCase):
                     ["x", "y"],
                     Block([Return(BinOp("+", Var("x"), Var("y")))]),
                 ),
-                VarDecl("x", FunCall("foo", [Int(1), Int(2)])),
+                VarDef("x", FunCall("foo", [Int(1), Int(2)])),
             ],
             program,
         )

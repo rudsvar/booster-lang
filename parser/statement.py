@@ -1,11 +1,11 @@
 from dataclasses import dataclass
 from parser.expression import *
 
-type Stmt = VarDecl | Assignment | Print | Block | If | FunDef | Return
+type Stmt = VarDef | Assignment | Print | Block | If | FunDef | Return
 
 
 @dataclass
-class VarDecl:
+class VarDef:
     v: str
     e: Expr
 
@@ -47,13 +47,13 @@ class Return:
 
 class StatementParser(ExpressionParser):
 
-    def var_decl(self) -> VarDecl:
+    def var_def(self) -> VarDef:
         _ = self.keyword("let")
         v = self.var()
         _ = self.symbol("=")
         e = self.expr()
         _ = self.symbol(";")
-        return VarDecl(v.name, e)
+        return VarDef(v.name, e)
 
     def assignment(self) -> Assignment:
         v = self.var()
@@ -77,7 +77,7 @@ class StatementParser(ExpressionParser):
     def statement(self) -> Stmt:
         return self.one_of(
             [
-                self.var_decl,
+                self.var_def,
                 self.if_statement,
                 self.print,
                 self.block,
