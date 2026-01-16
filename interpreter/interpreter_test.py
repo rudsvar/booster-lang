@@ -59,7 +59,7 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser("let x = 10; let y = 20; let z = + x y;").program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertTrue(30, env.lookup("z"))
+        self.assertTrue(30, env.lookup_var("z"))
 
     def test_concatenation(self):
         program = ProgramParser(
@@ -67,13 +67,13 @@ class InterpreterTest(unittest.TestCase):
         ).program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertTrue("Hello world!", env.lookup("z"))
+        self.assertTrue("Hello world!", env.lookup_var("z"))
 
     def test_list(self):
         program = ProgramParser('let x = [1, "a", true];').program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertTrue([1, "a", True], env.lookup("x"))
+        self.assertTrue([1, "a", True], env.lookup_var("x"))
 
     def test_if_true_then(self):
         program = ProgramParser("let b = true; if b { print b; }").program()
@@ -107,7 +107,7 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser("let x = 3; { x = 4; }").program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertEqual(4, env.lookup("x"))
+        self.assertEqual(4, env.lookup_var("x"))
 
     def test_assignment_undefined_var(self):
         program = ProgramParser("let x = 3; { y = 4; }").program()
@@ -123,7 +123,7 @@ class InterpreterTest(unittest.TestCase):
         ).program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertEqual(3, env.lookup("x"))
+        self.assertEqual(3, env.lookup_var("x"))
 
     def test_fun_decl_fibonacci(self):
         with open("examples/fibonacci.blang") as f:
@@ -131,7 +131,7 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser(input).program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertEqual(55, env.lookup("x"))
+        self.assertEqual(55, env.lookup_var("x"))
 
     def test_fun_decl_mutual_recursion(self):
         with open("examples/mutual_recursion.blang") as f:
@@ -139,7 +139,7 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser(input).program()
         env: Env = Env()
         exec_program(program, env)
-        self.assertEqual(5, env.lookup("x"))
+        self.assertEqual(5, env.lookup_var("x"))
 
 
 if __name__ == "__main__":

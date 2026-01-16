@@ -35,12 +35,12 @@ class Env:
         """Get a reference to the top level scope"""
         return self.scopes[0]
 
-    def define(self, var: str, value: Value):
+    def define_var(self, var: str, value: Value):
         """Define a new variable in the nearest scope"""
         inner_scope = self.inner_scope()
         inner_scope[var] = value
 
-    def lookup(self, var: str) -> Value:
+    def lookup_var(self, var: str) -> Value:
         """Look up a variable's value from the environment"""
         for scope in reversed(self.scopes):
             val = scope.get(var)
@@ -48,7 +48,7 @@ class Env:
                 return val
         raise InterpretException(f'Undefined variable "{var}"')
 
-    def assign(self, var: str, value: Value):
+    def assign_var(self, var: str, value: Value):
         """Assign a new value to an existing variable"""
         for scope in reversed(self.scopes):
             if scope.get(var) is not None:
@@ -66,7 +66,7 @@ def eval_expr(e: Expr, env: Env) -> Value:
         case Bool(b):
             return b
         case Var(v):
-            return env.lookup(v)
+            return env.lookup_var(v)
         case List(elements):
             return [eval_expr(e, env) for e in elements]
         case BinOp(op, e1, e2):
@@ -78,7 +78,7 @@ def eval_expr(e: Expr, env: Env) -> Value:
 
 
 def eval_var(name: str, env: Env):
-    return env.lookup(name)
+    return env.lookup_var(name)
 
 
 def eval_list(list: list[Expr], env: Env):
@@ -103,7 +103,7 @@ def eval_binop(op: str, e1: Expr, e2: Expr, env: Env):
 
 def eval_function_call(name: str, args: list[Expr], env: Env):
     # Look up function in scope
-    f = env.lookup(name)
+    f = env.lookup_var(name)
     if type(f) != FunDef:
         raise InterpretException(f"{f} is not callable")
 
@@ -122,7 +122,7 @@ def eval_function_call(name: str, args: list[Expr], env: Env):
     function_env.open_scope()
     for param, arg in zip(params, args):
         # Put parameters in the fresh scope
-        function_env.define(param, eval_expr(arg, env))
+        function_env.define_var(param, eval_expr(arg, env))
 
     # Run body with function env
     return exec_statement(f.body, function_env)
@@ -131,9 +131,9 @@ def eval_function_call(name: str, args: list[Expr], env: Env):
 def exec_statement(statement: Stmt, env: Env) -> Value | None:
     match statement:
         case VarDef(v, e):
-            env.define(v, eval_expr(e, env))
+            env.define_var(v, eval_expr(e, env))
         case Assignment(v, e):
-            env.assign(v, eval_expr(e, env))
+            env.assign_var(v, eval_expr(e, env))
         case Print(e):
             print(eval_expr(e, env))
         case Block(statements):
@@ -148,7 +148,7 @@ def exec_statement(statement: Stmt, env: Env) -> Value | None:
             elif else_block:
                 return exec_statement(else_block, env)
         case FunDef(name, _, _) as f:
-            env.define(name, f)
+            env.define_var(name, f)
         case Return(return_value):
             if return_value:
                 return eval_expr(return_value, env)
