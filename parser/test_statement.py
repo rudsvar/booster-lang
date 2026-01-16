@@ -33,20 +33,20 @@ class StatementParserTest(unittest.TestCase):
             lambda: parser.var_def(),
         )
 
-    def test_print(self):
-        parser = StatementParser("print + 2 a;")
-        self.assertEqual(Print(BinOp("+", Int(2), Var("a"))), parser.print())
+    def test_shout(self):
+        parser = StatementParser("shout + 2 a;")
+        self.assertEqual(Shout(BinOp("+", Int(2), Var("a"))), parser.shout())
 
     def test_if_then(self):
-        parser = StatementParser('if b { print "Yes!"; }')
+        parser = StatementParser('if b { shout "Yes!"; }')
         self.assertEqual(
-            If(Var("b"), Block([Print(StrLit("Yes!"))]), None), parser.if_statement()
+            If(Var("b"), Block([Shout(StrLit("Yes!"))]), None), parser.if_statement()
         )
 
     def test_if_then_else(self):
-        parser = StatementParser('if b { print "Yes!"; } else { print "Nah"; }')
+        parser = StatementParser('if b { shout "Yes!"; } else { shout "Nah"; }')
         self.assertEqual(
-            If(Var("b"), Block([Print(StrLit("Yes!"))]), Block([Print(StrLit("Nah"))])),
+            If(Var("b"), Block([Shout(StrLit("Yes!"))]), Block([Shout(StrLit("Nah"))])),
             parser.if_statement(),
         )
 

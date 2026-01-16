@@ -61,9 +61,6 @@ class Env:
 @dataclass
 class Interpreter:
 
-    def __init__(self):
-        pass
-
     def eval_int(self, i: Int):
         return i.value
 
@@ -143,33 +140,57 @@ class Interpreter:
             case _:
                 raise InterpretException("eval not implemented for " + str(e))
 
+    def exec_var_def(self, var_def: VarDef, env: Env):
+        value = self.eval_expr(var_def.expr, env)
+        env.define_var(var_def.var_name, value)
+
+    def exec_assignment(self, assignment: Assignment, env: Env):
+        value = self.eval_expr(assignment.expr, env)
+        env.assign_var(assignment.var_name, value)
+
+    def exec_print(self, print_stmt: Shout, env: Env):
+        value = self.eval_expr(print_stmt.expr, env)
+        print(str(value).upper())
+
+    def exec_block(self, block: Block, env: Env) -> Value | None:
+        env.open_scope()
+        return_value = self.exec_program(block.statements, env)
+        env.close_scope()
+        return return_value
+
+    def exec_if(self, if_stmt: If, env: Env) -> Value | None:
+        condition = self.eval_expr(if_stmt.condition, env)
+        if condition:
+            return self.exec_statement(if_stmt.then_block, env)
+        elif if_stmt.else_block:
+            return self.exec_statement(if_stmt.else_block, env)
+
+    def exec_fun_def(self, fun_def: FunDef, env: Env):
+        env.define_var(fun_def.name, fun_def)
+
+    def exec_return(self, return_stmt: Return, env: Env) -> Value | None:
+        if return_stmt.expr:
+            return self.eval_expr(return_stmt.expr, env)
+        return None
+
     def exec_statement(self, statement: Stmt, env: Env) -> Value | None:
         match statement:
-            case VarDef(v, e):
-                env.define_var(v, self.eval_expr(e, env))
-            case Assignment(v, e):
-                env.assign_var(v, self.eval_expr(e, env))
-            case Print(e):
-                print(self.eval_expr(e, env))
-            case Block(statements):
-                env.open_scope()
-                return_value = self.exec_program(statements, env)
-                env.close_scope()
-                return return_value
-            case If(condition, then_block, else_block):
-                condition = self.eval_expr(condition, env)
-                if condition:
-                    return self.exec_statement(then_block, env)
-                elif else_block:
-                    return self.exec_statement(else_block, env)
-            case FunDef(name, _, _) as f:
-                env.define_var(name, f)
-            case Return(return_value):
-                if return_value:
-                    return self.eval_expr(return_value, env)
+            case VarDef():
+                return self.exec_var_def(statement, env)
+            case Assignment():
+                return self.exec_assignment(statement, env)
+            case Shout():
+                return self.exec_print(statement, env)
+            case Block():
+                return self.exec_block(statement, env)
+            case If():
+                return self.exec_if(statement, env)
+            case FunDef():
+                return self.exec_fun_def(statement, env)
+            case Return():
+                return self.exec_return(statement, env)
             case _:
                 raise InterpretException("exec not implemented for " + str(statement))
-        return None
 
     def exec_program(self, program: list[Stmt], env: Env) -> Value | None:
         for statement in program:

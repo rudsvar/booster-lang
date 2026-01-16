@@ -44,84 +44,73 @@ class FunCall:
 
 class ExpressionParser(Parser):
 
-    def int(self) -> Int:
-        i = Int(int(self.digits()))
+    def parse_int(self) -> Int:
+        i = Int(int(self.parse_digits()))
         if self.input and self.peek().isalpha():
             raise ParseException(
                 f'Int cannot be followed by alphabetic character at "{i.value}{self.peek()}"',
                 self.line,
                 self.column,
             )
-        self.whitespace()
+        self.parse_whitespace()
         return i
 
-    def var(self) -> Var:
-        ident = self.identifier()
-        self.whitespace()
+    def parse_var(self) -> Var:
+        ident = self.parse_identifier()
+        self.parse_whitespace()
         return Var(ident)
 
-    def function_call(self) -> FunCall:
+    def parse_function_call(self) -> FunCall:
         # Keyword `call`
-        _ = self.keyword("call")
+        _ = self.parse_keyword("call")
         # Function name
-        v = self.var()
+        v = self.parse_var()
         # Argument list
-        _ = self.symbol("(")
-        args = self.separated_by(self.expr, ",")
-        _ = self.symbol(")")
+        _ = self.parse_symbol("(")
+        args = self.separated_by(self.parse_expr, ",")
+        _ = self.parse_symbol(")")
         return FunCall(v.name, args)
 
-    def str_lit(self) -> StrLit:
-        _ = self.string('"')
+    def parse_str_lit(self) -> StrLit:
+        _ = self.parse_string('"')
         s = self.zero_or_more(lambda c: c != '"')
-        _ = self.string('"')
-        _ = self.whitespace()
+        _ = self.parse_string('"')
+        _ = self.parse_whitespace()
         return StrLit(s)
 
-    def bool(self) -> Bool:
+    def parse_bool(self) -> Bool:
         self_input = self.input
         try:
-            true = lambda: self.keyword("true")
-            false = lambda: self.keyword("false")
+            true = lambda: self.parse_keyword("true")
+            false = lambda: self.parse_keyword("false")
             b = self.one_of([true, false])
-            _ = self.whitespace()
+            _ = self.parse_whitespace()
             return Bool(b == "true")
         except ParseException as e:
             self.has_consumed = False
             self.input = self_input
             raise e
 
-    def lst(self) -> List:
-        _ = self.symbol("[")
-        elements: list[Expr] = []
-        # Try to get first element
-        element = self.optional(self.expr)
-        if element:
-            elements.append(element)
-        # Further elements require comma
-        while True:
-            try:
-                _ = self.symbol(",")
-                elements.append(self.expr())
-            except ParseException:
-                break
-        _ = self.symbol("]")
+    def parse_list(self) -> List:
+        _ = self.parse_symbol("[")
+        elements = self.separated_by(self.parse_expr, ",")
+        _ = self.parse_symbol("]")
         return List(elements)
 
-    def expr(self) -> Expr:
+    def parse_expr(self) -> Expr:
         input_at_start = self.input
         pos_at_start = self.pos
         try:
             return self.one_of(
                 [
-                    self.int,
-                    self.str_lit,
-                    self.bool,
-                    self.function_call,
-                    self.bin_op,
-                    self.sub_expr,
-                    self.lst,
-                    self.var,
+                    self.parse_int,
+                    self.parse_str_lit,
+                    self.parse_bool,
+                    self.parse_function_call,
+                    self.parse_bin_op,
+                    self.parse_sub_expr,
+                    self.parse_list,
+                    self.parse_var,
                 ]
             )
         except ParseException as e:
@@ -132,22 +121,22 @@ class ExpressionParser(Parser):
                 self.column,
             )
 
-    def sub_expr(self) -> Expr:
-        _ = self.symbol("(")
-        e = self.expr()
-        _ = self.symbol(")")
+    def parse_sub_expr(self) -> Expr:
+        _ = self.parse_symbol("(")
+        e = self.parse_expr()
+        _ = self.parse_symbol(")")
         return e
 
-    def bin_op(self) -> Expr:
+    def parse_bin_op(self) -> Expr:
         op = self.one_of(
             [
-                lambda: self.keyword("+"),
-                lambda: self.keyword("-"),
-                lambda: self.keyword("*"),
-                lambda: self.keyword("/"),
-                lambda: self.keyword("=="),
+                lambda: self.parse_keyword("+"),
+                lambda: self.parse_keyword("-"),
+                lambda: self.parse_keyword("*"),
+                lambda: self.parse_keyword("/"),
+                lambda: self.parse_keyword("=="),
             ]
         )
-        e1 = self.expr()
-        e2 = self.expr()
+        e1 = self.parse_expr()
+        e2 = self.parse_expr()
         return BinOp(op, e1, e2)

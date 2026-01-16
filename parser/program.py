@@ -6,7 +6,7 @@ from parser.statement import *
 class ProgramParser(StatementParser):
 
     def program(self) -> list[Stmt]:
-        self.whitespace()
+        self.parse_whitespace()
         stmts = self.statements()
         if self.input:
             raise ParseException(

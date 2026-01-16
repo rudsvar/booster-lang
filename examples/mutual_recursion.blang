@@ -1,12 +1,12 @@
 fun sum1(x) {
     if == x 0 { return 0; }
-    print("sum1");
+    shout("sum1");
     return + 1 (call sum2(- x 1));
 }
 fun sum2(x) {
     if == x 0 { return 0; }
-    print("sum2");
+    shout("sum2");
     return + 1 (call sum1(- x 1));
 }
 let x = call sum1(5);
-print(x);
+shout(x);

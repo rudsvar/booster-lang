@@ -20,7 +20,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual([{"x": 10, "y": "Test"}], env.scopes)
 
     def test_print(self):
-        program = ProgramParser("print + 2 3;").program()
+        program = ProgramParser("shout + 2 3;").program()
         env = Env()
         interpreter = Interpreter()
         interpreter.exec_program(program, env)
@@ -34,7 +34,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual([{"x": 10}], env.scopes)
 
     def test_undeclared_variable(self):
-        program = ProgramParser("print + 2 a;").program()
+        program = ProgramParser("shout + 2 a;").program()
         env = Env()
         interpreter = Interpreter()
         self.assertRaisesRegex(
@@ -49,10 +49,10 @@ class InterpreterTest(unittest.TestCase):
             let a = 3;
             {
                 let b = 3;
-                print(b);
+                shout(b);
             }
-            print(a);
-            print(b);
+            shout(a);
+            shout(b);
         """
         ).program()
         env = Env()
@@ -78,14 +78,14 @@ class InterpreterTest(unittest.TestCase):
         self.assertTrue([1, "a", True], env.lookup_var("x"))
 
     def test_if_true_then(self):
-        program = ProgramParser("let b = true; if b { print b; }").program()
+        program = ProgramParser("let b = true; if b { shout b; }").program()
         print(program)
         env = Env()
         interpreter = Interpreter()
         interpreter.exec_program(program, env)
 
     def test_if_false_then(self):
-        program = ProgramParser("let b = false; if b { print b; }").program()
+        program = ProgramParser("let b = false; if b { shout b; }").program()
         print(program)
         env = Env()
         interpreter = Interpreter()
@@ -93,7 +93,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_if_true_then_else(self):
         program = ProgramParser(
-            "let b = true; if b { print b; } else { print undefined; }"
+            "let b = true; if b { shout b; } else { shout undefined; }"
         ).program()
         print(program)
         env = Env()
@@ -102,7 +102,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_if_false_then_else(self):
         program = ProgramParser(
-            "let b = false; if b { print undefined; } else { print b; }"
+            "let b = false; if b { shout undefined; } else { shout b; }"
         ).program()
         print(program)
         env = Env()

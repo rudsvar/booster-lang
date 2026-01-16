@@ -4,4 +4,4 @@ fun fibonacci(x) {
     return + (call fibonacci(- x 1)) (call fibonacci(- x 2));
 }
 let x = call fibonacci(10);
-print(x);
+shout(x);

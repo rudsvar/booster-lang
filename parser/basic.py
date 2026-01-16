@@ -32,7 +32,7 @@ class Parser:
             raise ParseException("Unexpected end of input", self.line, self.column)
         return self.input[0]
 
-    def sat(self, check: Callable[[str], bool]) -> str:
+    def while_satisfied(self, check: Callable[[str], bool]) -> str:
         c = self.peek()
         # Check if check is satisfied
         if not check(c):
@@ -56,7 +56,7 @@ class Parser:
         chars = ""
         while True:
             try:
-                chars += self.sat(check)
+                chars += self.while_satisfied(check)
             except ParseException:
                 break
         return chars
@@ -69,21 +69,21 @@ class Parser:
             )
         return chars
 
-    def digits(self) -> str:
+    def parse_digits(self) -> str:
         return self.one_or_more(str.isdigit)
 
-    def alphas(self) -> str:
+    def parse_alphas(self) -> str:
         return self.one_or_more(str.isalpha)
 
-    def alnums(self) -> str:
+    def parse_alnum(self) -> str:
         return self.one_or_more(str.isalnum)
 
-    def whitespace(self) -> str:
+    def parse_whitespace(self) -> str:
         return self.zero_or_more(str.isspace)
 
-    def identifier(self) -> str:
+    def parse_identifier(self) -> str:
         try:
-            alpha = self.sat(str.isalpha)
+            alpha = self.while_satisfied(str.isalpha)
             alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
             return alpha + alnums
         except ParseException as e:
@@ -91,13 +91,13 @@ class Parser:
                 f"Expected identifier: {e.message}", self.line, self.column
             )
 
-    def string(self, target: str) -> str:
+    def parse_string(self, target: str) -> str:
         """Parses an exact string"""
         actual = self.input[: len(target)]
         try:
             s = ""
             for target_c in target:
-                s += self.sat(lambda c: c == target_c)
+                s += self.while_satisfied(lambda c: c == target_c)
             return s
         except ParseException as e:
             if actual:
@@ -109,27 +109,27 @@ class Parser:
                     f'Expected "{target}": {e.message}', self.line, self.column
                 )
 
-    def symbol(self, target: str) -> str:
+    def parse_symbol(self, target: str) -> str:
         """Parses an exact string followed by optional whitespace"""
-        s = self.string(target)
-        _ = self.whitespace()
+        s = self.parse_string(target)
+        _ = self.parse_whitespace()
         return s
 
-    def keyword(self, keyword: str) -> str:
+    def parse_keyword(self, keyword: str) -> str:
         """
         Parses an exact string followed by optional whitespace, but does not partially consume input.
         This is required to not abort parsing if a variable starts with a prefix that looks like a keyword, like `true_var`.
         """
         self_input = self.input
         try:
-            s = self.string(keyword)
+            s = self.parse_string(keyword)
             if self.input and self.peek().isalnum():
                 raise ParseException(
                     f'Keyword "{s}" cannot be followed by "{self.peek()}"',
                     self.line,
                     self.column,
                 )
-            _ = self.whitespace()
+            _ = self.parse_whitespace()
             return s
         except ParseException as e:
             # Allow keyword failures to continue
@@ -165,7 +165,7 @@ class Parser:
             try:
                 element = parser()
                 elements.append(element)
-                _ = self.symbol(separator)
+                _ = self.parse_symbol(separator)
             except ParseException:
                 break
         return elements

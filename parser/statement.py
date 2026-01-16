@@ -1,24 +1,24 @@
 from dataclasses import dataclass
 from parser.expression import *
 
-type Stmt = VarDef | Assignment | Print | Block | If | FunDef | Return
+type Stmt = VarDef | Assignment | Shout | Block | If | FunDef | Return
 
 
 @dataclass
 class VarDef:
-    v: str
-    e: Expr
+    var_name: str
+    expr: Expr
 
 
 @dataclass
 class Assignment:
-    v: str
-    e: Expr
+    var_name: str
+    expr: Expr
 
 
 @dataclass
-class Print:
-    e: Expr
+class Shout:
+    expr: Expr
 
 
 @dataclass
@@ -48,27 +48,27 @@ class Return:
 class StatementParser(ExpressionParser):
 
     def var_def(self) -> VarDef:
-        _ = self.keyword("let")
-        v = self.var()
-        _ = self.symbol("=")
-        e = self.expr()
-        _ = self.symbol(";")
+        _ = self.parse_keyword("let")
+        v = self.parse_var()
+        _ = self.parse_symbol("=")
+        e = self.parse_expr()
+        _ = self.parse_symbol(";")
         return VarDef(v.name, e)
 
     def assignment(self) -> Assignment:
-        v = self.var()
-        _ = self.symbol("=")
-        e = self.expr()
-        _ = self.symbol(";")
+        v = self.parse_var()
+        _ = self.parse_symbol("=")
+        e = self.parse_expr()
+        _ = self.parse_symbol(";")
         return Assignment(v.name, e)
 
-    def print(self) -> Print:
+    def shout(self) -> Shout:
         self_input = self.input
         try:
-            _ = self.keyword("print")
-            e = self.expr()
-            _ = self.symbol(";")
-            return Print(e)
+            _ = self.parse_keyword("shout")
+            e = self.parse_expr()
+            _ = self.parse_symbol(";")
+            return Shout(e)
         except ParseException as e:
             self.has_consumed = False
             self.input = self_input
@@ -79,7 +79,7 @@ class StatementParser(ExpressionParser):
             [
                 self.var_def,
                 self.if_statement,
-                self.print,
+                self.shout,
                 self.block,
                 self.function_definition,
                 self.return_statement,
@@ -99,33 +99,33 @@ class StatementParser(ExpressionParser):
         return stmts
 
     def block(self) -> Block:
-        _ = self.symbol("{")
+        _ = self.parse_symbol("{")
         stmts = self.statements()
-        _ = self.symbol("}")
+        _ = self.parse_symbol("}")
         return Block(stmts)
 
     def if_statement(self) -> If:
-        _ = self.keyword("if")
-        condition = self.expr()
+        _ = self.parse_keyword("if")
+        condition = self.parse_expr()
         then_branch = self.block()
         else_branch = self.optional(lambda: self.else_branch())
         return If(condition, then_branch, else_branch)
 
     def else_branch(self) -> Block:
-        _ = self.keyword("else")
+        _ = self.parse_keyword("else")
         return self.block()
 
     def function_definition(self) -> FunDef:
-        _ = self.keyword("fun")
-        name = self.identifier()
-        _ = self.symbol("(")
-        parameters = self.separated_by(self.identifier, ",")
-        _ = self.symbol(")")
+        _ = self.parse_keyword("fun")
+        name = self.parse_identifier()
+        _ = self.parse_symbol("(")
+        parameters = self.separated_by(self.parse_identifier, ",")
+        _ = self.parse_symbol(")")
         body = self.block()
         return FunDef(name, parameters, body)
 
     def return_statement(self) -> Return:
-        _ = self.keyword("return")
-        e = self.optional(self.expr)
-        _ = self.symbol(";")
+        _ = self.parse_keyword("return")
+        e = self.optional(self.parse_expr)
+        _ = self.parse_symbol(";")
         return Return(e)
