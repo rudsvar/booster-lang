@@ -57,7 +57,7 @@ class Env:
         raise InterpretException(f'Undefined variable "{var}"')
 
 
-def eval(e: Expr, env: Env) -> Value:
+def eval_expr(e: Expr, env: Env) -> Value:
     match e:
         case Int(i):
             return i
@@ -68,97 +68,108 @@ def eval(e: Expr, env: Env) -> Value:
         case Var(v):
             return env.lookup(v)
         case List(elements):
-            return [eval(e, env) for e in elements]
+            return [eval_expr(e, env) for e in elements]
         case BinOp(op, e1, e2):
-            v1 = eval(e1, env)
-            v2 = eval(e2, env)
-            match op:
-                case "+" if type(v1) == int and type(v2) == int:
-                    return int(v1) + int(v2)
-                case "+" if type(v1) == str and type(v2) == str:
-                    return str(v1) + str(v2)
-                case "-" if type(v1) == int and type(v2) == int:
-                    return int(v1) - int(v2)
-                case "*" if type(v1) == int and type(v2) == int:
-                    return int(v1) * int(v2)
-                case "/" if type(v1) == int and type(v2) == int:
-                    return int(v1) / int(v2)
-                case "==" if type(v1) == type(v2):
-                    return v1 == v2
-                case _:
-                    raise InterpretException(
-                        f"Operator {op} does not work on {v1} and {v2}"
-                    )
+            return eval_binop(op, e1, e2, env)
         case FunCall(name, args):
-            # Look up function in scope
-            f = env.lookup(name)
-            if type(f) != FunDef:
-                raise InterpretException(f"{f} is not callable")
-
-            # Check argument length matches parameter length
-            params = f.params
-            if len(params) != len(args):
-                raise InterpretException(
-                    f"{name} expects {len(params)} arguments, but got {len(args)}"
-                )
-
-            # Pass a custom env with two scopes:
-            # 1. The top level scope
-            # 2. A fresh one to bind arguments to parameter names
-            function_env: Env = Env()
-            function_env.scopes = [env.top_level_scope()]
-            function_env.open_scope()
-            for param, arg in zip(params, args):
-                # Put parameters in the fresh scope
-                function_env.define(param, eval(arg, env))
-
-            # Run body with function env
-            return exec_one(f.body, function_env)
+            return eval_function_call(name, args, env)
         case _:
             raise InterpretException("eval not implemented for " + str(e))
 
 
-def exec_one(statement: Stmt, env: Env) -> Value | None:
+def eval_var(name: str, env: Env):
+    return env.lookup(name)
+
+
+def eval_list(list: list[Expr], env: Env):
+    return [eval_expr(e, env) for e in list]
+
+
+def eval_binop(op: str, e1: Expr, e2: Expr, env: Env):
+    v1 = eval_expr(e1, env)
+    v2 = eval_expr(e2, env)
+    match op:
+        case "+" if type(v1) == int and type(v2) == int:
+            return v1 + v2
+        case "+" if type(v1) == str and type(v2) == str:
+            return v1 + v2
+        case "-" if type(v1) == int and type(v2) == int:
+            return v1 - v2
+        case "==" if type(v1) == type(v2):
+            return v1 == v2
+        case _:
+            raise InterpretException(f"Operator {op} does not work on {v1} and {v2}")
+
+
+def eval_function_call(name: str, args: list[Expr], env: Env):
+    # Look up function in scope
+    f = env.lookup(name)
+    if type(f) != FunDef:
+        raise InterpretException(f"{f} is not callable")
+
+    # Check argument length matches parameter length
+    params = f.params
+    if len(params) != len(args):
+        raise InterpretException(
+            f"{name} expects {len(params)} arguments, but got {len(args)}"
+        )
+
+    # Pass a custom env with two scopes:
+    # 1. The top level scope
+    # 2. A fresh one to bind arguments to parameter names
+    function_env: Env = Env()
+    function_env.scopes = [env.top_level_scope()]
+    function_env.open_scope()
+    for param, arg in zip(params, args):
+        # Put parameters in the fresh scope
+        function_env.define(param, eval_expr(arg, env))
+
+    # Run body with function env
+    return exec_statement(f.body, function_env)
+
+
+def exec_statement(statement: Stmt, env: Env) -> Value | None:
     match statement:
         case VarDef(v, e):
-            env.define(v, eval(e, env))
+            env.define(v, eval_expr(e, env))
         case Assignment(v, e):
-            env.assign(v, eval(e, env))
+            env.assign(v, eval_expr(e, env))
         case Print(e):
-            print(eval(e, env))
+            print(eval_expr(e, env))
         case Block(statements):
             env.open_scope()
-            return_value = exec(statements, env)
+            return_value = exec_program(statements, env)
             env.close_scope()
             return return_value
         case If(condition, then_block, else_block):
-            condition = eval(condition, env)
+            condition = eval_expr(condition, env)
             if condition:
-                return exec_one(then_block, env)
+                return exec_statement(then_block, env)
             elif else_block:
-                return exec_one(else_block, env)
+                return exec_statement(else_block, env)
         case FunDef(name, _, _) as f:
             env.define(name, f)
         case Return(return_value):
             if return_value:
-                return eval(return_value, env)
+                return eval_expr(return_value, env)
         case _:
             raise InterpretException("exec not implemented for " + str(statement))
     return None
 
 
-def exec(statements: list[Stmt], env: Env) -> Value | None:
-    for statement in statements:
-        return_value = exec_one(statement, env)
+def exec_program(program: list[Stmt], env: Env) -> Value | None:
+    for statement in program:
+        return_value = exec_statement(statement, env)
         if return_value is not None:
             return return_value
 
 
 def exec_string(input: str) -> Value | None:
+    """Helper to parse and execute a program"""
     parser = ProgramParser(input)
     program = parser.program()
     env: Env = Env()
-    exec(program, env)
+    exec_program(program, env)
 
 
 def exec_file(path: str) -> Value | None:

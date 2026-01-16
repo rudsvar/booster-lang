@@ -8,31 +8,33 @@ class InterpreterTest(unittest.TestCase):
     def test_empty_program(self):
         program = ProgramParser("").program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(Env(), env)
 
     def test_variable_declaration(self):
         program = ProgramParser('let x = 10; let y = "Test";').program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual([{"x": 10, "y": "Test"}], env.scopes)
 
     def test_print(self):
         program = ProgramParser("print + 2 3;").program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(Env(), env)
 
     def test_block(self):
         program = ProgramParser('let x = 10; { let y = "Test"; }').program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual([{"x": 10}], env.scopes)
 
     def test_undeclared_variable(self):
         program = ProgramParser("print + 2 a;").program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "a"', lambda: exec(program, Env())
+            InterpretException,
+            'Undefined variable "a"',
+            lambda: exec_program(program, Env()),
         )
 
     def test_variables_are_removed_after_exiting_scope(self):
@@ -48,13 +50,15 @@ class InterpreterTest(unittest.TestCase):
         """
         ).program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "b"', lambda: exec(program, Env())
+            InterpretException,
+            'Undefined variable "b"',
+            lambda: exec_program(program, Env()),
         )
 
     def test_addition(self):
         program = ProgramParser("let x = 10; let y = 20; let z = + x y;").program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertTrue(30, env.lookup("z"))
 
     def test_concatenation(self):
@@ -62,26 +66,26 @@ class InterpreterTest(unittest.TestCase):
             'let x = "Hello "; let y = " world!"; let z = + x y;'
         ).program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertTrue("Hello world!", env.lookup("z"))
 
     def test_list(self):
         program = ProgramParser('let x = [1, "a", true];').program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertTrue([1, "a", True], env.lookup("x"))
 
     def test_if_true_then(self):
         program = ProgramParser("let b = true; if b { print b; }").program()
         print(program)
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
 
     def test_if_false_then(self):
         program = ProgramParser("let b = false; if b { print b; }").program()
         print(program)
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
 
     def test_if_true_then_else(self):
         program = ProgramParser(
@@ -89,7 +93,7 @@ class InterpreterTest(unittest.TestCase):
         ).program()
         print(program)
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
 
     def test_if_false_then_else(self):
         program = ProgramParser(
@@ -97,18 +101,20 @@ class InterpreterTest(unittest.TestCase):
         ).program()
         print(program)
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
 
     def test_assignment(self):
         program = ProgramParser("let x = 3; { x = 4; }").program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(4, env.lookup("x"))
 
     def test_assignment_undefined_var(self):
         program = ProgramParser("let x = 3; { y = 4; }").program()
         self.assertRaisesRegex(
-            InterpretException, 'Undefined variable "y"', lambda: exec(program, Env())
+            InterpretException,
+            'Undefined variable "y"',
+            lambda: exec_program(program, Env()),
         )
 
     def test_fun_decl(self):
@@ -116,7 +122,7 @@ class InterpreterTest(unittest.TestCase):
             "fun foo(x, y) { return + x y; } let x = call foo(1, 2);"
         ).program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(3, env.lookup("x"))
 
     def test_fun_decl_fibonacci(self):
@@ -124,7 +130,7 @@ class InterpreterTest(unittest.TestCase):
             input = f.read()
         program = ProgramParser(input).program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(55, env.lookup("x"))
 
     def test_fun_decl_mutual_recursion(self):
@@ -132,7 +138,7 @@ class InterpreterTest(unittest.TestCase):
             input = f.read()
         program = ProgramParser(input).program()
         env: Env = Env()
-        exec(program, env)
+        exec_program(program, env)
         self.assertEqual(5, env.lookup("x"))
 
 
