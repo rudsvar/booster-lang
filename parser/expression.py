@@ -6,7 +6,7 @@ type Expr = Int | StrLit | Bool | Var | BinOp | List | FunCall
 
 @dataclass
 class Int:
-    i: int
+    value: int
 
 
 @dataclass
@@ -16,12 +16,12 @@ class Var:
 
 @dataclass
 class StrLit:
-    s: str
+    value: str
 
 
 @dataclass
 class Bool:
-    b: bool
+    value: bool
 
 
 @dataclass
@@ -48,7 +48,7 @@ class ExpressionParser(Parser):
         i = Int(int(self.digits()))
         if self.input and self.peek().isalpha():
             raise ParseException(
-                f'Int cannot be followed by alphabetic character at "{i.i}{self.peek()}"',
+                f'Int cannot be followed by alphabetic character at "{i.value}{self.peek()}"',
                 self.line,
                 self.column,
             )

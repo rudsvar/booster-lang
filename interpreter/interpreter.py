@@ -3,6 +3,7 @@ from parser.program import *
 import sys
 
 
+"""Values that expressions can be evaluated to"""
 type Value = int | float | str | bool | list[Value] | FunDef | None
 
 
@@ -57,138 +58,151 @@ class Env:
         raise InterpretException(f'Undefined variable "{var}"')
 
 
-def eval_expr(e: Expr, env: Env) -> Value:
-    match e:
-        case Int(i):
-            return i
-        case StrLit(s):
-            return s
-        case Bool(b):
-            return b
-        case Var(v):
-            return env.lookup_var(v)
-        case List(elements):
-            return [eval_expr(e, env) for e in elements]
-        case BinOp(op, e1, e2):
-            return eval_binop(op, e1, e2, env)
-        case FunCall(name, args):
-            return eval_function_call(name, args, env)
-        case _:
-            raise InterpretException("eval not implemented for " + str(e))
+@dataclass
+class Interpreter:
 
+    def __init__(self):
+        pass
 
-def eval_var(name: str, env: Env):
-    return env.lookup_var(name)
+    def eval_int(self, i: Int):
+        return i.value
 
+    def eval_str_lit(self, s: StrLit):
+        return s.value
 
-def eval_list(list: list[Expr], env: Env):
-    return [eval_expr(e, env) for e in list]
+    def eval_bool(self, b: Bool):
+        return b.value
 
+    def eval_var(self, var: Var, env: Env):
+        return env.lookup_var(var.name)
 
-def eval_binop(op: str, e1: Expr, e2: Expr, env: Env):
-    v1 = eval_expr(e1, env)
-    v2 = eval_expr(e2, env)
-    match op:
-        case "+" if type(v1) == int and type(v2) == int:
-            return v1 + v2
-        case "+" if type(v1) == str and type(v2) == str:
-            return v1 + v2
-        case "-" if type(v1) == int and type(v2) == int:
-            return v1 - v2
-        case "==" if type(v1) == type(v2):
-            return v1 == v2
-        case _:
-            raise InterpretException(f"Operator {op} does not work on {v1} and {v2}")
+    def eval_list(self, list: List, env: Env):
+        return [self.eval_expr(e, env) for e in list.elements]
 
+    def eval_binop(self, binop: BinOp, env: Env):
+        operator = binop.op
+        v1 = self.eval_expr(binop.e1, env)
+        v2 = self.eval_expr(binop.e2, env)
+        match operator:
+            case "+" if type(v1) == int and type(v2) == int:
+                return v1 + v2
+            case "-" if type(v1) == int and type(v2) == int:
+                return v1 - v2
+            case "==" if type(v1) == type(v2):
+                return v1 == v2
+            case _:
+                raise InterpretException(
+                    f"Operator {operator} does not work on {v1} and {v2}"
+                )
 
-def eval_function_call(name: str, args: list[Expr], env: Env):
-    # Look up function in scope
-    f = env.lookup_var(name)
-    if type(f) != FunDef:
-        raise InterpretException(f"{f} is not callable")
+    def eval_function_call(self, function_call: FunCall, env: Env) -> Value | None:
+        name = function_call.name
+        args = function_call.args
+        # Look up function in scope
+        f = env.lookup_var(name)
+        if type(f) != FunDef:
+            raise InterpretException(f"{f} is not callable")
 
-    # Check argument length matches parameter length
-    params = f.params
-    if len(params) != len(args):
-        raise InterpretException(
-            f"{name} expects {len(params)} arguments, but got {len(args)}"
-        )
+        # Check argument length matches parameter length
+        params = f.params
+        if len(params) != len(args):
+            raise InterpretException(
+                f"{name} expects {len(params)} arguments, but got {len(args)}"
+            )
 
-    # Pass a custom env with two scopes:
-    # 1. The top level scope
-    # 2. A fresh one to bind arguments to parameter names
-    function_env: Env = Env()
-    function_env.scopes = [env.top_level_scope()]
-    function_env.open_scope()
-    for param, arg in zip(params, args):
-        # Put parameters in the fresh scope
-        function_env.define_var(param, eval_expr(arg, env))
+        # Create the environment that the function should run in
+        function_env: Env = Env()  # Start by creating an empty one
+        function_env.scopes = [
+            env.top_level_scope()
+        ]  # Copy the top level scope to get global variables and functions
+        function_env.open_scope()  # Open a new scope to bind arguments to parameters
+        for param, arg in zip(params, args):
+            # Evaluate argument and bind to parameter
+            arg_value = self.eval_expr(arg, env)
+            function_env.define_var(param, arg_value)
 
-    # Run body with function env
-    return exec_statement(f.body, function_env)
+        # Run body with function env
+        return self.exec_statement(f.body, function_env)
 
+    def eval_expr(self, e: Expr, env: Env) -> Value:
+        match e:
+            case Int():
+                return self.eval_int(e)
+            case StrLit():
+                return self.eval_str_lit(e)
+            case Bool():
+                return self.eval_bool(e)
+            case Var():
+                return self.eval_var(e, env)
+            case List():
+                return self.eval_list(e, env)
+            case BinOp():
+                return self.eval_binop(e, env)
+            case FunCall():
+                return self.eval_function_call(e, env)
+            case _:
+                raise InterpretException("eval not implemented for " + str(e))
 
-def exec_statement(statement: Stmt, env: Env) -> Value | None:
-    match statement:
-        case VarDef(v, e):
-            env.define_var(v, eval_expr(e, env))
-        case Assignment(v, e):
-            env.assign_var(v, eval_expr(e, env))
-        case Print(e):
-            print(eval_expr(e, env))
-        case Block(statements):
-            env.open_scope()
-            return_value = exec_program(statements, env)
-            env.close_scope()
-            return return_value
-        case If(condition, then_block, else_block):
-            condition = eval_expr(condition, env)
-            if condition:
-                return exec_statement(then_block, env)
-            elif else_block:
-                return exec_statement(else_block, env)
-        case FunDef(name, _, _) as f:
-            env.define_var(name, f)
-        case Return(return_value):
-            if return_value:
-                return eval_expr(return_value, env)
-        case _:
-            raise InterpretException("exec not implemented for " + str(statement))
-    return None
+    def exec_statement(self, statement: Stmt, env: Env) -> Value | None:
+        match statement:
+            case VarDef(v, e):
+                env.define_var(v, self.eval_expr(e, env))
+            case Assignment(v, e):
+                env.assign_var(v, self.eval_expr(e, env))
+            case Print(e):
+                print(self.eval_expr(e, env))
+            case Block(statements):
+                env.open_scope()
+                return_value = self.exec_program(statements, env)
+                env.close_scope()
+                return return_value
+            case If(condition, then_block, else_block):
+                condition = self.eval_expr(condition, env)
+                if condition:
+                    return self.exec_statement(then_block, env)
+                elif else_block:
+                    return self.exec_statement(else_block, env)
+            case FunDef(name, _, _) as f:
+                env.define_var(name, f)
+            case Return(return_value):
+                if return_value:
+                    return self.eval_expr(return_value, env)
+            case _:
+                raise InterpretException("exec not implemented for " + str(statement))
+        return None
 
+    def exec_program(self, program: list[Stmt], env: Env) -> Value | None:
+        for statement in program:
+            return_value = self.exec_statement(statement, env)
+            if return_value is not None:
+                return return_value
 
-def exec_program(program: list[Stmt], env: Env) -> Value | None:
-    for statement in program:
-        return_value = exec_statement(statement, env)
-        if return_value is not None:
-            return return_value
+    def exec_string(self, input: str, env: Env) -> Value | None:
+        """Parses and interprets text"""
+        parser = ProgramParser(input)
+        program = parser.program()
+        self.exec_program(program, env)
 
-
-def exec_string(input: str) -> Value | None:
-    """Helper to parse and execute a program"""
-    parser = ProgramParser(input)
-    program = parser.program()
-    env: Env = Env()
-    exec_program(program, env)
-
-
-def exec_file(path: str) -> Value | None:
-    with open(path) as f:
-        inp = f.read()
-        exec_string(inp)
+    def exec_file(self, path: str, env: Env) -> Value | None:
+        """Reads, parses and interprets a file"""
+        with open(path) as f:
+            inp = f.read()
+            self.exec_string(inp, env)
 
 
 if __name__ == "__main__":
+    interpreter = Interpreter()
+    env = Env()
     # Read file or use arg as program
     input = sys.argv[1]
     try:
-        exec_file(input)
+        interpreter.exec_file(input, env)
     except FileNotFoundError:
         pass
 
     # Parse and execute
     try:
-        exec_string(input)
+        interpreter.exec_string(input, env)
     except ParseException as e:
         print(f"{e.message} at {e.line}:{e.column}")
     except InterpretException as e:
