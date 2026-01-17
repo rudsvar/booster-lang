@@ -1,5 +1,5 @@
 import unittest
-from ..statement_parser import *
+from statement_parser import *
 
 
 class StatementParserTest(unittest.TestCase):

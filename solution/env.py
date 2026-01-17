@@ -5,8 +5,8 @@ It's essentially just a list of scopes where each scope is a dict of variables a
 
 from dataclasses import dataclass
 
-from .interpret_exception import InterpretException
-from .value import Value
+from interpret_exception import InterpretException
+from value import Value
 
 
 @dataclass

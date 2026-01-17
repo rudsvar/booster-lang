@@ -4,7 +4,7 @@
         "unittest",
         "discover",
         "-s",
-        ".",
+        "solution",
         "-v"
     ],
     "python.testing.pytestEnabled": false,

@@ -1,5 +1,5 @@
 import unittest
-from ..base_parser import *
+from base_parser import *
 
 
 class BasicParserTest(unittest.TestCase):
