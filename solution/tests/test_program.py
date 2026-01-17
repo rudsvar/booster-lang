@@ -1,6 +1,6 @@
 import unittest
-from parser.program import ProgramParser
-from parser.statement import *
+from solution.parser.program import ProgramParser
+from solution.parser.statement import *
 
 
 class ProgramParserTest(unittest.TestCase):

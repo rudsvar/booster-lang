@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from parser.expression import *
+from solution.parser.expression import *
 
 type Stmt = VarDef | Assignment | Shout | Block | If | Whilst | FunDef | Return
 

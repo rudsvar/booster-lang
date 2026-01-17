@@ -1,30 +1,30 @@
-from interpreter.env import Env
-from interpreter.interpret_exception import InterpretException
-from interpreter.value import Value
-from parser.statement import *
+from solution.interpreter.env import Env
+from solution.interpreter.interpret_exception import InterpretException
+from solution.interpreter.value import Value
+from solution.parser.statement import *
 
 
-def eval_int(i: Int):
+def eval_int(i: Int) -> Value:
     return i.value
 
 
-def eval_str_lit(s: StrLit):
+def eval_str_lit(s: StrLit) -> Value:
     return s.value
 
 
-def eval_bool(b: Bool):
+def eval_bool(b: Bool) -> Value:
     return b.value
 
 
-def eval_var(var: Var, env: Env):
+def eval_var(var: Var, env: Env) -> Value:
     return env.lookup_var(var.name)
 
 
-def eval_list(list: List, env: Env):
+def eval_list(list: List, env: Env) -> Value:
     return [eval_expr(e, env) for e in list.elements]
 
 
-def eval_binop(binop: BinOp, env: Env):
+def eval_binop(binop: BinOp, env: Env) -> Value:
     operator = binop.op
     v1 = eval_expr(binop.e1, env)
     v2 = eval_expr(binop.e2, env)

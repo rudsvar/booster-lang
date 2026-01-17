@@ -1,7 +1,12 @@
+"""
+Implementation of an `Environment` type that stores variables and their scopes.
+It's essentially just a list of scopes where each scope is a dict of variables and their values.
+"""
+
 from dataclasses import dataclass
 
-from interpreter.interpret_exception import InterpretException
-from interpreter.value import Value
+from solution.interpreter.interpret_exception import InterpretException
+from solution.interpreter.value import Value
 
 
 @dataclass

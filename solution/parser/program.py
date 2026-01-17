@@ -1,4 +1,4 @@
-from parser.statement import *
+from solution.parser.statement import *
 
 
 class ProgramParser(StatementParser):

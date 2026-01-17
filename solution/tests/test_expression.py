@@ -1,5 +1,5 @@
 import unittest
-from parser.expression import *
+from solution.parser.expression import *
 
 
 class ExpressionParserTest(unittest.TestCase):
