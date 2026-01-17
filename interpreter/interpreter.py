@@ -1,6 +1,6 @@
 from dataclasses import dataclass
-from parser.program import *
-import sys
+from parser.program import ProgramParser
+from parser.statement import *
 
 
 """Values that expressions can be evaluated to"""
@@ -122,6 +122,7 @@ class Interpreter:
         return self.exec_statement(f.body, function_env)
 
     def eval_expr(self, e: Expr, env: Env) -> Value:
+        """Evaluates any kind of expression. Delegates to separate evaluator functions for each kind."""
         match e:
             case Int():
                 return self.eval_int(e)
@@ -174,6 +175,7 @@ class Interpreter:
         return None
 
     def exec_statement(self, statement: Stmt, env: Env) -> Value | None:
+        """Executes any kind of statement. Delegates to separate executor functions for each kind."""
         match statement:
             case VarDef():
                 return self.exec_var_def(statement, env)
@@ -201,7 +203,7 @@ class Interpreter:
     def exec_string(self, input: str, env: Env) -> Value | None:
         """Parses and interprets text"""
         parser = ProgramParser(input)
-        program = parser.program()
+        program = parser.parse_program()
         self.exec_program(program, env)
 
     def exec_file(self, path: str, env: Env) -> Value | None:
@@ -209,22 +211,3 @@ class Interpreter:
         with open(path) as f:
             inp = f.read()
             self.exec_string(inp, env)
-
-
-if __name__ == "__main__":
-    interpreter = Interpreter()
-    env = Env()
-    # Read file or use arg as program
-    input = sys.argv[1]
-    try:
-        interpreter.exec_file(input, env)
-    except FileNotFoundError:
-        pass
-
-    # Parse and execute
-    try:
-        interpreter.exec_string(input, env)
-    except ParseException as e:
-        print(f"{e.message} at {e.line}:{e.column}")
-    except InterpretException as e:
-        print(e.message)
