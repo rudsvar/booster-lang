@@ -130,12 +130,12 @@ class ExpressionParser(Parser):
     def parse_bin_op(self) -> Expr:
         op = self.one_of(
             [
-                lambda: self.parse_keyword("+"),
-                lambda: self.parse_keyword("-"),
-                lambda: self.parse_keyword("*"),
-                lambda: self.parse_keyword("/"),
-                lambda: self.parse_keyword("=="),
-                lambda: self.parse_keyword("!="),
+                lambda: self.parse_keyword("add"),
+                lambda: self.parse_keyword("sub"),
+                lambda: self.parse_keyword("mul"),
+                lambda: self.parse_keyword("div"),
+                lambda: self.parse_keyword("eq"),
+                lambda: self.parse_keyword("neq"),
             ]
         )
         e1 = self.parse_expr()

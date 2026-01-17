@@ -20,7 +20,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual([{"x": 10, "y": "Test"}], env.scopes)
 
     def test_print(self):
-        program = ProgramParser("shout + 2 3;").parse_program()
+        program = ProgramParser("shout add 2 3;").parse_program()
         env = Env()
         interpreter = Interpreter()
         interpreter.exec_program(program, env)
@@ -34,7 +34,7 @@ class InterpreterTest(unittest.TestCase):
         self.assertEqual([{"x": 10}], env.scopes)
 
     def test_undeclared_variable(self):
-        program = ProgramParser("shout + 2 a;").parse_program()
+        program = ProgramParser("shout add 2 a;").parse_program()
         env = Env()
         interpreter = Interpreter()
         self.assertRaisesRegex(
@@ -49,10 +49,10 @@ class InterpreterTest(unittest.TestCase):
             let a = 3;
             {
                 let b = 3;
-                shout(b);
+                shout b;
             }
-            shout(a);
-            shout(b);
+            shout a;
+            shout b;
         """
         ).parse_program()
         env = Env()
@@ -65,7 +65,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_addition(self):
         program = ProgramParser(
-            "let x = 10; let y = 20; let z = + x y;"
+            "let x = 10; let y = 20; let z = add x y;"
         ).parse_program()
         env = Env()
         interpreter = Interpreter()
@@ -130,7 +130,7 @@ class InterpreterTest(unittest.TestCase):
 
     def test_fun_decl(self):
         program = ProgramParser(
-            "fun foo(x, y) { return + x y; } let x = call foo(1, 2);"
+            "fun foo(x, y) { return add x y; } let x = call foo(1, 2);"
         ).parse_program()
         env = Env()
         interpreter = Interpreter()
@@ -154,6 +154,15 @@ class InterpreterTest(unittest.TestCase):
         interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(5, env.lookup_var("x"))
+
+    def test_whilst(self):
+        program = ProgramParser(
+            "let x = 5; whilst neq x 0 { x = sub x 1; } shout x;"
+        ).parse_program()
+        env = Env()
+        interpreter = Interpreter()
+        interpreter.exec_program(program, env)
+        self.assertEqual(0, env.lookup_var("x"))
 
 
 if __name__ == "__main__":

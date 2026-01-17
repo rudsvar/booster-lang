@@ -1,7 +1,7 @@
 fun fibonacci(x) {
-    if == x 0 { return 0; }
-    if == x 1 { return 1; }
-    return + (call fibonacci(- x 1)) (call fibonacci(- x 2));
+    if eq x 0 { return 0; }
+    if eq x 1 { return 1; }
+    return add (call fibonacci(sub x 1)) (call fibonacci(sub x 2));
 }
 let x = call fibonacci(10);
-shout(x);
+shout x;

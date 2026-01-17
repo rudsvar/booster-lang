@@ -1,2 +1,2 @@
 let x = "Hello world!";
-shout(x);
+shout x;

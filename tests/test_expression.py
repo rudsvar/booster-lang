@@ -56,11 +56,11 @@ class ExpressionParserTest(unittest.TestCase):
         self.assertEqual(Bool(False), parser.parse_bool())
 
     def test_add(self):
-        parser = ExpressionParser("+ a 2")
-        self.assertEqual(BinOp("+", Var("a"), Int(2)), parser.parse_bin_op())
+        parser = ExpressionParser("add a 2")
+        self.assertEqual(BinOp("add", Var("a"), Int(2)), parser.parse_bin_op())
 
     def test_add_failure(self):
-        parser = ExpressionParser("+ a 2a")
+        parser = ExpressionParser("add a 2a")
         self.assertRaisesRegex(
             ParseException,
             'cannot be followed by alphabetic character at "2a"',
@@ -68,18 +68,18 @@ class ExpressionParserTest(unittest.TestCase):
         )
 
     def test_math_expr(self):
-        parser = ExpressionParser("+ a - b * c / d e")
+        parser = ExpressionParser("add a sub b mul c div d e")
         self.assertEqual(
             BinOp(
-                "+",
+                "add",
                 Var("a"),
                 BinOp(
-                    "-",
+                    "sub",
                     Var("b"),
                     BinOp(
-                        "*",
+                        "mul",
                         Var("c"),
-                        BinOp("/", Var("d"), Var("e")),
+                        BinOp("div", Var("d"), Var("e")),
                     ),
                 ),
             ),
@@ -87,11 +87,11 @@ class ExpressionParserTest(unittest.TestCase):
         )
 
     def test_math_sub_expr(self):
-        parser = ExpressionParser("- (+ a b) c")
+        parser = ExpressionParser("sub (add a b) c")
         self.assertEqual(
             BinOp(
-                "-",
-                BinOp("+", Var("a"), Var("b")),
+                "sub",
+                BinOp("add", Var("a"), Var("b")),
                 Var("c"),
             ),
             parser.parse_expr(),

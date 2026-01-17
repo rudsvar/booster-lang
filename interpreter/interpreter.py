@@ -81,13 +81,17 @@ class Interpreter:
         v1 = self.eval_expr(binop.e1, env)
         v2 = self.eval_expr(binop.e2, env)
         match operator:
-            case "+" if type(v1) == int and type(v2) == int:
+            case "add" if type(v1) == int and type(v2) == int:
                 return v1 + v2
-            case "-" if type(v1) == int and type(v2) == int:
+            case "sub" if type(v1) == int and type(v2) == int:
                 return v1 - v2
-            case "==" if type(v1) == type(v2):
+            case "mul" if type(v1) == int and type(v2) == int:
+                return v1 * v2
+            case "div" if type(v1) == int and type(v2) == int:
+                return v1 // v2
+            case "eq" if type(v1) == type(v2):
                 return v1 == v2
-            case "!=" if type(v1) == type(v2):
+            case "neq" if type(v1) == type(v2):
                 return v1 != v2
             case _:
                 raise InterpretException(

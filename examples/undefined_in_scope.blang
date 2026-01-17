@@ -1,4 +1,4 @@
 {
     let x = 10;
 }
-shout(x);
+shout x;

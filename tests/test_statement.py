@@ -18,15 +18,15 @@ class StatementParserTest(unittest.TestCase):
         )
 
     def test_var_decl_deep_error_is_included(self):
-        parser = StatementParser("let x = (+ 2 3a);")
+        parser = StatementParser("let x = (add 2 3a);")
         self.assertRaisesRegex(
             ParseException,
-            r'at "\(\+ 2 3a".*at "\+ 2 3a".*at "3a"',
+            r'at "\(add 2 3a".*at "add 2 3a".*at "3a"',
             lambda: parser.parse_var_def(),
         )
 
     def test_var_decl_keyword_cannot_be_followed_by_alnum(self):
-        parser = StatementParser("letx = (+ 2 3);")
+        parser = StatementParser("letx = (add 2 3);")
         self.assertRaisesRegex(
             ParseException,
             'Keyword "let" cannot be followed by "x"',
@@ -34,8 +34,8 @@ class StatementParserTest(unittest.TestCase):
         )
 
     def test_shout(self):
-        parser = StatementParser("shout + 2 a;")
-        self.assertEqual(Shout(BinOp("+", Int(2), Var("a"))), parser.parse_shout())
+        parser = StatementParser("shout add 2 a;")
+        self.assertEqual(Shout(BinOp("add", Int(2), Var("a"))), parser.parse_shout())
 
     def test_if_then(self):
         parser = StatementParser('if b { shout "Yes!"; }')
@@ -49,6 +49,13 @@ class StatementParserTest(unittest.TestCase):
         self.assertEqual(
             If(Var("b"), Block([Shout(StrLit("Yes!"))]), Block([Shout(StrLit("Nah"))])),
             parser.parse_if(),
+        )
+
+    def test_whilst(self):
+        parser = StatementParser('whilst b { x = sub x 1; }')
+        self.assertEqual(
+            Whilst(Var("b"), Block([Assignment("x", BinOp("sub", Var("x"), Int(1)))])),
+            parser.parse_whilst(),
         )
 
 
