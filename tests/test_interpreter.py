@@ -1,6 +1,7 @@
 import unittest
 from parser.program import *
-from interpreter.interpreter import *
+from interpreter.interpreter import Env, InterpretException
+from interpreter import interpreter
 
 
 class InterpreterTest(unittest.TestCase):
@@ -8,35 +9,30 @@ class InterpreterTest(unittest.TestCase):
     def test_empty_program(self):
         program = ProgramParser("").parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(Env(), env)
 
     def test_variable_declaration(self):
         program = ProgramParser('let x = 10; let y = "Test";').parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual([{"x": 10, "y": "Test"}], env.scopes)
 
     def test_print(self):
         program = ProgramParser("shout add 2 3;").parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(Env(), env)
 
     def test_block(self):
         program = ProgramParser('let x = 10; { let y = "Test"; }').parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual([{"x": 10}], env.scopes)
 
     def test_undeclared_variable(self):
         program = ProgramParser("shout add 2 a;").parse_program()
         env = Env()
-        interpreter = Interpreter()
         self.assertRaisesRegex(
             InterpretException,
             'Undefined variable "a"',
@@ -56,7 +52,6 @@ class InterpreterTest(unittest.TestCase):
         """
         ).parse_program()
         env = Env()
-        interpreter = Interpreter()
         self.assertRaisesRegex(
             InterpretException,
             'Undefined variable "b"',
@@ -68,14 +63,12 @@ class InterpreterTest(unittest.TestCase):
             "let x = 10; let y = 20; let z = add x y;"
         ).parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertTrue(30, env.lookup_var("z"))
 
     def test_list(self):
         program = ProgramParser('let x = [1, "a", true];').parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertTrue([1, "a", True], env.lookup_var("x"))
 
@@ -83,14 +76,12 @@ class InterpreterTest(unittest.TestCase):
         program = ProgramParser("let b = true; if b { shout b; }").parse_program()
         print(program)
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
 
     def test_if_false_then(self):
         program = ProgramParser("let b = false; if b { shout b; }").parse_program()
         print(program)
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
 
     def test_if_true_then_else(self):
@@ -99,7 +90,6 @@ class InterpreterTest(unittest.TestCase):
         ).parse_program()
         print(program)
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
 
     def test_if_false_then_else(self):
@@ -108,20 +98,17 @@ class InterpreterTest(unittest.TestCase):
         ).parse_program()
         print(program)
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
 
     def test_assignment(self):
         program = ProgramParser("let x = 3; { x = 4; }").parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(4, env.lookup_var("x"))
 
     def test_assignment_undefined_var(self):
         program = ProgramParser("let x = 3; { y = 4; }").parse_program()
         env = Env()
-        interpreter = Interpreter()
         self.assertRaisesRegex(
             InterpretException,
             'Undefined variable "y"',
@@ -133,7 +120,6 @@ class InterpreterTest(unittest.TestCase):
             "fun foo(x, y) { return add x y; } let x = call foo(1, 2);"
         ).parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(3, env.lookup_var("x"))
 
@@ -142,7 +128,6 @@ class InterpreterTest(unittest.TestCase):
             input = f.read()
         program = ProgramParser(input).parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(55, env.lookup_var("x"))
 
@@ -151,7 +136,6 @@ class InterpreterTest(unittest.TestCase):
             input = f.read()
         program = ProgramParser(input).parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(5, env.lookup_var("x"))
 
@@ -160,7 +144,6 @@ class InterpreterTest(unittest.TestCase):
             "let x = 5; whilst neq x 0 { x = sub x 1; } shout x;"
         ).parse_program()
         env = Env()
-        interpreter = Interpreter()
         interpreter.exec_program(program, env)
         self.assertEqual(0, env.lookup_var("x"))
 

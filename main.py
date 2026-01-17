@@ -3,7 +3,8 @@ import argparse
 from pprint import pprint
 from parser.program import ProgramParser
 from parser.expression import ParseException
-from interpreter.interpreter import Interpreter, Env, InterpretException
+from interpreter.interpreter import Env, InterpretException
+from interpreter import interpreter
 
 
 def read_input(input_path: str) -> str:
@@ -27,7 +28,6 @@ def cmd_run(args: argparse.Namespace) -> None:
     parser = ProgramParser(code)
     program = parser.parse_program()
 
-    interpreter = Interpreter()
     env = Env()
     interpreter.exec_program(program, env)
 
