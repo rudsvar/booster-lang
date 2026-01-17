@@ -75,15 +75,7 @@ class StatementParser(ExpressionParser):
         return Shout(e)
 
     def parse_statements(self) -> list[Stmt]:
-        stmts: list[Stmt] = []
-        while True:
-            try:
-                stmts.append(self.statement())
-            except ParseException as e:
-                if self.has_consumed:
-                    raise e
-                break
-        return stmts
+        return self.zero_or_more(self.parse_statement)
 
     def parse_block(self) -> Block:
         _ = self.parse_symbol("{")
@@ -123,7 +115,7 @@ class StatementParser(ExpressionParser):
         _ = self.parse_symbol(";")
         return Return(e)
 
-    def statement(self) -> Stmt:
+    def parse_statement(self) -> Stmt:
         return self.one_of(
             [
                 self.parse_var_def,

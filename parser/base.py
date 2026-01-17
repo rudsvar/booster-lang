@@ -56,7 +56,7 @@ class Parser:
             self.column += 1
         return c
 
-    def zero_or_more(self, check: Callable[[str], bool]) -> str:
+    def zero_or_more_chars(self, check: Callable[[str], bool]) -> str:
         chars = ""
         while True:
             try:
@@ -65,8 +65,8 @@ class Parser:
                 break
         return chars
 
-    def one_or_more(self, check: Callable[[str], bool]) -> str:
-        chars = self.zero_or_more(check)
+    def one_or_more_chars(self, check: Callable[[str], bool]) -> str:
+        chars = self.zero_or_more_chars(check)
         if not chars:
             raise ParseException(
                 f"Expected some {check.__name__}", self.line, self.column
@@ -74,21 +74,21 @@ class Parser:
         return chars
 
     def parse_digits(self) -> str:
-        return self.one_or_more(str.isdigit)
+        return self.one_or_more_chars(str.isdigit)
 
     def parse_alphas(self) -> str:
-        return self.one_or_more(str.isalpha)
+        return self.one_or_more_chars(str.isalpha)
 
     def parse_alnum(self) -> str:
-        return self.one_or_more(str.isalnum)
+        return self.one_or_more_chars(str.isalnum)
 
     def parse_whitespace(self) -> str:
-        return self.zero_or_more(str.isspace)
+        return self.zero_or_more_chars(str.isspace)
 
     def parse_identifier(self) -> str:
         try:
             alpha = self.while_satisfied(str.isalpha)
-            alnums = self.zero_or_more(lambda c: c.isalnum() or c == "_")
+            alnums = self.zero_or_more_chars(lambda c: c.isalnum() or c == "_")
             return alpha + alnums
         except ParseException as e:
             raise ParseException(
@@ -140,6 +140,18 @@ class Parser:
             self.input = self_input
             self.has_consumed = False
             raise e
+
+    def zero_or_more(self, parser: ParserFun[Output]) -> list[Output]:
+        """Runs the provided parser zero or more times and returns the list of parsed values"""
+        stmts: list[Output] = []
+        while True:
+            try:
+                stmts.append(parser())
+            except ParseException as e:
+                if self.has_consumed:
+                    raise e
+                break
+        return stmts
 
     def one_of(self, parsers: list[ParserFun[Output]]) -> Output:
         self.has_consumed = False

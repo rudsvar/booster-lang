@@ -40,15 +40,15 @@ class BasicParserTest(unittest.TestCase):
 
     def test_many_digits(self):
         parser = Parser("123abc")
-        self.assertEqual("123", parser.zero_or_more(str.isdigit))
+        self.assertEqual("123", parser.zero_or_more_chars(str.isdigit))
 
     def test_many_empty(self):
         parser = Parser("abc")
-        self.assertEqual("", parser.zero_or_more(str.isdigit))
+        self.assertEqual("", parser.zero_or_more_chars(str.isdigit))
 
     def test_some_alphas(self):
         parser = Parser("abc123")
-        self.assertEqual("abc", parser.zero_or_more(str.isalpha))
+        self.assertEqual("abc", parser.zero_or_more_chars(str.isalpha))
 
     def test_digits(self):
         parser = Parser("123abc")

@@ -73,7 +73,7 @@ class ExpressionParser(Parser):
 
     def parse_str_lit(self) -> StrLit:
         _ = self.parse_string('"')
-        s = self.zero_or_more(lambda c: c != '"')
+        s = self.zero_or_more_chars(lambda c: c != '"')
         _ = self.parse_string('"')
         _ = self.parse_whitespace()
         return StrLit(s)
