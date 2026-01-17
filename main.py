@@ -1,9 +1,10 @@
 import sys
 import argparse
 from pprint import pprint
+from interpreter.interpret_exception import InterpretException
 from parser.program import ProgramParser
 from parser.expression import ParseException
-from interpreter.interpreter import Env, InterpretException
+from interpreter.interpreter import Env
 from interpreter import interpreter
 
 

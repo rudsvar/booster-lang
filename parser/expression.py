@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from parser.basic import *
+from parser.base import *
 
 type Expr = Int | StrLit | Bool | Var | BinOp | List | FunCall
 

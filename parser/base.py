@@ -1,3 +1,7 @@
+"""
+A parser with basic low-level parsing functionality.
+"""
+
 from dataclasses import dataclass
 from typing import Callable, TypeVar
 

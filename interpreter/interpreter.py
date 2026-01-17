@@ -1,61 +1,7 @@
-from dataclasses import dataclass
-from parser.program import ProgramParser
+from interpreter.env import Env
+from interpreter.interpret_exception import InterpretException
+from interpreter.value import Value
 from parser.statement import *
-
-
-"""Values that expressions can be evaluated to"""
-type Value = int | float | str | bool | list[Value] | FunDef | None
-
-
-@dataclass
-class InterpretException(Exception):
-    message: str
-
-
-@dataclass
-class Env:
-    scopes: list[dict[str, Value]]
-
-    def __init__(self):
-        """Initialize an environment with one initial top-level scope"""
-        self.scopes = [{}]
-
-    def open_scope(self):
-        """Open a new, empty scope"""
-        self.scopes.append({})
-
-    def close_scope(self):
-        """Close the nearest scope"""
-        self.scopes.pop()
-
-    def inner_scope(self) -> dict[str, Value]:
-        """Get a reference to the closest/nearest/inner scope"""
-        return self.scopes[-1]
-
-    def top_level_scope(self) -> dict[str, Value]:
-        """Get a reference to the top level scope"""
-        return self.scopes[0]
-
-    def define_var(self, var: str, value: Value):
-        """Define a new variable in the nearest scope"""
-        inner_scope = self.inner_scope()
-        inner_scope[var] = value
-
-    def lookup_var(self, var: str) -> Value:
-        """Look up a variable's value from the environment"""
-        for scope in reversed(self.scopes):
-            val = scope.get(var)
-            if val is not None:
-                return val
-        raise InterpretException(f'Undefined variable "{var}"')
-
-    def assign_var(self, var: str, value: Value):
-        """Assign a new value to an existing variable"""
-        for scope in reversed(self.scopes):
-            if scope.get(var) is not None:
-                scope[var] = value
-                return
-        raise InterpretException(f'Undefined variable "{var}"')
 
 
 def eval_int(i: Int):
@@ -97,7 +43,7 @@ def eval_binop(binop: BinOp, env: Env):
             return v1 != v2
         case _:
             raise InterpretException(
-                f"Operator {operator} does not work on {v1} and {v2}"
+                f"Operator {operator} does not support {v1} and {v2}"
             )
 
 
@@ -230,17 +176,3 @@ def exec_program(program: list[Stmt], env: Env) -> Value | None:
         return_value = exec_statement(statement, env)
         if return_value is not None:
             return return_value
-
-
-def exec_string(input: str, env: Env) -> Value | None:
-    """Parses and interprets text"""
-    parser = ProgramParser(input)
-    program = parser.parse_program()
-    exec_program(program, env)
-
-
-def exec_file(path: str, env: Env) -> Value | None:
-    """Reads, parses and interprets a file"""
-    with open(path) as f:
-        inp = f.read()
-        exec_string(inp, env)
