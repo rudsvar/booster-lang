@@ -52,7 +52,7 @@ class StatementParserTest(unittest.TestCase):
         )
 
     def test_whilst(self):
-        parser = StatementParser('whilst b { x = sub x 1; }')
+        parser = StatementParser("whilst b { x = sub x 1; }")
         self.assertEqual(
             Whilst(Var("b"), Block([Assignment("x", BinOp("sub", Var("x"), Int(1)))])),
             parser.parse_whilst(),
