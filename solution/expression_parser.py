@@ -42,7 +42,7 @@ class FunCall:
     args: list[Expr]
 
 
-class ExpressionParser(Parser):
+class ExpressionParser(BaseParser):
 
     def parse_int(self) -> Int:
         i = Int(int(self.parse_digits()))
@@ -73,23 +73,16 @@ class ExpressionParser(Parser):
 
     def parse_str_lit(self) -> StrLit:
         _ = self.parse_string('"')
-        s = self.zero_or_more_chars(lambda c: c != '"')
+        s = self.parse_until('"')
         _ = self.parse_string('"')
         _ = self.parse_whitespace()
         return StrLit(s)
 
     def parse_bool(self) -> Bool:
-        self_input = self.input
-        try:
-            true = lambda: self.parse_keyword("true")
-            false = lambda: self.parse_keyword("false")
-            b = self.one_of([true, false])
-            _ = self.parse_whitespace()
-            return Bool(b == "true")
-        except ParseException as e:
-            self.has_consumed = False
-            self.input = self_input
-            raise e
+        true = lambda: self.parse_keyword("true")
+        false = lambda: self.parse_keyword("false")
+        b = self.one_of([true, false])
+        return Bool(b == "true")
 
     def parse_list(self) -> List:
         _ = self.parse_symbol("[")

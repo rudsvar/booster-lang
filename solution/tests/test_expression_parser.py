@@ -34,7 +34,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_var(self):
         parser = ExpressionParser("my_identifier3")
         self.assertEqual(Var("my_identifier3"), parser.parse_var())
-
+    
     def test_str_lit(self):
         parser = ExpressionParser('"string $ literal %"')
         self.assertEqual(StrLit("string $ literal %"), parser.parse_str_lit())

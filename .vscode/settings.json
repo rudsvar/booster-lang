@@ -1,4 +1,5 @@
 {
+    "editor.suggest.showInlineDetails": true,
     "python.testing.unittestArgs": [
         "-m",
         "unittest",
