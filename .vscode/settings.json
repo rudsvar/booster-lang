@@ -3,7 +3,8 @@
         "-m",
         "unittest",
         "discover",
-        "solution/tests",
+        "-s",
+        ".",
         "-v"
     ],
     "python.testing.pytestEnabled": false,

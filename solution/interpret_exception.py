@@ -1,4 +1,4 @@
-from solution.parser.statement import dataclass
+from dataclasses import dataclass
 
 
 from dataclasses import dataclass

@@ -1,11 +1,11 @@
 import sys
 import argparse
 from pprint import pprint
-from solution.interpreter.interpret_exception import InterpretException
-from solution.parser.program import ProgramParser
-from solution.parser.expression import ParseException
-from solution.interpreter.interpreter import Env
-from solution.interpreter import interpreter
+from solution.interpret_exception import InterpretException
+from solution.program_parser import ProgramParser
+from solution.expression_parser import ParseException
+from solution.env import Env
+from solution import interpreter
 
 
 def read_input(input_path: str) -> str:

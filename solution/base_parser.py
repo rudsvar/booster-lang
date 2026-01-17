@@ -154,6 +154,7 @@ class Parser:
         return stmts
 
     def one_of(self, parsers: list[ParserFun[Output]]) -> Output:
+        """Tries to run each of the parsers until one succeeds. If one fails and has consumed input, we abort and return the error."""
         self.has_consumed = False
         for parser in parsers:
             try:
@@ -167,6 +168,7 @@ class Parser:
         )
 
     def optional(self, parser: ParserFun[Output]) -> Output | None:
+        """Tries to run the provided parser, but returns None if it fails. If it fails and has consumed input, and error is returned."""
         self.has_consumed = False
         try:
             return parser()
@@ -176,6 +178,7 @@ class Parser:
             return None
 
     def separated_by(self, parser: ParserFun[Output], separator: str) -> list[Output]:
+        """Runs the provided parser zero or more times separated by the provided separator, and returns the list of parsed values"""
         elements: list[Output] = []
         while True:
             try:

@@ -1,8 +1,8 @@
 import unittest
-from solution.interpreter.interpret_exception import InterpretException
-from solution.parser.program import *
-from solution.interpreter.interpreter import Env
-from solution.interpreter import interpreter
+from ..interpret_exception import InterpretException
+from ..program_parser import *
+from ..interpreter import Env
+from .. import interpreter
 
 
 class InterpreterTest(unittest.TestCase):

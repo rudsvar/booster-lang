@@ -1,7 +1,7 @@
-from solution.interpreter.env import Env
-from solution.interpreter.interpret_exception import InterpretException
-from solution.interpreter.value import Value
-from solution.parser.statement import *
+from .env import Env
+from .interpret_exception import InterpretException
+from .value import Value
+from .statement_parser import *
 
 
 def eval_int(i: Int) -> Value:
