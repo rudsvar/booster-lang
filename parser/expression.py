@@ -135,6 +135,7 @@ class ExpressionParser(Parser):
                 lambda: self.parse_keyword("*"),
                 lambda: self.parse_keyword("/"),
                 lambda: self.parse_keyword("=="),
+                lambda: self.parse_keyword("!="),
             ]
         )
         e1 = self.parse_expr()

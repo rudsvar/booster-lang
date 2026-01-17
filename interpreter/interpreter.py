@@ -87,6 +87,8 @@ class Interpreter:
                 return v1 - v2
             case "==" if type(v1) == type(v2):
                 return v1 == v2
+            case "!=" if type(v1) == type(v2):
+                return v1 != v2
             case _:
                 raise InterpretException(
                     f"Operator {operator} does not work on {v1} and {v2}"
@@ -166,6 +168,14 @@ class Interpreter:
         elif if_stmt.else_block:
             return self.exec_statement(if_stmt.else_block, env)
 
+    def exec_whilst(self, whilst_stmt: Whilst, env: Env):
+        condition = self.eval_expr(whilst_stmt.condition, env)
+        while condition:
+            # Run the whilst body. The body should update variables in the condition to avoid an infinite loop
+            self.exec_statement(whilst_stmt.body, env)
+            # We must evaluate the condition again with the updated environment
+            condition = self.eval_expr(whilst_stmt.condition, env)
+
     def exec_fun_def(self, fun_def: FunDef, env: Env):
         env.define_var(fun_def.name, fun_def)
 
@@ -187,6 +197,8 @@ class Interpreter:
                 return self.exec_block(statement, env)
             case If():
                 return self.exec_if(statement, env)
+            case Whilst():
+                return self.exec_whilst(statement, env)
             case FunDef():
                 return self.exec_fun_def(statement, env)
             case Return():
