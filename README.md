@@ -41,5 +41,9 @@ python3 solution/interpreter.py "let x = 5; shout x;"
 ## Tasks
 
 The tasks will mostly switch between the three main parts to continuously extend the language as you implement it.
+You don't need to do them in this order. You can try to run what you would like to have work, then implement what fails.
 
 1. Implement `parse_int`, `eval_int`, `parse_shout` and `exec_shout`. Then try to run the interpreter with the input `shout 42;`
+    - Optional: Implement `parse_bool` to be able to run `shout true;`
+    - Optional: Implement `parse_string_literal` to be able to run `shout "Hello World!"`
+2. Implement `parse_var`, `parse_var_def` and `exec_var_def` to be able to run `let x = 10; shout x;`

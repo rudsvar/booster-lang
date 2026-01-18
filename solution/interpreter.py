@@ -57,11 +57,11 @@ def eval_int(i: int) -> Value:
     return i
 
 
-def eval_str_lit(s: str) -> Value:
+def eval_string_literal(s: str) -> Value:
     """
     A string cannot be simplified further and can just be returned.
 
-    >>> eval_str_lit("hello")
+    >>> eval_string_literal("hello")
     'hello'
     """
     return s
@@ -195,7 +195,7 @@ def eval_expr(e: Expr, env: Env) -> Value:
         case int():
             return eval_int(e)
         case str():
-            return eval_str_lit(e)
+            return eval_string_literal(e)
         case Variable():
             return eval_var(e, env)
         case list():
@@ -222,7 +222,7 @@ def exec_shout(print_stmt: Shout, env: Env):
     Execute a `shout` statement by evaluating the expression and printing it in uppercase.
 
     >>> env: Env = [{}]
-    >>> exec_print(Shout(expr="hello"), env)
+    >>> exec_shout(Shout(expr="hello"), env)
     HELLO
     """
     value = eval_expr(print_stmt.expr, env)

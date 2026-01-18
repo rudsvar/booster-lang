@@ -27,16 +27,16 @@ class ExpressionParserTest(unittest.TestCase):
         parser = ExpressionParser("my_identifier3")
         self.assertEqual(Variable("my_identifier3"), parser.parse_var())
 
-    def test_str_lit(self):
+    def test_string_literal(self):
         parser = ExpressionParser('"string $ literal %"')
-        self.assertEqual("string $ literal %", parser.parse_str_lit())
+        self.assertEqual("string $ literal %", parser.parse_string_literal())
 
-    def test_str_lit_without_end(self):
+    def test_string_literal_without_end(self):
         parser = ExpressionParser('"string $ literal %')
         self.assertRaisesRegex(
             ParseException,
             'Expected """: Unexpected end of input',
-            lambda: parser.parse_str_lit(),
+            lambda: parser.parse_string_literal(),
         )
 
     def test_bool_true(self):
@@ -98,7 +98,7 @@ class ExpressionParserTest(unittest.TestCase):
             parser.parse_expr(),
         )
 
-    def test_list_missing_end_str_lit_fail(self):
+    def test_list_missing_end_string_literal_fail(self):
         parser = ExpressionParser('[1, "a, b, true]')
         self.assertRaisesRegex(
             ParseException,

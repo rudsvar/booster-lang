@@ -52,12 +52,12 @@ class ExpressionParser(BaseParser):
         self.parse_whitespace()
         return Variable(ident)
 
-    def parse_str_lit(self) -> str:
+    def parse_string_literal(self) -> str:
         """
         Parses a single string literal like "hello world" followed by whitespace. The input includes quotes (or another character if you want), but the output should not.
 
         >>> parser = ExpressionParser('"hello"')
-        >>> parser.parse_str_lit()
+        >>> parser.parse_string_literal()
         'hello'
         """
         _ = self.parse_string('"')
@@ -148,7 +148,7 @@ class ExpressionParser(BaseParser):
             return self.one_of(
                 [
                     self.parse_int,
-                    self.parse_str_lit,
+                    self.parse_string_literal,
                     self.parse_bool,
                     self.parse_function_call,
                     self.parse_bin_op,
