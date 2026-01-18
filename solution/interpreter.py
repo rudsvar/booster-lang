@@ -1,33 +1,71 @@
-from env import Env
 from interpret_exception import InterpretException
 from value import Value
 from statement_parser import *
 import sys
 
+# Environment functions
+
+type Env = list[dict[str, Value]]
+
+
+def define_var(var: str, value: Value, env: Env):
+    env[-1][var] = value
+
+
+def lookup_var(var: str, env: Env) -> Value:
+    """
+    Look up a variable's value from the environment by iterating from the last to first scope.
+    To check if a variable is in a scope, you can use `val = scope.get(var)` and return it if `val is not None`.
+    """
+    for scope in reversed(env):
+        val = scope.get(var)
+        if val is not None:
+            return val
+    raise InterpretException(f'Undefined variable "{var}"')
+
+
+def assign_var(var: str, value: Value, env: Env):
+    """
+    Assign a new value to an existing variable.
+    This is very similar to `lookup_var`, except we update the value in the scope we find the variable in.
+    """
+    for scope in reversed(env):
+        if scope.get(var) is not None:
+            scope[var] = value
+            return
+    raise InterpretException(f'Undefined variable "{var}"')
+
+
 # Evaluation of expressions
 
 
 def eval_int(i: int) -> Value:
+    """An int cannot be simplified further and can just be returned."""
     return i
 
 
 def eval_str_lit(s: str) -> Value:
+    """A string cannot be simplified further and can just be returned."""
     return s
 
 
 def eval_bool(b: bool) -> Value:
+    """A bool cannot be simplified further and can just be returned."""
     return b
 
 
 def eval_var(var: Variable, env: Env) -> Value:
-    return env.lookup_var(var.name)
+    """Look up the variable's name in the environment."""
+    return lookup_var(var.name, env)
 
 
 def eval_list(list: List, env: Env) -> Value:
+    """Evaluate each expression in the elements of the list."""
     return [eval_expr(e, env) for e in list.elements]
 
 
 def eval_binop(binop: BinaryOperation, env: Env) -> Value:
+    """Evaluate the two operand expressions, and match on"""
     operator = binop.op
     v1 = eval_expr(binop.e1, env)
     v2 = eval_expr(binop.e2, env)
@@ -53,28 +91,31 @@ def eval_binop(binop: BinaryOperation, env: Env) -> Value:
 def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
     name = function_call.name
     args = function_call.args
+
     # Look up function in scope
-    f = env.lookup_var(name)
+    f = lookup_var(name, env)
     if type(f) != FunctionDef:
         raise InterpretException(f"{f} is not callable")
 
-    # Check argument length matches parameter length
+    # Optional: Check argument length matches parameter length
     params = f.params
     if len(params) != len(args):
         raise InterpretException(
             f"{name} expects {len(params)} arguments, but got {len(args)}"
         )
 
-    # Create the environment that the function should run in
-    function_env: Env = Env()  # Start by creating an empty one
-    function_env.scopes = [
-        env.top_level_scope()
-    ]  # Copy the top level scope to get global variables and functions
-    function_env.open_scope()  # Open a new scope to bind arguments to parameters
+    # Optional: Create an environment that the function should run in. Alternatively just use env.
+    # Mine includes a copy the top level scope to get global variables and functions and a fresh scope for parameter values.
+    function_env: Env = [
+        env[0],
+        {},
+    ]
+
+    # Add parameters to environment
     for param, arg in zip(params, args):
-        # Evaluate argument and bind to parameter
+        # Set parameter to evaluated argument
         arg_value = eval_expr(arg, env)
-        function_env.define_var(param, arg_value)
+        define_var(param, arg_value, function_env)
 
     # Run body with function env
     return exec_statement(f.body, function_env)
@@ -107,12 +148,12 @@ def eval_expr(e: Expr, env: Env) -> Value:
 
 def exec_var_def(var_def: VarDef, env: Env):
     value = eval_expr(var_def.expr, env)
-    env.define_var(var_def.var_name, value)
+    define_var(var_def.var_name, value, env)
 
 
 def exec_assignment(assignment: Assignment, env: Env):
     value = eval_expr(assignment.expr, env)
-    env.assign_var(assignment.var_name, value)
+    assign_var(assignment.var_name, value, env)
 
 
 def exec_print(print_stmt: Shout, env: Env):
@@ -121,9 +162,9 @@ def exec_print(print_stmt: Shout, env: Env):
 
 
 def exec_block(block: Block, env: Env) -> Value | None:
-    env.open_scope()
+    env.append({})
     return_value = exec_program(block.statements, env)
-    env.close_scope()
+    env.pop()
     return return_value
 
 
@@ -145,7 +186,7 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
 
 
 def exec_fun_def(fun_def: FunctionDef, env: Env):
-    env.define_var(fun_def.name, fun_def)
+    define_var(fun_def.name, fun_def, env)
 
 
 def exec_return(return_stmt: Return, env: Env) -> Value | None:
@@ -204,7 +245,7 @@ if __name__ == "__main__":
         code = read_input(sys.argv[1])
         parser = ProgramParser(code)
         program = parser.parse_program()
-        env = Env()
+        env: Env = [{}]
         exec_program(program, env)
     except ParseException as e:
         print(f"error: {e.message} at {e.line}:{e.column}")
