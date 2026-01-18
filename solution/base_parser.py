@@ -183,7 +183,7 @@ class BaseParser:
         'my_var3'
         """
         try:
-            alpha = self.__sat(str.isalpha)
+            alpha = self.__sat(lambda c: c.isalpha() or c == "_")
             alnums = self.__zero_or_more_chars(lambda c: c.isalnum() or c == "_")
             identifier = alpha + alnums
             if not identifier:
