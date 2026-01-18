@@ -3,7 +3,12 @@ from expression_parser import *
 import sys
 from pprint import pprint
 
-type Statement = VarDef | Assignment | Shout | Block | If | Whilst | FunctionDef | Return
+type Statement = Shout | VarDef | Assignment | Block | If | Whilst | FunctionDef | Return
+
+
+@dataclass
+class Shout:
+    expr: Expr
 
 
 @dataclass
@@ -15,11 +20,6 @@ class VarDef:
 @dataclass
 class Assignment:
     var_name: str
-    expr: Expr
-
-
-@dataclass
-class Shout:
     expr: Expr
 
 
@@ -55,6 +55,12 @@ class Return:
 
 class StatementParser(ExpressionParser):
 
+    def parse_shout(self) -> Shout:
+        _ = self.parse_keyword("shout")
+        e = self.parse_expr()
+        _ = self.parse_symbol(";")
+        return Shout(e)
+
     def parse_var_def(self) -> VarDef:
         _ = self.parse_keyword("let")
         v = self.parse_var()
@@ -69,12 +75,6 @@ class StatementParser(ExpressionParser):
         e = self.parse_expr()
         _ = self.parse_symbol(";")
         return Assignment(v.name, e)
-
-    def parse_shout(self) -> Shout:
-        _ = self.parse_keyword("shout")
-        e = self.parse_expr()
-        _ = self.parse_symbol(";")
-        return Shout(e)
 
     def parse_statements(self) -> list[Statement]:
         return self.zero_or_more(self.parse_statement)
