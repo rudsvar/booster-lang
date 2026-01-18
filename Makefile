@@ -2,7 +2,7 @@
 
 test:
 	@python3 -m unittest discover -s solution -v
-	@python3 -m doctest solution/base_parser.py
+	@python3 -m doctest solution/*.py
 
 parse:
 	@python3 main.py parse "$(FILE)"

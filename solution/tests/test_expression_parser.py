@@ -94,7 +94,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_list(self):
         parser = ExpressionParser('[1, "a", b, true]')
         self.assertEqual(
-            List([1, "a", Variable("b"), True]),
+            [1, "a", Variable("b"), True],
             parser.parse_expr(),
         )
 

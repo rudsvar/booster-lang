@@ -48,32 +48,70 @@ def assign_var(var: str, value: Value, env: Env):
 
 
 def eval_int(i: int) -> Value:
-    """An int cannot be simplified further and can just be returned."""
+    """
+    An int cannot be simplified further and can just be returned.
+
+    >>> eval_int(42)
+    42
+    """
     return i
 
 
 def eval_str_lit(s: str) -> Value:
-    """A string cannot be simplified further and can just be returned."""
+    """
+    A string cannot be simplified further and can just be returned.
+
+    >>> eval_str_lit("hello")
+    'hello'
+    """
     return s
 
 
 def eval_bool(b: bool) -> Value:
-    """A bool cannot be simplified further and can just be returned."""
+    """
+    A bool cannot be simplified further and can just be returned.
+
+    >>> eval_bool(True)
+    True
+    """
     return b
 
 
 def eval_var(var: Variable, env: Env) -> Value:
-    """Look up the variable's name in the environment."""
+    """
+    Look up the variable's name in the environment.
+
+    >>> env: Env = [{"x": 42}]
+    >>> eval_var(Variable(name="x"), env)
+    42
+    >>> env: Env = [{"x": 10}, {"y": 20}]
+    >>> eval_var(Variable(name="y"), env)
+    20
+    >>> eval_var(Variable(name="x"), env)
+    10
+    """
     return lookup_var(var.name, env)
 
 
-def eval_list(list: List, env: Env) -> Value:
-    """Evaluate each expression in the elements of the list."""
-    return [eval_expr(e, env) for e in list.elements]
+def eval_list(list: list[Expr], env: Env) -> Value:
+    """
+    Evaluate each expression in the elements of the list.
+
+    >>> env: Env = [{'x': 2}]
+    >>> eval_list([1, Variable('x'), BinaryOperation('add', 1, 2)], env)
+    [1, 2, 3]
+    """
+    return [eval_expr(e, env) for e in list]
 
 
 def eval_binop(binop: BinaryOperation, env: Env) -> Value:
-    """Evaluate the two operand expressions, and match on"""
+    """
+    Evaluate the two operand expressions, and match on the operator to decide what to do.
+
+    >>> env: Env = [{}]
+    >>> eval_binop(BinaryOperation(op="add", e1=2, e2=3), env)
+    5
+    """
     operator = binop.op
     v1 = eval_expr(binop.e1, env)
     v2 = eval_expr(binop.e2, env)
@@ -130,7 +168,26 @@ def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
 
 
 def eval_expr(e: Expr, env: Env) -> Value:
-    """Evaluates any kind of expression. Delegates to separate evaluator functions for each kind."""
+    """
+    Evaluates any kind of expression. Delegates to separate evaluator functions for each kind.
+
+    >>> env: Env = [{}]
+    >>> eval_expr(42, env)
+    42
+    >>> eval_expr("hello", env)
+    'hello'
+    >>> eval_expr(True, env)
+    True
+    >>> eval_expr([1, 2, 3], env)
+    [1, 2, 3]
+    >>> env: Env = [{"x": 10}]
+    >>> eval_expr(Variable(name="x"), env)
+    10
+    >>> eval_expr(BinaryOperation(op="add", e1=5, e2=3), env)
+    8
+    >>> eval_expr(BinaryOperation(op="eq", e1=5, e2=5), env)
+    True
+    """
     match e:
         # bool must be first since it's a subclass of int
         case bool():
@@ -141,7 +198,7 @@ def eval_expr(e: Expr, env: Env) -> Value:
             return eval_str_lit(e)
         case Variable():
             return eval_var(e, env)
-        case List():
+        case list():
             return eval_list(e, env)
         case BinaryOperation():
             return eval_binop(e, env)
@@ -161,21 +218,52 @@ def eval_expr(e: Expr, env: Env) -> Value:
 
 
 def exec_var_def(var_def: VarDef, env: Env):
+    """
+    Execute a variable definition by evaluating the expression and storing it in the environment.
+
+    >>> env: Env = [{}]
+    >>> exec_var_def(VarDef(var_name="x", expr=42), env)
+    >>> env
+    [{'x': 42}]
+    """
     value = eval_expr(var_def.expr, env)
     define_var(var_def.var_name, value, env)
 
 
 def exec_assignment(assignment: Assignment, env: Env):
+    """
+    Execute an assignment by evaluating the expression and assigning it to an existing variable.
+
+    >>> env: Env = [{"x": 10}]
+    >>> exec_assignment(Assignment(var_name="x", expr=20), env)
+    >>> env
+    [{'x': 20}]
+    """
     value = eval_expr(assignment.expr, env)
     assign_var(assignment.var_name, value, env)
 
 
 def exec_print(print_stmt: Shout, env: Env):
+    """
+    Execute a print statement by evaluating the expression and printing it in uppercase.
+
+    >>> env: Env = [{}]
+    >>> exec_print(Shout(expr="hello"), env)
+    HELLO
+    """
     value = eval_expr(print_stmt.expr, env)
     print(str(value).upper())
 
 
 def exec_block(block: Block, env: Env) -> Value | None:
+    """
+    Execute a block by creating a new scope, executing statements, and then closing the scope.
+
+    >>> env: Env = [{"x": 10}]
+    >>> exec_block(Block(statements=[]), env)
+    >>> env
+    [{'x': 10}]
+    """
     env.append({})
     return_value = exec_program(block.statements, env)
     env.pop()
@@ -183,6 +271,12 @@ def exec_block(block: Block, env: Env) -> Value | None:
 
 
 def exec_if(if_stmt: If, env: Env) -> Value | None:
+    """
+    Execute an if statement by evaluating the condition and executing the appropriate branch.
+
+    >>> env: Env = [{}]
+    >>> exec_if(If(condition=True, then_block=Block(statements=[]), else_block=None), env)
+    """
     condition = eval_expr(if_stmt.condition, env)
     if condition:
         return exec_statement(if_stmt.then_block, env)
@@ -191,6 +285,13 @@ def exec_if(if_stmt: If, env: Env) -> Value | None:
 
 
 def exec_whilst(whilst_stmt: Whilst, env: Env):
+    """
+    Execute a while loop by repeatedly evaluating the condition and executing the body.
+    The condition is re-evaluated after each iteration.
+
+    >>> env: Env = [{"x": 2}]
+    >>> # Would loop while x != 0, decrementing x each iteration
+    """
     condition = eval_expr(whilst_stmt.condition, env)
     while condition:
         # Run the whilst body. The body should update variables in the condition to avoid an infinite loop
@@ -200,17 +301,42 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
 
 
 def exec_fun_def(fun_def: FunctionDef, env: Env):
+    """
+    Execute a function definition by storing the function in the environment.
+
+    >>> env: Env = [{}]
+    >>> fun = FunctionDef(name="add", params=["x", "y"], body=Block(statements=[]))
+    >>> exec_fun_def(fun, env)
+    >>> env
+    [{'add': FunctionDef(name='add', params=['x', 'y'], body=Block(statements=[]))}]
+    """
     define_var(fun_def.name, fun_def, env)
 
 
 def exec_return(return_stmt: Return, env: Env) -> Value | None:
+    """
+    Execute a return statement by evaluating the expression and returning its value.
+    If no expression is provided, returns None.
+
+    >>> env: Env = [{}]
+    >>> exec_return(Return(expr=42), env)
+    42
+    >>> exec_return(Return(expr=None), env)
+    """
     if return_stmt.expr is not None:
         return eval_expr(return_stmt.expr, env)
     return None
 
 
 def exec_statement(statement: Statement, env: Env) -> Value | None:
-    """Executes any kind of statement. Delegates to separate executor functions for each kind."""
+    """
+    Executes any kind of statement. Delegates to separate executor functions for each kind.
+
+    >>> env: Env = [{}]
+    >>> exec_statement(VarDef(var_name="x", expr=42), env)
+    >>> env
+    [{'x': 42}]
+    """
     match statement:
         case VarDef():
             return exec_var_def(statement, env)
@@ -233,6 +359,15 @@ def exec_statement(statement: Statement, env: Env) -> Value | None:
 
 
 def exec_program(program: list[Statement], env: Env) -> Value | None:
+    """
+    Execute a list of statements in order, returning the value of the first statement that returns a value.
+
+    >>> env: Env = [{}]
+    >>> program = [VarDef(var_name="x", expr=10), VarDef(var_name="y", expr=20)]
+    >>> exec_program(program, env)
+    >>> env
+    [{'x': 10, 'y': 20}]
+    """
     for statement in program:
         return_value = exec_statement(statement, env)
         if return_value is not None:

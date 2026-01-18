@@ -3,7 +3,7 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expr = int | bool | str | Variable | BinaryOperation | List | FunctionCall
+type Expr = int | bool | str | Variable | BinaryOperation | list[Expr] | FunctionCall
 
 
 @dataclass
@@ -16,11 +16,6 @@ class BinaryOperation:
     op: str
     e1: Expr
     e2: Expr
-
-
-@dataclass
-class List:
-    elements: list[Expr]
 
 
 @dataclass
@@ -51,7 +46,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("foo")
         >>> parser.parse_var()
-        Var(name='foo')
+        Variable(name='foo')
         """
         ident = self.parse_identifier()
         self.parse_whitespace()
@@ -82,19 +77,19 @@ class ExpressionParser(BaseParser):
         b = self.one_of_strings(["true", "false"])
         return b == "true"
 
-    def parse_list(self) -> List:
+    def parse_list(self) -> list[Expr]:
         """
         Parses expressions separated by comma and surrounded by [ and ], followed by whitespace.
 
-        >>> parser = ExpressionParser("[1, 2, 3]")
+        >>> parser = ExpressionParser('[1, a, "abc"]')
         >>> parser.parse_list()
-        List(elements=[1, 2, 3])
+        [1, Variable(name='a'), 'abc']
         """
         _ = self.parse_symbol("[")
         elements = self.separated_by(self.parse_expr, ",")
         _ = self.parse_symbol("]")
         _ = self.parse_whitespace()
-        return List(elements)
+        return elements
 
     def parse_bin_op(self) -> Expr:
         """
@@ -103,7 +98,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("add 2 3")
         >>> parser.parse_bin_op()
-        BinOp(op='add', e1=2, e2=3)
+        BinaryOperation(op='add', e1=2, e2=3)
         """
         op = self.one_of_strings(["add", "sub", "mul", "div", "eq", "neq"])
         e1 = self.parse_expr()
@@ -116,7 +111,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("call foo(1, 2)")
         >>> parser.parse_function_call()
-        FunCall(name='foo', args=[1, 2])
+        FunctionCall(name='foo', args=[1, 2])
         """
         # Keyword `call`
         _ = self.parse_keyword("call")
