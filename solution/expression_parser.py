@@ -30,21 +30,18 @@ class FunCall:
 
 
 class ExpressionParser(BaseParser):
+    """A parser for expressions that extends `BaseParser`."""
 
     def parse_int(self) -> int:
         """
-        Parses digits, converts them to an integer, and consumes whitespace. Optionally checks the next character to ensure it's not alphabetic.
+        Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
         >>> parser = ExpressionParser("42")
         >>> parser.parse_int()
         42
         """
-        i = int(self.parse_digits())
-        # Not strictly required, but ensures we get a proper error if a variable starts with a digit
-        if self.input and self.peek().isalpha():
-            self.fail(
-                f'Int cannot be followed by alphabetic character at "{i}{self.peek()}"'
-            )
+        digits = self.parse_digits()
+        i = int(digits)
         self.parse_whitespace()
         return i
 
@@ -101,7 +98,8 @@ class ExpressionParser(BaseParser):
 
     def parse_bin_op(self) -> Expr:
         """
-        Parses an operator like `+` followed by two more expressions. Using prefix-notation like `+ 2 3` makes parsing much simpler.
+        Parses an operator like `+` followed by two expressions. Using prefix-notation like `+ 2 3` makes parsing much simpler.
+        You can rename the operators to any string you want.
 
         >>> parser = ExpressionParser("add 2 3")
         >>> parser.parse_bin_op()
