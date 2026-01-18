@@ -3,16 +3,16 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expr = int | bool | str | Var | BinOp | List | FunCall
+type Expr = int | bool | str | Variable | BinaryOperation | List | FunctionCall
 
 
 @dataclass
-class Var:
+class Variable:
     name: str
 
 
 @dataclass
-class BinOp:
+class BinaryOperation:
     op: str
     e1: Expr
     e2: Expr
@@ -24,7 +24,7 @@ class List:
 
 
 @dataclass
-class FunCall:
+class FunctionCall:
     name: str
     args: list[Expr]
 
@@ -45,7 +45,7 @@ class ExpressionParser(BaseParser):
         self.parse_whitespace()
         return i
 
-    def parse_var(self) -> Var:
+    def parse_var(self) -> Variable:
         """
         Parses a single variable name and consumes whitespace.
 
@@ -55,7 +55,7 @@ class ExpressionParser(BaseParser):
         """
         ident = self.parse_identifier()
         self.parse_whitespace()
-        return Var(ident)
+        return Variable(ident)
 
     def parse_str_lit(self) -> str:
         """
@@ -108,9 +108,9 @@ class ExpressionParser(BaseParser):
         op = self.one_of_strings(["add", "sub", "mul", "div", "eq", "neq"])
         e1 = self.parse_expr()
         e2 = self.parse_expr()
-        return BinOp(op, e1, e2)
+        return BinaryOperation(op, e1, e2)
 
-    def parse_function_call(self) -> FunCall:
+    def parse_function_call(self) -> FunctionCall:
         """
         Parses a function call. This can look like `call foo(arg1, arg2)`. The keyword `call` is added for fun. Optionally, you can make it not require parentheses nor comma.
 
@@ -126,7 +126,7 @@ class ExpressionParser(BaseParser):
         _ = self.parse_symbol("(")
         args = self.separated_by(self.parse_expr, ",")
         _ = self.parse_symbol(")")
-        return FunCall(v.name, args)
+        return FunctionCall(v.name, args)
 
     def parse_sub_expr(self) -> Expr:
         """

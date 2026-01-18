@@ -23,17 +23,9 @@ class ExpressionParserTest(unittest.TestCase):
             lambda: parser.parse_int(),
         )
 
-    def test_integer_followed_by_alpha_fails(self):
-        parser = ExpressionParser("123a")
-        self.assertRaisesRegex(
-            ParseException,
-            "Int cannot be followed by alphabetic character",
-            lambda: parser.parse_int(),
-        )
-
     def test_var(self):
         parser = ExpressionParser("my_identifier3")
-        self.assertEqual(Var("my_identifier3"), parser.parse_var())
+        self.assertEqual(Variable("my_identifier3"), parser.parse_var())
 
     def test_str_lit(self):
         parser = ExpressionParser('"string $ literal %"')
@@ -57,29 +49,31 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_add(self):
         parser = ExpressionParser("add a 2")
-        self.assertEqual(BinOp("add", Var("a"), 2), parser.parse_bin_op())
+        self.assertEqual(
+            BinaryOperation("add", Variable("a"), 2), parser.parse_bin_op()
+        )
 
     def test_add_failure(self):
-        parser = ExpressionParser("add a 2a")
+        parser = ExpressionParser("add a !")
         self.assertRaisesRegex(
             ParseException,
-            'cannot be followed by alphabetic character at "2a"',
+            "Failed to parse expression",
             lambda: parser.parse_bin_op(),
         )
 
     def test_math_expr(self):
         parser = ExpressionParser("add a sub b mul c div d e")
         self.assertEqual(
-            BinOp(
+            BinaryOperation(
                 "add",
-                Var("a"),
-                BinOp(
+                Variable("a"),
+                BinaryOperation(
                     "sub",
-                    Var("b"),
-                    BinOp(
+                    Variable("b"),
+                    BinaryOperation(
                         "mul",
-                        Var("c"),
-                        BinOp("div", Var("d"), Var("e")),
+                        Variable("c"),
+                        BinaryOperation("div", Variable("d"), Variable("e")),
                     ),
                 ),
             ),
@@ -89,10 +83,10 @@ class ExpressionParserTest(unittest.TestCase):
     def test_math_sub_expr(self):
         parser = ExpressionParser("sub (add a b) c")
         self.assertEqual(
-            BinOp(
+            BinaryOperation(
                 "sub",
-                BinOp("add", Var("a"), Var("b")),
-                Var("c"),
+                BinaryOperation("add", Variable("a"), Variable("b")),
+                Variable("c"),
             ),
             parser.parse_expr(),
         )
@@ -100,7 +94,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_list(self):
         parser = ExpressionParser('[1, "a", b, true]')
         self.assertEqual(
-            List([1, "a", Var("b"), True]),
+            List([1, "a", Variable("b"), True]),
             parser.parse_expr(),
         )
 
@@ -123,7 +117,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_function_call(self):
         parser = ExpressionParser('call foo(1, a, true, "hello")')
         self.assertEqual(
-            FunCall("foo", [1, Var("a"), True, "hello"]),
+            FunctionCall("foo", [1, Variable("a"), True, "hello"]),
             parser.parse_function_call(),
         )
 

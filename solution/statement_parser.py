@@ -3,7 +3,7 @@ from expression_parser import *
 import sys
 from pprint import pprint
 
-type Stmt = VarDef | Assignment | Shout | Block | If | Whilst | FunDef | Return
+type Statement = VarDef | Assignment | Shout | Block | If | Whilst | FunctionDef | Return
 
 
 @dataclass
@@ -25,7 +25,7 @@ class Shout:
 
 @dataclass
 class Block:
-    statements: list[Stmt]
+    statements: list[Statement]
 
 
 @dataclass
@@ -42,7 +42,7 @@ class Whilst:
 
 
 @dataclass
-class FunDef:
+class FunctionDef:
     name: str
     params: list[str]
     body: Block
@@ -76,7 +76,7 @@ class StatementParser(ExpressionParser):
         _ = self.parse_symbol(";")
         return Shout(e)
 
-    def parse_statements(self) -> list[Stmt]:
+    def parse_statements(self) -> list[Statement]:
         return self.zero_or_more(self.parse_statement)
 
     def parse_block(self) -> Block:
@@ -102,14 +102,14 @@ class StatementParser(ExpressionParser):
         body = self.parse_block()
         return Whilst(condition, body)
 
-    def parse_function_definition(self) -> FunDef:
+    def parse_function_definition(self) -> FunctionDef:
         _ = self.parse_keyword("fun")
         name = self.parse_identifier()
         _ = self.parse_symbol("(")
         parameters = self.separated_by(self.parse_identifier, ",")
         _ = self.parse_symbol(")")
         body = self.parse_block()
-        return FunDef(name, parameters, body)
+        return FunctionDef(name, parameters, body)
 
     def parse_return_statement(self) -> Return:
         _ = self.parse_keyword("return")
@@ -117,7 +117,7 @@ class StatementParser(ExpressionParser):
         _ = self.parse_symbol(";")
         return Return(e)
 
-    def parse_statement(self) -> Stmt:
+    def parse_statement(self) -> Statement:
         try:
             return self.one_of(
                 [

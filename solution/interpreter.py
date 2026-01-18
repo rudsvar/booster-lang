@@ -19,7 +19,7 @@ def eval_bool(b: bool) -> Value:
     return b
 
 
-def eval_var(var: Var, env: Env) -> Value:
+def eval_var(var: Variable, env: Env) -> Value:
     return env.lookup_var(var.name)
 
 
@@ -27,7 +27,7 @@ def eval_list(list: List, env: Env) -> Value:
     return [eval_expr(e, env) for e in list.elements]
 
 
-def eval_binop(binop: BinOp, env: Env) -> Value:
+def eval_binop(binop: BinaryOperation, env: Env) -> Value:
     operator = binop.op
     v1 = eval_expr(binop.e1, env)
     v2 = eval_expr(binop.e2, env)
@@ -50,12 +50,12 @@ def eval_binop(binop: BinOp, env: Env) -> Value:
             )
 
 
-def eval_function_call(function_call: FunCall, env: Env) -> Value | None:
+def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
     name = function_call.name
     args = function_call.args
     # Look up function in scope
     f = env.lookup_var(name)
-    if type(f) != FunDef:
+    if type(f) != FunctionDef:
         raise InterpretException(f"{f} is not callable")
 
     # Check argument length matches parameter length
@@ -90,13 +90,13 @@ def eval_expr(e: Expr, env: Env) -> Value:
             return eval_int(e)
         case str():
             return eval_str_lit(e)
-        case Var():
+        case Variable():
             return eval_var(e, env)
         case List():
             return eval_list(e, env)
-        case BinOp():
+        case BinaryOperation():
             return eval_binop(e, env)
-        case FunCall():
+        case FunctionCall():
             return eval_function_call(e, env)
         case _:
             raise InterpretException("eval not implemented for " + str(e))
@@ -144,7 +144,7 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
         condition = eval_expr(whilst_stmt.condition, env)
 
 
-def exec_fun_def(fun_def: FunDef, env: Env):
+def exec_fun_def(fun_def: FunctionDef, env: Env):
     env.define_var(fun_def.name, fun_def)
 
 
@@ -154,7 +154,7 @@ def exec_return(return_stmt: Return, env: Env) -> Value | None:
     return None
 
 
-def exec_statement(statement: Stmt, env: Env) -> Value | None:
+def exec_statement(statement: Statement, env: Env) -> Value | None:
     """Executes any kind of statement. Delegates to separate executor functions for each kind."""
     match statement:
         case VarDef():
@@ -169,7 +169,7 @@ def exec_statement(statement: Stmt, env: Env) -> Value | None:
             return exec_if(statement, env)
         case Whilst():
             return exec_whilst(statement, env)
-        case FunDef():
+        case FunctionDef():
             return exec_fun_def(statement, env)
         case Return():
             return exec_return(statement, env)
@@ -177,7 +177,7 @@ def exec_statement(statement: Stmt, env: Env) -> Value | None:
             raise InterpretException("exec not implemented for " + str(statement))
 
 
-def exec_program(program: list[Stmt], env: Env) -> Value | None:
+def exec_program(program: list[Statement], env: Env) -> Value | None:
     for statement in program:
         return_value = exec_statement(statement, env)
         if return_value is not None:
