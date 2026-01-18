@@ -13,7 +13,7 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_integer(self):
         parser = ExpressionParser("123")
-        self.assertEqual(Int(123), parser.parse_int())
+        self.assertEqual(123, parser.parse_int())
 
     def test_integer_fails(self):
         parser = ExpressionParser("abc")
@@ -34,10 +34,10 @@ class ExpressionParserTest(unittest.TestCase):
     def test_var(self):
         parser = ExpressionParser("my_identifier3")
         self.assertEqual(Var("my_identifier3"), parser.parse_var())
-    
+
     def test_str_lit(self):
         parser = ExpressionParser('"string $ literal %"')
-        self.assertEqual(StrLit("string $ literal %"), parser.parse_str_lit())
+        self.assertEqual("string $ literal %", parser.parse_str_lit())
 
     def test_str_lit_without_end(self):
         parser = ExpressionParser('"string $ literal %')
@@ -49,15 +49,15 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_bool_true(self):
         parser = ExpressionParser("true")
-        self.assertEqual(Bool(True), parser.parse_bool())
+        self.assertEqual(True, parser.parse_bool())
 
     def test_bool_false(self):
         parser = ExpressionParser("false")
-        self.assertEqual(Bool(False), parser.parse_bool())
+        self.assertEqual(False, parser.parse_bool())
 
     def test_add(self):
         parser = ExpressionParser("add a 2")
-        self.assertEqual(BinOp("add", Var("a"), Int(2)), parser.parse_bin_op())
+        self.assertEqual(BinOp("add", Var("a"), 2), parser.parse_bin_op())
 
     def test_add_failure(self):
         parser = ExpressionParser("add a 2a")
@@ -100,7 +100,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_list(self):
         parser = ExpressionParser('[1, "a", b, true]')
         self.assertEqual(
-            List([Int(1), StrLit("a"), Var("b"), Bool(True)]),
+            List([1, "a", Var("b"), True]),
             parser.parse_expr(),
         )
 
@@ -123,7 +123,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_function_call(self):
         parser = ExpressionParser('call foo(1, a, true, "hello")')
         self.assertEqual(
-            FunCall("foo", [Int(1), Var("a"), Bool(True), StrLit("hello")]),
+            FunCall("foo", [1, Var("a"), True, "hello"]),
             parser.parse_function_call(),
         )
 

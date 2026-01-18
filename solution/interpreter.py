@@ -4,16 +4,19 @@ from value import Value
 from statement_parser import *
 
 
-def eval_int(i: Int) -> Value:
-    return i.value
+# Evaluation of expressions
 
 
-def eval_str_lit(s: StrLit) -> Value:
-    return s.value
+def eval_int(i: int) -> Value:
+    return i
 
 
-def eval_bool(b: Bool) -> Value:
-    return b.value
+def eval_str_lit(s: str) -> Value:
+    return s
+
+
+def eval_bool(b: bool) -> Value:
+    return b
 
 
 def eval_var(var: Var, env: Env) -> Value:
@@ -80,12 +83,13 @@ def eval_function_call(function_call: FunCall, env: Env) -> Value | None:
 def eval_expr(e: Expr, env: Env) -> Value:
     """Evaluates any kind of expression. Delegates to separate evaluator functions for each kind."""
     match e:
-        case Int():
-            return eval_int(e)
-        case StrLit():
-            return eval_str_lit(e)
-        case Bool():
+        # bool must be first since it's a subclass of int
+        case bool():
             return eval_bool(e)
+        case int():
+            return eval_int(e)
+        case str():
+            return eval_str_lit(e)
         case Var():
             return eval_var(e, env)
         case List():
@@ -96,6 +100,9 @@ def eval_expr(e: Expr, env: Env) -> Value:
             return eval_function_call(e, env)
         case _:
             raise InterpretException("eval not implemented for " + str(e))
+
+
+# Execution of statements
 
 
 def exec_var_def(var_def: VarDef, env: Env):
@@ -142,7 +149,7 @@ def exec_fun_def(fun_def: FunDef, env: Env):
 
 
 def exec_return(return_stmt: Return, env: Env) -> Value | None:
-    if return_stmt.expr:
+    if return_stmt.expr is not None:
         return eval_expr(return_stmt.expr, env)
     return None
 

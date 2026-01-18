@@ -5,11 +5,11 @@ from statement_parser import *
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):
         parser = StatementParser("let x = 10;")
-        self.assertEqual(VarDef("x", Int(10)), parser.parse_var_def())
+        self.assertEqual(VarDef("x", 10), parser.parse_var_def())
 
     def test_var_decl_bool(self):
         parser = StatementParser("let x = true;")
-        self.assertEqual(VarDef("x", Bool(True)), parser.parse_var_def())
+        self.assertEqual(VarDef("x", True), parser.parse_var_def())
 
     def test_var_decl_fail(self):
         parser = StatementParser("let x =")
@@ -35,26 +35,26 @@ class StatementParserTest(unittest.TestCase):
 
     def test_shout(self):
         parser = StatementParser("shout add 2 a;")
-        self.assertEqual(Shout(BinOp("add", Int(2), Var("a"))), parser.parse_shout())
+        self.assertEqual(Shout(BinOp("add", 2, Var("a"))), parser.parse_shout())
 
     def test_if_then(self):
         parser = StatementParser('if b { shout "Yes!"; }')
         self.assertEqual(
-            If(Var("b"), Block([Shout(StrLit("Yes!"))]), None),
+            If(Var("b"), Block([Shout("Yes!")]), None),
             parser.parse_if(),
         )
 
     def test_if_then_else(self):
         parser = StatementParser('if b { shout "Yes!"; } else { shout "Nah"; }')
         self.assertEqual(
-            If(Var("b"), Block([Shout(StrLit("Yes!"))]), Block([Shout(StrLit("Nah"))])),
+            If(Var("b"), Block([Shout("Yes!")]), Block([Shout("Nah")])),
             parser.parse_if(),
         )
 
     def test_whilst(self):
         parser = StatementParser("whilst b { x = sub x 1; }")
         self.assertEqual(
-            Whilst(Var("b"), Block([Assignment("x", BinOp("sub", Var("x"), Int(1)))])),
+            Whilst(Var("b"), Block([Assignment("x", BinOp("sub", Var("x"), 1))])),
             parser.parse_whilst(),
         )
 
