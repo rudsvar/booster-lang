@@ -77,20 +77,6 @@ class ExpressionParser(BaseParser):
         b = self.one_of_strings(["true", "false"])
         return b == "true"
 
-    def parse_list(self) -> list[Expr]:
-        """
-        Parses expressions separated by comma and surrounded by [ and ], followed by whitespace.
-
-        >>> parser = ExpressionParser('[1, a, "abc"]')
-        >>> parser.parse_list()
-        [1, Variable(name='a'), 'abc']
-        """
-        _ = self.parse_symbol("[")
-        elements = self.separated_by(self.parse_expr, ",")
-        _ = self.parse_symbol("]")
-        _ = self.parse_whitespace()
-        return elements
-
     def parse_bin_op(self) -> Expr:
         """
         Parses an operator like `+` followed by two expressions. Using prefix-notation like `+ 2 3` makes parsing much simpler.
@@ -104,6 +90,20 @@ class ExpressionParser(BaseParser):
         e1 = self.parse_expr()
         e2 = self.parse_expr()
         return BinaryOperation(op, e1, e2)
+
+    def parse_list(self) -> list[Expr]:
+        """
+        Parses expressions separated by comma and surrounded by [ and ], followed by whitespace.
+
+        >>> parser = ExpressionParser('[1, a, "abc"]')
+        >>> parser.parse_list()
+        [1, Variable(name='a'), 'abc']
+        """
+        _ = self.parse_symbol("[")
+        elements = self.separated_by(self.parse_expr, ",")
+        _ = self.parse_symbol("]")
+        _ = self.parse_whitespace()
+        return elements
 
     def parse_function_call(self) -> FunctionCall:
         """

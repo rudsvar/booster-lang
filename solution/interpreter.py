@@ -93,17 +93,6 @@ def eval_var(var: Variable, env: Env) -> Value:
     return lookup_var(var.name, env)
 
 
-def eval_list(list: list[Expr], env: Env) -> Value:
-    """
-    Evaluate each expression in the elements of the list.
-
-    >>> env: Env = [{'x': 2}]
-    >>> eval_list([1, Variable('x'), BinaryOperation('add', 1, 2)], env)
-    [1, 2, 3]
-    """
-    return [eval_expr(e, env) for e in list]
-
-
 def eval_binop(binop: BinaryOperation, env: Env) -> Value:
     """
     Evaluate the two operand expressions, and match on the operator to decide what to do.
@@ -132,6 +121,17 @@ def eval_binop(binop: BinaryOperation, env: Env) -> Value:
             raise InterpretException(
                 f"Operator {operator} does not support {v1} and {v2}"
             )
+
+
+def eval_list(list: list[Expr], env: Env) -> Value:
+    """
+    Evaluate each expression in the elements of the list.
+
+    >>> env: Env = [{'x': 2}]
+    >>> eval_list([1, Variable('x'), BinaryOperation('add', 1, 2)], env)
+    [1, 2, 3]
+    """
+    return [eval_expr(e, env) for e in list]
 
 
 def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
