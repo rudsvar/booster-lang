@@ -217,6 +217,18 @@ def eval_expr(e: Expr, env: Env) -> Value:
 # Execution of statements
 
 
+def exec_shout(print_stmt: Shout, env: Env):
+    """
+    Execute a `shout` statement by evaluating the expression and printing it in uppercase.
+
+    >>> env: Env = [{}]
+    >>> exec_print(Shout(expr="hello"), env)
+    HELLO
+    """
+    value = eval_expr(print_stmt.expr, env)
+    print(str(value).upper())
+
+
 def exec_var_def(var_def: VarDef, env: Env):
     """
     Execute a variable definition by evaluating the expression and storing it in the environment.
@@ -241,18 +253,6 @@ def exec_assignment(assignment: Assignment, env: Env):
     """
     value = eval_expr(assignment.expr, env)
     assign_var(assignment.var_name, value, env)
-
-
-def exec_print(print_stmt: Shout, env: Env):
-    """
-    Execute a print statement by evaluating the expression and printing it in uppercase.
-
-    >>> env: Env = [{}]
-    >>> exec_print(Shout(expr="hello"), env)
-    HELLO
-    """
-    value = eval_expr(print_stmt.expr, env)
-    print(str(value).upper())
 
 
 def exec_block(block: Block, env: Env) -> Value | None:
@@ -343,7 +343,7 @@ def exec_statement(statement: Statement, env: Env) -> Value | None:
         case Assignment():
             return exec_assignment(statement, env)
         case Shout():
-            return exec_print(statement, env)
+            return exec_shout(statement, env)
         case Block():
             return exec_block(statement, env)
         case If():

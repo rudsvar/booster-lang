@@ -1,14 +1,11 @@
 # Booster Lang
 
-There are three main parts to the solution directory.
+There are two main parts to the solution directory.
 
-- Parsers for transforming source code into an Abstract Syntax Tree (AST), like the classes `Expr` and `Stmt`.
+- Parsers for transforming source code into types we can work with.
 - An interpreter for evaluating expressions and executing statements.
-- An entrypoint (`main.py`) to read files, parse them, and run them with the interpreter.
 
-## Command Line Usage
-
-Each parser and the interpreter can be run directly from the command line:
+The parsers and the interpreter can be run directly from the command line.
 Note that you might have to use `python` instead of `python3`.
 
 ### Expression Parser
@@ -40,3 +37,9 @@ Parse and execute a program:
 python3 solution/interpreter.py examples/fibonacci.blang
 python3 solution/interpreter.py "let x = 5; shout x;"
 ```
+
+## Tasks
+
+The tasks will mostly switch between the three main parts to continuously extend the language as you implement it.
+
+1. Implement `parse_int`, `eval_int`, `parse_shout` and `exec_shout`. Then try to run the interpreter with the input `shout 42;`
