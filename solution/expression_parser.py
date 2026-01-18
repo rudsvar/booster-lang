@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from base_parser import *
+import sys
+from pprint import pprint
 
 type Expr = int | bool | str | Var | BinOp | List | FunCall
 
@@ -149,8 +151,6 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_expr()
         42
         """
-        input_at_start = self.input
-        pos_at_start = self.pos
         try:
             return self.one_of(
                 [
@@ -165,9 +165,18 @@ class ExpressionParser(BaseParser):
                 ]
             )
         except ParseException as e:
-            pos_diff = self.pos - pos_at_start + 1
-            raise ParseException(
-                f'Failed to parse expression at "{input_at_start[:pos_diff]}": {e.message}',
-                self.line,
-                self.column,
-            )
+            self.fail(f"Failed to parse expression: {e.message}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python expression_parser.py <expression>")
+        sys.exit(1)
+
+    try:
+        parser = ExpressionParser(sys.argv[1])
+        expr = parser.parse_expr()
+        pprint(expr)
+    except ParseException as e:
+        print(f"error: {e.message} at {e.line}:{e.column}")
+        sys.exit(1)

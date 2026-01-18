@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 from expression_parser import *
+import sys
+from pprint import pprint
 
 type Stmt = VarDef | Assignment | Shout | Block | If | Whilst | FunDef | Return
 
@@ -116,15 +118,32 @@ class StatementParser(ExpressionParser):
         return Return(e)
 
     def parse_statement(self) -> Stmt:
-        return self.one_of(
-            [
-                self.parse_var_def,
-                self.parse_if,
-                self.parse_whilst,
-                self.parse_shout,
-                self.parse_block,
-                self.parse_function_definition,
-                self.parse_return_statement,
-                self.parse_assignment,
-            ]
-        )
+        try:
+            return self.one_of(
+                [
+                    self.parse_var_def,
+                    self.parse_if,
+                    self.parse_whilst,
+                    self.parse_shout,
+                    self.parse_block,
+                    self.parse_function_definition,
+                    self.parse_return_statement,
+                    self.parse_assignment,
+                ]
+            )
+        except ParseException as e:
+            self.fail(f"Failed to parse statement: {e.message}")
+
+
+if __name__ == "__main__":
+    if len(sys.argv) < 2:
+        print("Usage: python statement_parser.py <statement>")
+        sys.exit(1)
+
+    try:
+        parser = StatementParser(sys.argv[1])
+        stmt = parser.parse_statement()
+        pprint(stmt)
+    except ParseException as e:
+        print(f"error: {e.message} at {e.line}:{e.column}")
+        sys.exit(1)

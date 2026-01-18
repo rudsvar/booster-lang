@@ -2,7 +2,7 @@ from env import Env
 from interpret_exception import InterpretException
 from value import Value
 from statement_parser import *
-
+import sys
 
 # Evaluation of expressions
 
@@ -179,7 +179,36 @@ def exec_statement(statement: Stmt, env: Env) -> Value | None:
 
 def exec_program(program: list[Stmt], env: Env) -> Value | None:
     for statement in program:
-        # If a statement returns something, propagate that upwards
         return_value = exec_statement(statement, env)
         if return_value is not None:
             return return_value
+
+
+if __name__ == "__main__":
+
+    def read_input(input_path: str) -> str:
+        """Try to read file, otherwise treat input as code string"""
+        try:
+            with open(input_path) as f:
+                return f.read()
+        except FileNotFoundError:
+            return input_path
+
+    if len(sys.argv) < 2:
+        print("Usage: python interpreter.py <file_or_code>")
+        sys.exit(1)
+
+    try:
+        from program_parser import ProgramParser
+
+        code = read_input(sys.argv[1])
+        parser = ProgramParser(code)
+        program = parser.parse_program()
+        env = Env()
+        exec_program(program, env)
+    except ParseException as e:
+        print(f"error: {e.message} at {e.line}:{e.column}")
+        sys.exit(1)
+    except InterpretException as e:
+        print("error:", e.message)
+        sys.exit(1)
