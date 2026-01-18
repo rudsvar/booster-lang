@@ -1,10 +1,18 @@
-from interpret_exception import InterpretException
-from value import Value
 from statement_parser import *
 import sys
 
-# Environment functions
 
+# Values that expressions are evaluated to.
+type Value = int | str | bool | list[Value] | FunctionDef
+
+
+# Exception for when interpreting fails, like when variables are not set
+@dataclass
+class InterpretException(Exception):
+    message: str
+
+
+# Environment and environment helper functions
 type Env = list[dict[str, Value]]
 
 
@@ -137,8 +145,14 @@ def eval_expr(e: Expr, env: Env) -> Value:
             return eval_list(e, env)
         case BinaryOperation():
             return eval_binop(e, env)
-        case FunctionCall():
-            return eval_function_call(e, env)
+        case FunctionCall() as f:
+            return_value = eval_function_call(e, env)
+            # Ensure the function returned a value
+            if return_value is None:
+                raise InterpretException(
+                    f"Return value of {f.name} was None. It must return something."
+                )
+            return return_value
         case _:
             raise InterpretException("eval not implemented for " + str(e))
 
