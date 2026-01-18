@@ -10,14 +10,14 @@ class ProgramParserTest(unittest.TestCase):
         ).parse_program()
         self.assertEqual(
             [
-                FunctionDef(
+                FunctionDefinition(
                     "foo",
                     ["x", "y"],
                     Block(
                         [Return(BinaryOperation("add", Variable("x"), Variable("y")))]
                     ),
                 ),
-                VarDef("x", FunctionCall("foo", [1, 2])),
+                VariableDefinition("x", FunctionCall("foo", [1, 2])),
             ],
             program,
         )

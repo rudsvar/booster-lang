@@ -50,7 +50,7 @@ class ExpressionParserTest(unittest.TestCase):
     def test_add(self):
         parser = ExpressionParser("add a 2")
         self.assertEqual(
-            BinaryOperation("add", Variable("a"), 2), parser.parse_bin_op()
+            BinaryOperation("add", Variable("a"), 2), parser.parse_binary_operation()
         )
 
     def test_add_failure(self):
@@ -58,7 +58,7 @@ class ExpressionParserTest(unittest.TestCase):
         self.assertRaisesRegex(
             ParseException,
             "Failed to parse expression",
-            lambda: parser.parse_bin_op(),
+            lambda: parser.parse_binary_operation(),
         )
 
     def test_math_expr(self):

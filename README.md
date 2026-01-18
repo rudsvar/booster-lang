@@ -42,8 +42,16 @@ python3 solution/interpreter.py "let x = 5; shout x;"
 
 The tasks will mostly switch between the three main parts to continuously extend the language as you implement it.
 You don't need to do them in this order. You can try to run what you would like to have work, then implement what fails.
+In any of the following tasks, you can rename keywords, switch out symbols, or change the behavior, as long as it don't cause ambiguity for the parser.
+For example, instead of `print`, the example solution has the `shout` keyword that prints a stringified uppercase version of the input.
 
 1. Implement `parse_int`, `eval_int`, `parse_shout` and `exec_shout`. Then try to run the interpreter with the input `shout 42;`
     - Optional: Implement `parse_bool` to be able to run `shout true;`
     - Optional: Implement `parse_string_literal` to be able to run `shout "Hello World!"`
 2. Implement `parse_var`, `parse_var_def` and `exec_var_def` to be able to run `let x = 10; shout x;`
+3. Implement `parse_binary_operation` and `eval_binary_operation`. Then try to run the interpreter with the input `shout add 2 3;`
+    - Optional: Add more operators such as `eq` (equal), `!=` (not equal), `<` (less than).
+4. Implement `parse_if` and `exec_if`. Then try to run the interpreter with the input `if eq 2 3 { shout "True!"; }`
+    - Optional: Try to parse an optional `else`-block after the if.
+5. Implement `parse_whilst` and `exec_whilst`. Then try to run the interpreter with the input `let x = 0; whilst neq x 10 { shout x; x = add x 1; }`
+6. Implement `parse_function_definition`, `parse_function_call`, `eval_function_call`, and `exec_function_definition`. Then try to run the interpreter with the input `fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;`

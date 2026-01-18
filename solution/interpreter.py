@@ -3,7 +3,7 @@ import sys
 
 
 # Values that expressions are evaluated to.
-type Value = int | str | bool | list[Value] | FunctionDef
+type Value = int | str | bool | list[Value] | FunctionDefinition
 
 
 # Exception for when interpreting fails, like when variables are not set
@@ -93,12 +93,12 @@ def eval_var(var: Variable, env: Env) -> Value:
     return lookup_var(var.name, env)
 
 
-def eval_binop(binop: BinaryOperation, env: Env) -> Value:
+def eval_binary_operation(binop: BinaryOperation, env: Env) -> Value:
     """
     Evaluate the two operand expressions, and match on the operator to decide what to do.
 
     >>> env: Env = [{}]
-    >>> eval_binop(BinaryOperation(op="add", e1=2, e2=3), env)
+    >>> eval_binary_operation(BinaryOperation(op="add", e1=2, e2=3), env)
     5
     """
     operator = binop.op
@@ -123,7 +123,7 @@ def eval_binop(binop: BinaryOperation, env: Env) -> Value:
             )
 
 
-def eval_list(list: list[Expr], env: Env) -> Value:
+def eval_list(list: list[Expression], env: Env) -> Value:
     """
     Evaluate each expression in the elements of the list.
 
@@ -140,7 +140,7 @@ def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
 
     # Look up function in scope
     f = lookup_var(name, env)
-    if type(f) != FunctionDef:
+    if type(f) != FunctionDefinition:
         raise InterpretException(f"{f} is not callable")
 
     # Optional: Check argument length matches parameter length
@@ -167,7 +167,7 @@ def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
     return exec_statement(f.body, function_env)
 
 
-def eval_expr(e: Expr, env: Env) -> Value:
+def eval_expr(e: Expression, env: Env) -> Value:
     """
     Evaluates any kind of expression. Delegates to separate evaluator functions for each kind.
 
@@ -201,7 +201,7 @@ def eval_expr(e: Expr, env: Env) -> Value:
         case list():
             return eval_list(e, env)
         case BinaryOperation():
-            return eval_binop(e, env)
+            return eval_binary_operation(e, env)
         case FunctionCall() as f:
             return_value = eval_function_call(e, env)
             # Ensure the function returned a value
@@ -229,12 +229,12 @@ def exec_shout(print_stmt: Shout, env: Env):
     print(str(value).upper())
 
 
-def exec_var_def(var_def: VarDef, env: Env):
+def exec_var_def(var_def: VariableDefinition, env: Env):
     """
     Execute a variable definition by evaluating the expression and storing it in the environment.
 
     >>> env: Env = [{}]
-    >>> exec_var_def(VarDef(var_name="x", expr=42), env)
+    >>> exec_var_def(VariableDefinition(var_name="x", expr=42), env)
     >>> env
     [{'x': 42}]
     """
@@ -290,7 +290,11 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
     The condition is re-evaluated after each iteration.
 
     >>> env: Env = [{"x": 2}]
-    >>> # Would loop while x != 0, decrementing x each iteration
+    >>> body = Block(statements=[Assignment(var_name="x", expr=BinaryOperation(op="sub", e1=Variable(name="x"), e2=1))])
+    >>> loop = Whilst(condition=BinaryOperation(op="neq", e1=Variable(name="x"), e2=0), body=body)
+    >>> exec_whilst(loop, env)
+    >>> env
+    [{'x': 0}]
     """
     condition = eval_expr(whilst_stmt.condition, env)
     while condition:
@@ -300,15 +304,15 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
         condition = eval_expr(whilst_stmt.condition, env)
 
 
-def exec_fun_def(fun_def: FunctionDef, env: Env):
+def exec_function_definition(fun_def: FunctionDefinition, env: Env):
     """
     Execute a function definition by storing the function in the environment.
 
     >>> env: Env = [{}]
-    >>> fun = FunctionDef(name="add", params=["x", "y"], body=Block(statements=[]))
-    >>> exec_fun_def(fun, env)
+    >>> fun = FunctionDefinition(name="add", params=["x", "y"], body=Block(statements=[]))
+    >>> exec_function_definition(fun, env)
     >>> env
-    [{'add': FunctionDef(name='add', params=['x', 'y'], body=Block(statements=[]))}]
+    [{'add': FunctionDefinition(name='add', params=['x', 'y'], body=Block(statements=[]))}]
     """
     define_var(fun_def.name, fun_def, env)
 
@@ -333,12 +337,12 @@ def exec_statement(statement: Statement, env: Env) -> Value | None:
     Executes any kind of statement. Delegates to separate executor functions for each kind.
 
     >>> env: Env = [{}]
-    >>> exec_statement(VarDef(var_name="x", expr=42), env)
+    >>> exec_statement(VariableDefinition(var_name="x", expr=42), env)
     >>> env
     [{'x': 42}]
     """
     match statement:
-        case VarDef():
+        case VariableDefinition():
             return exec_var_def(statement, env)
         case Assignment():
             return exec_assignment(statement, env)
@@ -350,8 +354,8 @@ def exec_statement(statement: Statement, env: Env) -> Value | None:
             return exec_if(statement, env)
         case Whilst():
             return exec_whilst(statement, env)
-        case FunctionDef():
-            return exec_fun_def(statement, env)
+        case FunctionDefinition():
+            return exec_function_definition(statement, env)
         case Return():
             return exec_return(statement, env)
         case _:
@@ -363,7 +367,7 @@ def exec_program(program: list[Statement], env: Env) -> Value | None:
     Execute a list of statements in order, returning the value of the first statement that returns a value.
 
     >>> env: Env = [{}]
-    >>> program = [VarDef(var_name="x", expr=10), VarDef(var_name="y", expr=20)]
+    >>> program = [VariableDefinition(var_name="x", expr=10), VariableDefinition(var_name="y", expr=20)]
     >>> exec_program(program, env)
     >>> env
     [{'x': 10, 'y': 20}]

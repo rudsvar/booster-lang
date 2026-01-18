@@ -5,11 +5,11 @@ from statement_parser import *
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):
         parser = StatementParser("let x = 10;")
-        self.assertEqual(VarDef("x", 10), parser.parse_var_def())
+        self.assertEqual(VariableDefinition("x", 10), parser.parse_var_def())
 
     def test_var_decl_bool(self):
         parser = StatementParser("let x = true;")
-        self.assertEqual(VarDef("x", True), parser.parse_var_def())
+        self.assertEqual(VariableDefinition("x", True), parser.parse_var_def())
 
     def test_var_decl_fail(self):
         parser = StatementParser("let x =")

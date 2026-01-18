@@ -3,7 +3,7 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expr = int | bool | str | Variable | BinaryOperation | list[Expr] | FunctionCall
+type Expression = int | bool | str | Variable | BinaryOperation | list[Expression] | FunctionCall
 
 
 @dataclass
@@ -14,14 +14,14 @@ class Variable:
 @dataclass
 class BinaryOperation:
     op: str
-    e1: Expr
-    e2: Expr
+    e1: Expression
+    e2: Expression
 
 
 @dataclass
 class FunctionCall:
     name: str
-    args: list[Expr]
+    args: list[Expression]
 
 
 class ExpressionParser(BaseParser):
@@ -77,13 +77,13 @@ class ExpressionParser(BaseParser):
         b = self.one_of_strings(["true", "false"])
         return b == "true"
 
-    def parse_bin_op(self) -> Expr:
+    def parse_binary_operation(self) -> Expression:
         """
         Parses an operator like `+` followed by two expressions. Using prefix-notation like `+ 2 3` makes parsing much simpler.
         You can rename the operators to any string you want.
 
         >>> parser = ExpressionParser("add 2 3")
-        >>> parser.parse_bin_op()
+        >>> parser.parse_binary_operation()
         BinaryOperation(op='add', e1=2, e2=3)
         """
         op = self.one_of_strings(["add", "sub", "mul", "div", "eq", "neq"])
@@ -91,7 +91,7 @@ class ExpressionParser(BaseParser):
         e2 = self.parse_expr()
         return BinaryOperation(op, e1, e2)
 
-    def parse_list(self) -> list[Expr]:
+    def parse_list(self) -> list[Expression]:
         """
         Parses expressions separated by comma and surrounded by [ and ], followed by whitespace.
 
@@ -123,7 +123,7 @@ class ExpressionParser(BaseParser):
         _ = self.parse_symbol(")")
         return FunctionCall(v.name, args)
 
-    def parse_sub_expr(self) -> Expr:
+    def parse_sub_expr(self) -> Expression:
         """
         Parses an expression surrounded by parentheses.
 
@@ -136,7 +136,7 @@ class ExpressionParser(BaseParser):
         _ = self.parse_symbol(")")
         return e
 
-    def parse_expr(self) -> Expr:
+    def parse_expr(self) -> Expression:
         """
         Parses any kind of expression.
 
@@ -151,7 +151,7 @@ class ExpressionParser(BaseParser):
                     self.parse_string_literal,
                     self.parse_bool,
                     self.parse_function_call,
-                    self.parse_bin_op,
+                    self.parse_binary_operation,
                     self.parse_sub_expr,
                     self.parse_list,
                     self.parse_var,

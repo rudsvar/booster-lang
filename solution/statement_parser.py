@@ -3,24 +3,24 @@ from expression_parser import *
 import sys
 from pprint import pprint
 
-type Statement = Shout | VarDef | Assignment | Block | If | Whilst | FunctionDef | Return
+type Statement = Shout | VariableDefinition | Assignment | Block | If | Whilst | FunctionDefinition | Return
 
 
 @dataclass
 class Shout:
-    expr: Expr
+    expr: Expression
 
 
 @dataclass
-class VarDef:
+class VariableDefinition:
     var_name: str
-    expr: Expr
+    expr: Expression
 
 
 @dataclass
 class Assignment:
     var_name: str
-    expr: Expr
+    expr: Expression
 
 
 @dataclass
@@ -30,19 +30,19 @@ class Block:
 
 @dataclass
 class If:
-    condition: Expr
+    condition: Expression
     then_block: Block
     else_block: Block | None
 
 
 @dataclass
 class Whilst:
-    condition: Expr
+    condition: Expression
     body: Block
 
 
 @dataclass
-class FunctionDef:
+class FunctionDefinition:
     name: str
     params: list[str]
     body: Block
@@ -50,7 +50,7 @@ class FunctionDef:
 
 @dataclass
 class Return:
-    expr: Expr | None
+    expr: Expression | None
 
 
 class StatementParser(ExpressionParser):
@@ -61,13 +61,13 @@ class StatementParser(ExpressionParser):
         _ = self.parse_symbol(";")
         return Shout(e)
 
-    def parse_var_def(self) -> VarDef:
+    def parse_var_def(self) -> VariableDefinition:
         _ = self.parse_keyword("let")
         v = self.parse_var()
         _ = self.parse_symbol("=")
         e = self.parse_expr()
         _ = self.parse_symbol(";")
-        return VarDef(v.name, e)
+        return VariableDefinition(v.name, e)
 
     def parse_assignment(self) -> Assignment:
         v = self.parse_var()
@@ -102,14 +102,14 @@ class StatementParser(ExpressionParser):
         body = self.parse_block()
         return Whilst(condition, body)
 
-    def parse_function_definition(self) -> FunctionDef:
+    def parse_function_definition(self) -> FunctionDefinition:
         _ = self.parse_keyword("fun")
         name = self.parse_identifier()
         _ = self.parse_symbol("(")
         parameters = self.separated_by(self.parse_identifier, ",")
         _ = self.parse_symbol(")")
         body = self.parse_block()
-        return FunctionDef(name, parameters, body)
+        return FunctionDefinition(name, parameters, body)
 
     def parse_return_statement(self) -> Return:
         _ = self.parse_keyword("return")
