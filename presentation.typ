@@ -29,20 +29,26 @@
 ]
 
 #slide("Program")[
-  - 09:00 - 10:30: Part 1
+  - How do we make a programming language?
+    - Interpreters
+  - Parsing
+    - Making data more structured
+    - Parsing a whole program
+    - BaseParser
+  - Expressions
+    - Model
+    - Evaluation
+  - Statements
+    - Model
+    - Execution
+    - Environments and scopes
 
-    - 09:00: Introduction to parsing and interpreting
-    - 09:30: Parsing and evaluating expressions
-    - 10:00: Parsing and executing statements
-
-  - 10:30 - 10:50: Break
-
-  - 10:50 - 12:20: Part 2
-
-    - 10:50: Interpreting a program
-    - 11:20: Implementing more advanced control structures
-    - 11:50: Making your own language constructs
-    - 12:20: End of workshop
+  1. Parsing integers and printing them
+  2. Variables
+  3. Binary operations
+  4. If-statements
+  5. While-loops and assignment
+  6. Function definitions and function calls
 ]
 
 #slide("Parsing")[

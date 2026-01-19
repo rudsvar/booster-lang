@@ -48,10 +48,10 @@ For example, instead of `print`, the example solution has the `shout` keyword th
 1. Implement `parse_int`, `eval_int`, `parse_shout` and `exec_shout`. Then try to run the interpreter with the input `shout 42;`
     - Optional: Implement `parse_bool` to be able to run `shout true;`
     - Optional: Implement `parse_string_literal` to be able to run `shout "Hello World!"`
-2. Implement `parse_var`, `parse_var_def` and `exec_var_def` to be able to run `let x = 10; shout x;`
+2. Implement `parse_var`, `parse_var_def`, `define_var`, `lookup_var` and `exec_var_def` to be able to run `let x = 10; shout x;`
 3. Implement `parse_binary_operation` and `eval_binary_operation`. Then try to run the interpreter with the input `shout add 2 3;`
     - Optional: Add more operators such as `eq` (equal), `!=` (not equal), `<` (less than).
 4. Implement `parse_if` and `exec_if`. Then try to run the interpreter with the input `if eq 2 3 { shout "True!"; }`
     - Optional: Try to parse an optional `else`-block after the if.
-5. Implement `parse_whilst` and `exec_whilst`. Then try to run the interpreter with the input `let x = 0; whilst neq x 10 { shout x; x = add x 1; }`
+5. Implement `parse_assignment`, `exec_assignment`, `assign_var`, `parse_whilst` and `exec_whilst`. Then try to run the interpreter with the input `let x = 0; whilst neq x 10 { shout x; x = add x 1; }`
 6. Implement `parse_function_definition`, `parse_function_call`, `eval_function_call`, and `exec_function_definition`. Then try to run the interpreter with the input `fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;`
