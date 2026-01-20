@@ -308,6 +308,8 @@ class BaseParser:
         for parser in parsers:
             try:
                 return parser()
+            except NotImplementedError:
+                continue
             except ParseException as e:
                 if self.has_consumed:
                     raise e
