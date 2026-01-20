@@ -1,12 +1,31 @@
 # Booster Lang
 
-There are two main parts to the solution directory.
+There are five main parts to the solution directory:
 
-- Parsers for transforming source code into types we can work with.
-- An interpreter for evaluating expressions and executing statements.
+- **Expression Parser** for parsing expressions and defining types to parse them into.
+- **Statement Parser** for parsing statements and defining types to parse them into.
+- **Expression Evaluator** for evaluating expressions to values.
+- **Statement Executor** for executing statements with side effects.
+- **Interpreter** for parsing and running complete programs.
 
-The parsers and the interpreter can be run directly from the command line.
+Each can be run directly from the command line.
 Note that you might have to use `python` instead of `python3`.
+
+### Expression Parser
+Parse a single expression:
+```bash
+python3 solution/expression_parser.py "42"
+python3 solution/expression_parser.py "add 2 3"
+python3 solution/expression_parser.py "[1, 2, 3]"
+```
+
+### Statement Parser
+Parse a single statement:
+```bash
+python3 solution/statement_parser.py "let x = 5;"
+python3 solution/statement_parser.py "shout x;"
+python3 solution/statement_parser.py "if true { let y = 10; }"
+```
 
 ### Expression Evaluator
 Evaluate a single expression:
@@ -14,6 +33,8 @@ Evaluate a single expression:
 python3 solution/expression_evaluator.py "42"
 python3 solution/expression_evaluator.py "add 2 3"
 python3 solution/expression_evaluator.py "[1, 2, 3]"
+python3 solution/expression_evaluator.py 'add "hello" " world"'
+python3 solution/expression_evaluator.py "add [1, 2] [3, 4]"
 ```
 
 ### Statement Executor
@@ -21,7 +42,7 @@ Execute a single statement:
 ```bash
 python3 solution/statement_executor.py "let x = 5;"
 python3 solution/statement_executor.py "shout x;"
-python3 solution/statement_executor.py "if true { let y = 10; }"
+python3 solution/statement_executor.py "if true { let y = 10; shout y; }"
 ```
 
 ### Interpreter
@@ -33,114 +54,65 @@ python3 solution/interpreter.py "let x = 5; shout x;"
 
 ## Tasks
 
-The tasks will mostly switch between the three main parts to continuously extend the language as you implement it.
-You don't need to do them in this order. You can try to run what you would like to have work, then implement what fails.
+The tasks will mostly switch between the five main parts to continuously extend the language as you implement it.
+You will implement predefined functions in the expression parser, expression evaluator, statement parser, and statement executor to extend the interpreter.
+
 In any of the following tasks, you can rename keywords, switch out symbols, or change the behavior, as long as it don't cause ambiguity for the parser.
+Just remember to modify the test commands accordingly.
 For example, instead of `print`, the example solution has the `shout` keyword that prints a stringified uppercase version of the input.
 
 1. **Print integers and basic types**
    
-   Run: `python3 solution/interpreter.py exec "shout 42;"`
+   Run: `python3 solution/interpreter.py "shout 42;"`
    
-   - Implement `parse_int` and test with:
-     ```bash
-     python3 solution/expression_parser.py "42"
-     ```
-   - Implement `eval_int` and test with:
-     ```bash
-     python3 solution/expression_evaluator.py "42"
-     ```
-   - Implement `parse_shout` and test with:
-     ```bash
-     python3 solution/statement_parser.py "shout 42"
-     ```
-   - Implement `exec_shout` and run:
-     ```bash
-     python3 solution/interpreter.py "shout 42;"
-     ```
-   - Optional: Implement `parse_bool` and `eval_bool` to run `shout true;`
-   - Optional: Implement `parse_string_literal` and `eval_string` to run `shout "Hello World!"`
+   - Implement `parse_int` and test with `python3 solution/expression_parser.py "42"`
+   - Implement `eval_int` and test with `python3 solution/expression_evaluator.py "42"`
+   - Implement `parse_shout` and test with `python3 solution/statement_parser.py "shout 42;"`
+   - Implement `exec_shout` and run `python3 solution/interpreter.py "shout 42;"`
+   - Optional: Implement `parse_bool` and `eval_bool` and test with `python3 solution/expression_evaluator.py "true"`
+   - Optional: Implement `parse_string_literal` and `eval_string` and test with `python3 solution/expression_evaluator.py '"Hello World!"'`
 
 2. **Variable definitions and lookups**
    
-   Run: `python3 solution/interpreter.py exec "let x = 10; shout x;"`
+   Run: `python3 solution/interpreter.py "let x = 10; shout x;"`
    
-   - Implement `parse_var` and test with:
-     ```bash
-     python3 solution/expression_evaluator.py "x"
-     ```
-   - Implement `parse_var_def` and test with:
-     ```bash
-     python3 solution/statement_executor.py "let x = 10;"
-     ```
-   - Implement `define_var`, `lookup_var`, `eval_var`, and `exec_var_def` and run:
-     ```bash
-     python3 solution/interpreter.py "let x = 10; shout x;"
-     ```
+   - Implement `parse_var` and test with `python3 solution/expression_parser.py "x"`
+   - Implement `parse_var_def` and test with `python3 solution/statement_parser.py "let x = 10;"`
+   - Implement `define_var`, `lookup_var`, `eval_var`, and `exec_var_def` and run `python3 solution/interpreter.py "let x = 10; shout x;"`
 
 3. **Binary operations**
    
-   Run: `python3 solution/interpreter.py exec "shout add 2 3;"`
+   Run: `python3 solution/interpreter.py "shout add 2 3;"`
    
-   - Implement `parse_binary_operation` and test with:
-     ```bash
-     python3 solution/expression_evaluator.py "add 2 3"
-     ```
-   - Implement `eval_binary_operation` and run:
-     ```bash
-     python3 solution/expression_evaluator.py "add 2 3"
-     ```
-     Or execute with:
-     ```bash
-     python3 solution/interpreter.py "shout add 2 3;"
-     ```
-   - Optional: Add more operators such as `eq` (equal), `neq` (not equal), `<` (less than).
+   - Implement `parse_binary_operation` and test with `python3 solution/expression_parser.py "add 2 3"`
+   - Implement `eval_binary_operation` and run `python3 solution/expression_evaluator.py "add 2 3"`
+   - Or execute with `python3 solution/interpreter.py "shout add 2 3;"`
+   - Optional: Add more operators such as `<` (less than).
 
 4. **Conditionals**
    
-   Run: `python3 solution/interpreter.py exec "if eq 2 3 { shout \"True!\"; }"`
+   Run: `python3 solution/interpreter.py "if eq 2 2 { shout eq 3 4; }"`
    
-   - Implement `parse_if` and test with:
-     ```bash
-     python3 solution/statement_executor.py "if eq 2 3 { shout \"True!\"; }"
-     ```
-   - Implement `exec_if` and run:
-     ```bash
-     python3 solution/interpreter.py "if eq 2 3 { shout \"True!\"; }"
-     ```
+   - Implement the operator `eq` or `==` that checks if two values are equal and test with `python3 solution/expression_evaluator.py "eq 2 2"`
+   - Implement `parse_if` and test with `python3 solution/statement_parser.py "if eq 2 3 { shout \"True!\"; }"`
+   - Implement `exec_if` and run `python3 solution/interpreter.py "if eq 2 3 { shout \"True!\"; }"`
    - Optional: Implement parsing an optional `else`-block after the if.
 
 5. **Loops and variable assignment**
    
-   Run: `python3 solution/interpreter.py exec "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
+   Run: `python3 solution/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
    
-   - Implement `parse_assignment` and `parse_whilst` and test with:
-     ```bash
-     python3 solution/statement_executor.py "x = add x 1;"
-     python3 solution/statement_executor.py "whilst neq x 10 { shout x; }"
-     ```
-   - Implement `exec_assignment`, `exec_whilst`, and `assign_var` and run:
-     ```bash
-     python3 solution/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"
-     ```
+   - Implement the operator `neq` or `!=` that checks if two values inequal and test with `python3 solution/expression_evaluator.py "neq 2 3"`
+   - Implement `parse_assignment` and `parse_whilst` and test with
+     - `python3 solution/statement_parser.py "x = add x 1;"`
+     - `python3 solution/statement_parser.py "whilst neq x 10 { shout x; }"`
+   - Implement `exec_assignment`, `exec_whilst`, and `assign_var` and run `python3 solution/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
 
 6. **Functions**
    
-   Run: `python3 solution/interpreter.py exec "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`
+   Run: `python3 solution/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`
    
-   - Implement `parse_function_call` and test with:
-     ```bash
-     python3 solution/expression_evaluator.py "call add(2, 3)"
-     ```
-   - Implement `parse_function_definition` and test with:
-     ```bash
-     python3 solution/statement_executor.py "fun add(x, y) { return x y; }"
-     ```
-   - Implement `eval_function_call`, `exec_function_definition` and run:
-     ```bash
-     python3 solution/expression_evaluator.py "call add(2, 3)"
-     ```
-     Or execute the full program:
-     ```bash
-     python3 solution/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"
-     ```
+   - Implement `parse_function_call` and test with `python3 solution/expression_parser.py "call add(2, 3)"`
+   - Implement `parse_function_definition` and test with `python3 solution/statement_parser.py "fun add(x, y) { return x y; }"`
+   - Implement `eval_function_call`, `exec_function_definition` and run `python3 solution/expression_evaluator.py "call add(2, 3)"`
+   - Or execute the full program `python3 solution/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`

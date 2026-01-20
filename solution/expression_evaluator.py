@@ -109,6 +109,10 @@ def eval_binary_operation(binop: BinaryOperation, env: Env) -> Value:
     match operator:
         case "add" if type(v1) == int and type(v2) == int:
             return v1 + v2
+        case "add" if type(v1) == str and type(v2) == str:
+            return v1 + v2
+        case "add" if type(v1) == list and type(v2) == list:
+            return v1 + v2
         case "sub" if type(v1) == int and type(v2) == int:
             return v1 - v2
         case "mul" if type(v1) == int and type(v2) == int:
