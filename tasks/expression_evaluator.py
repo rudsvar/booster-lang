@@ -19,6 +19,7 @@ type Env = list[dict[str, Value]]
 
 
 def define_var(var: str, value: Value, env: Env):
+    """Add a variable to the innermost (last added) scope."""
     env[-1][var] = value
 
 
@@ -56,7 +57,7 @@ def eval_int(i: int) -> Value:
     >>> eval_int(42)
     42
     """
-    return i
+    raise NotImplementedError("eval_int is not implemented")
 
 
 def eval_string_literal(s: str) -> Value:
@@ -66,7 +67,7 @@ def eval_string_literal(s: str) -> Value:
     >>> eval_string_literal("hello")
     'hello'
     """
-    return s
+    raise NotImplementedError("eval_string_literal is not implemented")
 
 
 def eval_bool(b: bool) -> Value:
@@ -76,7 +77,7 @@ def eval_bool(b: bool) -> Value:
     >>> eval_bool(True)
     True
     """
-    return b
+    raise NotImplementedError("eval_bool is not implemented")
 
 
 def eval_var(var: Variable, env: Env) -> Value:
@@ -92,7 +93,7 @@ def eval_var(var: Variable, env: Env) -> Value:
     >>> eval_var(Variable(name="x"), env)
     10
     """
-    return lookup_var(var.name, env)
+    raise NotImplementedError("eval_var is not implemented")
 
 
 def eval_binary_operation(binop: BinaryOperation, env: Env) -> Value:
@@ -103,30 +104,7 @@ def eval_binary_operation(binop: BinaryOperation, env: Env) -> Value:
     >>> eval_binary_operation(BinaryOperation(op="add", e1=2, e2=3), env)
     5
     """
-    operator = binop.op
-    v1 = eval_expr(binop.e1, env)
-    v2 = eval_expr(binop.e2, env)
-    match operator:
-        case "add" if type(v1) == int and type(v2) == int:
-            return v1 + v2
-        case "add" if type(v1) == str and type(v2) == str:
-            return v1 + v2
-        case "add" if type(v1) == list and type(v2) == list:
-            return v1 + v2
-        case "sub" if type(v1) == int and type(v2) == int:
-            return v1 - v2
-        case "mul" if type(v1) == int and type(v2) == int:
-            return v1 * v2
-        case "div" if type(v1) == int and type(v2) == int:
-            return v1 // v2
-        case "eq" if type(v1) == type(v2):
-            return v1 == v2
-        case "neq" if type(v1) == type(v2):
-            return v1 != v2
-        case _:
-            raise InterpretException(
-                f"Operator {operator} does not support {v1} and {v2}"
-            )
+    raise NotImplementedError("eval_binary_operation is not implemented")
 
 
 def eval_list(list: list[Expression], env: Env) -> Value:
@@ -141,39 +119,7 @@ def eval_list(list: list[Expression], env: Env) -> Value:
 
 
 def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
-    # Import here to avoid circular dependency
-    from statement_executor import exec_statement
-
-    name = function_call.name
-    args = function_call.args
-
-    # Look up function in scope
-    f = lookup_var(name, env)
-    if type(f) != FunctionDefinition:
-        raise InterpretException(f"{f} is not callable")
-
-    # Optional: Check argument length matches parameter length
-    params = f.params
-    if len(params) != len(args):
-        raise InterpretException(
-            f"{name} expects {len(params)} arguments, but got {len(args)}"
-        )
-
-    # Optional: Create an environment that the function should run in. Alternatively just use env.
-    # Mine includes a copy the top level scope to get global variables and functions and a fresh scope for parameter values.
-    function_env: Env = [
-        env[0],
-        {},
-    ]
-
-    # Add parameters to environment
-    for param, arg in zip(params, args):
-        # Set parameter to evaluated argument
-        arg_value = eval_expr(arg, env)
-        define_var(param, arg_value, function_env)
-
-    # Run body with function env
-    return exec_statement(f.body, function_env)
+    raise NotImplementedError("eval_function_call is not implemented")
 
 
 def eval_expr(e: Expression, env: Env) -> Value:

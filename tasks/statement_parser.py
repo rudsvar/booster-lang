@@ -56,25 +56,13 @@ class Return:
 class StatementParser(ExpressionParser):
 
     def parse_shout(self) -> Shout:
-        _ = self.parse_keyword("shout")
-        e = self.parse_expr()
-        _ = self.parse_symbol(";")
-        return Shout(e)
+        raise NotImplementedError("parse_shout is not implemented")
 
     def parse_var_def(self) -> VariableDefinition:
-        _ = self.parse_keyword("let")
-        v = self.parse_var()
-        _ = self.parse_symbol("=")
-        e = self.parse_expr()
-        _ = self.parse_symbol(";")
-        return VariableDefinition(v.name, e)
+        raise NotImplementedError("parse_var_def is not implemented")
 
     def parse_assignment(self) -> Assignment:
-        v = self.parse_var()
-        _ = self.parse_symbol("=")
-        e = self.parse_expr()
-        _ = self.parse_symbol(";")
-        return Assignment(v.name, e)
+        raise NotImplementedError("parse_assignment is not implemented")
 
     def parse_statements(self) -> list[Statement]:
         return self.zero_or_more(self.parse_statement)
@@ -86,30 +74,17 @@ class StatementParser(ExpressionParser):
         return Block(stmts)
 
     def parse_if(self) -> If:
-        _ = self.parse_keyword("if")
-        condition = self.parse_expr()
-        then_branch = self.parse_block()
-        else_branch = self.optional(lambda: self.else_branch())
-        return If(condition, then_branch, else_branch)
+        raise NotImplementedError("parse_if is not implemented")
 
     def else_branch(self) -> Block:
         _ = self.parse_keyword("else")
         return self.parse_block()
 
     def parse_whilst(self) -> Whilst:
-        _ = self.parse_keyword("whilst")
-        condition = self.parse_expr()
-        body = self.parse_block()
-        return Whilst(condition, body)
+        raise NotImplementedError("parse_whilst is not implemented")
 
     def parse_function_definition(self) -> FunctionDefinition:
-        _ = self.parse_keyword("fun")
-        name = self.parse_identifier()
-        _ = self.parse_symbol("(")
-        parameters = self.separated_by(self.parse_identifier, ",")
-        _ = self.parse_symbol(")")
-        body = self.parse_block()
-        return FunctionDefinition(name, parameters, body)
+        raise NotImplementedError("parse_function_definition is not implemented")
 
     def parse_return_statement(self) -> Return:
         _ = self.parse_keyword("return")

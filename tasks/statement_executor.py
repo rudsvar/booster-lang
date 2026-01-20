@@ -11,8 +11,7 @@ def exec_shout(print_stmt: Shout, env: Env):
     >>> exec_shout(Shout(expr="hello"), env)
     HELLO
     """
-    value = eval_expr(print_stmt.expr, env)
-    print(str(value).upper())
+    raise NotImplementedError("exec_shout is not implemented")
 
 
 def exec_var_def(var_def: VariableDefinition, env: Env):
@@ -24,8 +23,7 @@ def exec_var_def(var_def: VariableDefinition, env: Env):
     >>> env
     [{'x': 42}]
     """
-    value = eval_expr(var_def.expr, env)
-    define_var(var_def.var_name, value, env)
+    raise NotImplementedError("exec_var_def is not implemented")
 
 
 def exec_assignment(assignment: Assignment, env: Env):
@@ -37,8 +35,7 @@ def exec_assignment(assignment: Assignment, env: Env):
     >>> env
     [{'x': 20}]
     """
-    value = eval_expr(assignment.expr, env)
-    assign_var(assignment.var_name, value, env)
+    raise NotImplementedError("exec_assignment is not implemented")
 
 
 def exec_block(block: Block, env: Env) -> Value | None:
@@ -63,11 +60,7 @@ def exec_if(if_stmt: If, env: Env) -> Value | None:
     >>> env: Env = [{}]
     >>> exec_if(If(condition=True, then_block=Block(statements=[]), else_block=None), env)
     """
-    condition = eval_expr(if_stmt.condition, env)
-    if condition:
-        return exec_statement(if_stmt.then_block, env)
-    elif if_stmt.else_block:
-        return exec_statement(if_stmt.else_block, env)
+    raise NotImplementedError("exec_if is not implemented")
 
 
 def exec_whilst(whilst_stmt: Whilst, env: Env):
@@ -82,12 +75,7 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
     >>> env
     [{'x': 0}]
     """
-    condition = eval_expr(whilst_stmt.condition, env)
-    while condition:
-        # Run the whilst body. The body should update variables in the condition to avoid an infinite loop
-        exec_statement(whilst_stmt.body, env)
-        # We must evaluate the condition again with the updated environment
-        condition = eval_expr(whilst_stmt.condition, env)
+    raise NotImplementedError("exec_whilst is not implemented")
 
 
 def exec_function_definition(fun_def: FunctionDefinition, env: Env):
@@ -100,7 +88,7 @@ def exec_function_definition(fun_def: FunctionDefinition, env: Env):
     >>> env
     [{'add': FunctionDefinition(name='add', params=['x', 'y'], body=Block(statements=[]))}]
     """
-    define_var(fun_def.name, fun_def, env)
+    raise NotImplementedError("exec_function_definition is not implemented")
 
 
 def exec_return(return_stmt: Return, env: Env) -> Value | None:

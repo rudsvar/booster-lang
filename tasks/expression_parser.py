@@ -35,10 +35,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_int()
         42
         """
-        digits = self.parse_digits()
-        i = int(digits)
-        self.parse_whitespace()
-        return i
+        raise NotImplementedError("parse_int is not implemented")
 
     def parse_var(self) -> Variable:
         """
@@ -48,9 +45,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_var()
         Variable(name='foo')
         """
-        ident = self.parse_identifier()
-        self.parse_whitespace()
-        return Variable(ident)
+        raise NotImplementedError("parse_var is not implemented")
 
     def parse_string_literal(self) -> str:
         """
@@ -60,11 +55,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_string_literal()
         'hello'
         """
-        _ = self.parse_string('"')
-        s = self.parse_until('"')
-        _ = self.parse_string('"')
-        _ = self.parse_whitespace()
-        return s
+        raise NotImplementedError("parse_string_literal is not implemented")
 
     def parse_bool(self) -> bool:
         """
@@ -74,8 +65,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_bool()
         True
         """
-        b = self.one_of_strings(["true", "false"])
-        return b == "true"
+        raise NotImplementedError("parse_bool is not implemented")
 
     def parse_binary_operation(self) -> Expression:
         """
@@ -86,10 +76,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_binary_operation()
         BinaryOperation(op='add', e1=2, e2=3)
         """
-        op = self.one_of_strings(["add", "sub", "mul", "div", "eq", "neq"])
-        e1 = self.parse_expr()
-        e2 = self.parse_expr()
-        return BinaryOperation(op, e1, e2)
+        raise NotImplementedError("parse_binary_operation is not implemented")
 
     def parse_list(self) -> list[Expression]:
         """
@@ -113,15 +100,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_function_call()
         FunctionCall(name='foo', args=[1, 2])
         """
-        # Keyword `call`
-        _ = self.parse_keyword("call")
-        # Function name
-        v = self.parse_var()
-        # Argument list
-        _ = self.parse_symbol("(")
-        args = self.separated_by(self.parse_expr, ",")
-        _ = self.parse_symbol(")")
-        return FunctionCall(v.name, args)
+        raise NotImplementedError("parse_function_call is not implemented")
 
     def parse_sub_expr(self) -> Expression:
         """

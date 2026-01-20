@@ -19,6 +19,7 @@ type Env = list[dict[str, Value]]
 
 
 def define_var(var: str, value: Value, env: Env):
+    """Add a variable to the innermost (last added) scope."""
     env[-1][var] = value
 
 
