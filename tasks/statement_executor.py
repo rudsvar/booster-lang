@@ -47,10 +47,7 @@ def exec_block(block: Block, env: Env) -> Value | None:
     >>> env
     [{'x': 10}]
     """
-    env.append({})
-    return_value = exec_program(block.statements, env)
-    env.pop()
-    return return_value
+    raise NotImplementedError("exec_block is not implemented")
 
 
 def exec_if(if_stmt: If, env: Env) -> Value | None:
@@ -170,6 +167,8 @@ if __name__ == "__main__":
         code = read_input(sys.argv[1])
         parser = StatementParser(code)
         stmt = parser.parse_statement()
+        if parser.input.strip():
+            parser.fail("Only expected a single statement")
         env: Env = [{}]
         exec_statement(stmt, env)
     except ParseException as e:

@@ -182,6 +182,8 @@ if __name__ == "__main__":
         code = read_input(sys.argv[1])
         parser = StatementParser(code)
         stmt = parser.parse_statement()
+        if parser.input.strip():
+            parser.fail("Only expected a single statement")
         env: Env = [{}]
         exec_statement(stmt, env)
     except ParseException as e:

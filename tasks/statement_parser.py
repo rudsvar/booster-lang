@@ -68,17 +68,13 @@ class StatementParser(ExpressionParser):
         return self.zero_or_more(self.parse_statement)
 
     def parse_block(self) -> Block:
-        _ = self.parse_symbol("{")
-        stmts = self.parse_statements()
-        _ = self.parse_symbol("}")
-        return Block(stmts)
+        raise NotImplementedError("parse_block is not implemented")
 
     def parse_if(self) -> If:
         raise NotImplementedError("parse_if is not implemented")
 
     def else_branch(self) -> Block:
-        _ = self.parse_keyword("else")
-        return self.parse_block()
+        raise NotImplementedError("else_branch is not implemented")
 
     def parse_whilst(self) -> Whilst:
         raise NotImplementedError("parse_whilst is not implemented")

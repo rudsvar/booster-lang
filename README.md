@@ -89,7 +89,14 @@ For example, instead of `print`, the example solution has the `shout` keyword th
    - Or execute with `python3 tasks/interpreter.py "shout add 2 3;"`
    - Optional: Add more operators such as `<` (less than).
 
-4. **Conditionals**
+4. **Blocks and scoping**
+   
+   Run: `python3 tasks/interpreter.py "let x = 10; { let y = 20; shout x; }"`
+   
+   - Implement `parse_block` and test with `python3 tasks/statement_parser.py "{ let x = 10; shout x; }"`
+   - Implement `exec_block` and run `python3 tasks/interpreter.py "{ let x = 10; shout x; }"`
+
+5. **Conditionals**
    
    Run: `python3 tasks/interpreter.py "if eq 2 2 { shout eq 3 4; }"`
    
@@ -98,17 +105,17 @@ For example, instead of `print`, the example solution has the `shout` keyword th
    - Implement `exec_if` and run `python3 tasks/interpreter.py "if eq 2 3 { shout \"True!\"; }"`
    - Optional: Implement parsing an optional `else`-block after the if.
 
-5. **Loops and variable assignment**
+6. **Loops and variable assignment**
    
    Run: `python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
    
    - Implement the operator `neq` or `!=` that checks if two values inequal and test with `python3 tasks/expression_evaluator.py "neq 2 3"`
-   - Implement `parse_assignment` and `parse_whilst` and test with
-     - `python3 tasks/statement_parser.py "x = add x 1;"`
-     - `python3 tasks/statement_parser.py "whilst neq x 10 { shout x; }"`
-   - Implement `exec_assignment`, `exec_whilst`, and `assign_var` and run `python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
+   - Implement `parse_assignment` and test with `python3 tasks/statement_parser.py "x = add x 1;"`
+   - Implement `assign_var` and `exec_assignment` and test with `python3 tasks/interpreter.py "let x = 0; x = add x 1; shout x;"`
+   - Implement `parse_whilst` and test with `python3 tasks/statement_parser.py "whilst neq x 10 { shout x; }"`
+   - Implement `exec_whilst` and test with `python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
 
-6. **Functions**
+7. **Functions**
    
    Run: `python3 tasks/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`
    
