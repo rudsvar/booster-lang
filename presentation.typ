@@ -1,4 +1,4 @@
-#set page(width: 25cm, height: 14cm)
+#set page(width: 20cm, height: 11cm)
 
 #let slide(title, body) = [
   #block(breakable: false)[
@@ -8,135 +8,76 @@
   #pagebreak()
 ]
 
-#let box(body) = [
-  #block(fill: rgb("#eeeeee"), radius: 1em)[
+#let box(body, color: "#eeeeee") = [
+  #block(fill: rgb(color), radius: 1em)[
     #pad(1em)[
       #body
     ]
   ]
 ]
 
-#slide("Make a Programming Language")[
+#slide("Make a Programming Language!")[
   with Rudi Blaha Svartveit
-  #pad(x: 1em)[]
-  ```rust
-  let hello = "Hello Booster!";
-  let booster = "Booster!"
-  print(+ hello booster)
+  #pad(y: 3em)[
+    #columns(2)[
+      #strike[
+        #box[
+          ```rust
+          let hello = "Hello Booster!";
+          let booster = "Booster!"
+          print(+ hello booster)
 
-  > Hello Booster!
-  ```
-]
+          > Hello Booster!
+          ```
+        ]
+      ]
+      #colbreak()
+      #box[
+        ```rust
+        let hello = "Hello Noria!";
+        let noria = "Noria!"
+        print(+ hello noria)
 
-#slide("Program")[
-  - How do we make a programming language?
-    - Interpreters
-  - Parsing
-    - Making data more structured
-    - Parsing a whole program
-    - BaseParser
-  - Expressions
-    - Model
-    - Evaluation
-  - Statements
-    - Model
-    - Execution
-    - Environments and scopes
-
-  1. Parsing integers and printing them
-  2. Variables
-  3. Binary operations
-  4. If-statements
-  5. While-loops and assignment
-  6. Function definitions and function calls
-]
-
-#slide("Parsing")[
-  Parsing is about making data more structured.
-
-  #box[
-    ```python
-    def parse_int(s: str) -> int:
-      return int(s)
-
-    int_text = "123"
-
-    i: int = parse_int(input)
-
-    print(i + 2)
-    ```
-  ]
-
-  If it's a valid integer, we can then perform more specific operations on it like addition.
-]
-
-#slide("Parsing a whole program")[
-  We can make it a lot more complex.
-
-  #box[
-    ```python
-    def parse_program(program_text: str) -> Program
-      ...
-
-    program_text: str = """
-      let x = 0;
-      while x < 10 {
-      x = x + 1;
-      }
-      print(x);
-    """
-
-    program: Program = parse_program(program_text)
-    ```
+        > Hello Noria!
+        ```
+      ]]
   ]
 ]
 
-#slide("Interpreters vs Compilers")[
-  The source code of a program is just text, and cannot be run on its own.
-  We require another program that can translate it to something the computer can run.
-
-  1. Compilers parse the program source code and turns the result into executable machine code.
-    When the compiler completes that task, its task is done.
-    The end result can be executed directly.
-    #box[
-      ```bash
-      $ gcc helloworld.c -o helloworld # Turn helloworld.c into an executable file
-      $ ./helloworld # Run the executable file
-      Hello world! # Program output
-      ```
+#slide("Where do we start?")[
+  We need to turn a text into something our computer can run. We can do that with either
+  #pad(y: 3em)[
+    #columns(2)[
+      (1) a compiler that translates it to machine code,
+      #box(color: "#d1d1e8")[
+        ```
+        $ gcc hello.c -o hello
+        $ ./hello
+        Hello World!
+        ```
+      ]
+      #colbreak()
+      (2) or an interpreter that runs our code on the fly.
+      #box(color: "#d1e8d5")[
+        ```
+        $ python hello.py
+        Hello World!
+        ```
+      ]
     ]
-  2. Interpreters still have to parse the source code to be able to work with it, but can then perform the work that the source code specified on its behalf.
-    #box[
-      ```bash
-      $ python helloworld.py
-      Hello world!
-      ```
-    ]
+  ]
+  Since we can piggyback off another language, like Python, making an interpreter is easier.
 ]
 
-#slide("Implementing a parser")[
+#slide("Parsing a Program")[
 
-  We have to define some types to parse program text into
-
-  #box[
-    ```python
-    type Expr = int
-    type Statement = VariableDeclaration | Print
-    type Program = list[Statement]
-    ```
-  ]
-
-  Then define functions that turn the program text into them
+  Parsing is all about making data more structured.
+  We need to convert code to a model we can program with.
 
   #box[
     ```python
-    def parse_int(input: str) -> Program:
-      ...
-
-    def parse_expression(input: str) -> Program:
-      ...
-
-    def parse_statement(input: str) -> Program:
+    @dataclass
+    class Program:
       ...
 
     def parse_program(input: str) -> Program:
@@ -145,62 +86,13 @@
   ]
 ]
 
-#slide("Keeping track of state")[
-  ```python
-  def parse_program(input: Input) -> Program:
-    ...
-  ```
-]
+#slide("Parsing Expressions")[]
+#slide("Parsing Statements")[]
 
-#slide("Implementing an interpreter")[
-  #box[
-    ```python
-    def run_program(program: Program):
-      ...
-
-    program_text: str = "let x = 10; print(x);"
-    program: Program = parse_program(program_text)
-    run_program(program) # Run the interpreter
-    ```
-  ]
-
-  The output of running
-]
-
-#slide("Python Features")[
-  1. Type annotations and strict type checking
-    #box[
-      ```python
-      i: int = 10
-      s: str = "Hi!"
-      f: float = "Uh oh"
-      ```
-    ]
-  2. Data classes
-    #box[
-      ```python
-      @dataclass
-      class VarDecl:
-        name: str
-        value: Expr
-      ```
-    ]
-  3. Union types
-    #box[
-      ```python
-      type Expr = int | str | bool
-      type Statement = VarDecl | Print
-      ```
-    ]
-]
-
-#slide("Tasks")[
-  - Extend interpreter to support boolean expressions
-  - Extend interpreter to support block statements
-  - Extend interpreter to support variable declaration statements
-  - Extend interpreter to support assignment?
-  - Extend interpreter to support a while-loop
-  - Extend interpreter to support if-statements
-]
-
-#slide("Break")[Starting again at 10:50]
+#slide("Integers and Printing")[]
+#slide("Variables")[]
+#slide("If-statements")[]
+#slide("Assignment")[]
+#slide("While-loops")[]
+#slide("Function Definitions")[]
+#slide("Function Calls")[]
