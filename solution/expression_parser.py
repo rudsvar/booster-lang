@@ -3,7 +3,9 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expression = int | bool | str | Variable | BinaryOperation | list[Expression] | FunctionCall
+type Expression = int | bool | str | Variable | BinaryOperation | list[
+    Expression
+] | FunctionCall
 
 
 @dataclass
@@ -74,7 +76,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_bool()
         True
         """
-        b = self.one_of_strings(["true", "false"])
+        b = self.parse_one_of_constants(["true", "false"])
         return b == "true"
 
     def parse_binary_operation(self) -> Expression:
@@ -86,7 +88,7 @@ class ExpressionParser(BaseParser):
         >>> parser.parse_binary_operation()
         BinaryOperation(op='add', e1=2, e2=3)
         """
-        op = self.one_of_strings(["add", "sub", "mul", "div", "eq", "neq"])
+        op = self.parse_one_of_constants(["add", "sub", "mul", "div", "eq", "neq"])
         e1 = self.parse_expr()
         e2 = self.parse_expr()
         return BinaryOperation(op, e1, e2)
@@ -145,7 +147,7 @@ class ExpressionParser(BaseParser):
         42
         """
         try:
-            return self.one_of(
+            return self.any(
                 [
                     self.parse_int,
                     self.parse_string_literal,

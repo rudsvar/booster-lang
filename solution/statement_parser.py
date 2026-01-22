@@ -119,7 +119,7 @@ class StatementParser(ExpressionParser):
 
     def parse_statement(self) -> Statement:
         try:
-            return self.one_of(
+            return self.any(
                 [
                     self.parse_var_def,
                     self.parse_if,

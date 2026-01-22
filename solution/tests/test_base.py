@@ -88,7 +88,7 @@ class BaseParserTest(unittest.TestCase):
         parser = BaseParser("lettuce ")
         self.assertEqual(
             "lettuce",
-            parser.one_of(
+            parser.any(
                 [
                     lambda: parser.parse_keyword("let"),
                     lambda: parser.parse_keyword("lettuce"),

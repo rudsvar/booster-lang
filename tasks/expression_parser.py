@@ -3,7 +3,9 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expression = int | bool | str | Variable | BinaryOperation | list[Expression] | FunctionCall
+type Expression = int | bool | str | Variable | BinaryOperation | list[
+    Expression
+] | FunctionCall
 
 
 @dataclass
@@ -124,7 +126,7 @@ class ExpressionParser(BaseParser):
         42
         """
         try:
-            return self.one_of(
+            return self.any(
                 [
                     self.parse_int,
                     self.parse_string_literal,

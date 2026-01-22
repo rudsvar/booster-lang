@@ -225,7 +225,7 @@ class BaseParser:
         Useful for symbol like parentheses, brackets and braces.
 
         >>> p = BaseParser('{ }')
-        >>> left_brace = p.parse_symbol('{')
+        >>> left_brace = p.parse_token('{')
         >>> assert p.input == '}'
         >>> left_brace
         '{'
@@ -236,15 +236,14 @@ class BaseParser:
 
     def parse_keyword(self, keyword: str) -> str:
         """
-        Parses an exact string followed by optional whitespace, but does fail irrecoverably like parse_symbol.
-        If parse_symbol
-        This is useful to try reading the entire keyword and checking if we're just looking at the prefix of a variable or not.
+        Parses an exact string followed by optional whitespace, but allows trying other alternatives if not found.
+        It does not allow being followed by alphanumeric characters, and is useful for keywords and constants.
 
-        >>> p = BaseParser('{ }')
-        >>> left_brace = p.parse_symbol('{')
-        >>> assert p.input == '}'
-        >>> left_brace
-        '{'
+        >>> p = BaseParser('let x = ...')
+        >>> let = p.parse_keyword('let')
+        >>> assert p.input == 'let'
+        >>> let
+        'let'
 
         In this case, parse_symbol would fail irrecoverably since it consumes 'let' from the input, while parse_keyword allows one_of to try more alternatives.
 
@@ -269,6 +268,19 @@ class BaseParser:
             self.has_consumed = False
             raise e
 
+    def parse_constant(self, constant: str):
+        """
+        Parses a constant value, followed by optional whitespace.
+        Constants are similar to keywords but are used for fixed literal values like Yes or No.
+        Allows trying other alternatives if not found, and does not allow being followed by alphanumeric characters.
+
+        >>> p = BaseParser('Yes ')
+        >>> p.parse_constant('Yes')
+        'Yes'
+        >>> assert p.input == ' '
+        """
+        return self.parse_keyword(constant)
+
     def zero_or_more(self, parser: ParserFun[Output]) -> list[Output]:
         """
         Runs the provided parser zero or more times and returns the list of parsed values.
@@ -288,7 +300,7 @@ class BaseParser:
                 break
         return stmts
 
-    def one_of(self, parsers: list[ParserFun[Output]]) -> Output:
+    def any(self, parsers: list[ParserFun[Output]]) -> Output:
         """
         Tries to run each of the parsers until one succeeds. If one fails and has consumed input, we abort and return the error.
 
@@ -318,7 +330,7 @@ class BaseParser:
             f"None of {[p.__name__ for p in parsers]} matched", self.line, self.column
         )
 
-    def one_of_strings(self, strings: list[str]) -> str:
+    def parse_one_of_constants(self, constants: list[str]) -> str:
         """
         Tries to parse one of the provided strings
 
@@ -331,10 +343,10 @@ class BaseParser:
         'bar'
         """
         try:
-            parsers = list(map(lambda s: lambda: self.parse_keyword(s), strings))
-            return self.one_of(parsers)
+            parsers = list(map(lambda s: lambda: self.parse_constant(s), constants))
+            return self.any(parsers)
         except ParseException:
-            raise ParseException(f"None of {strings} matched", self.line, self.column)
+            raise ParseException(f"None of {constants} matched", self.line, self.column)
 
     def optional(self, parser: ParserFun[Output]) -> Output | None:
         """
