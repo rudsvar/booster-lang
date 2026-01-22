@@ -73,22 +73,31 @@
   Since we can piggyback off another language, like Python, making an interpreter is easier.
 ]
 
-#slide("Parsing a Program")[
+#slide("Steps of Interpreting")[
 
-  Parsing is all about making data more structured.
-  We need to convert code to a model we can program with.
+  The first step is to *parse* the source code, turning it into a model we can work with.
 
-  #pad(y: 2em)[
-    #box[
-      ```python
-      class Program:
-        # ...
+  #box[
+    ```python
+    class Program:
+      # ...
 
-      def parse_program(input: str) -> Program:
-        # ...
-      ```
-    ]
+    def parse_program(input: str) -> Program:
+      # ...
+    ```
   ]
+
+  Once we have parsed a program, we can *execute* it.
+
+  #box[
+    ```python
+    def execute_program(program: Program):
+      # ...
+    ```
+  ]
+  A program consists of *expressions* and *statements*.
+
+  We can split up our parsing, evaluation and execution to handle those individually.
 ]
 
 #slide("Parsing Expressions (1)")[
@@ -169,7 +178,32 @@
   ]
 ]
 
-#slide("Parsing Statements")[
+#slide("Evaluating Expressions")[
+  Once we an expression, we can simplify it to a `Value`.
+  #box[
+    ```py
+    type Value = int | str | bool | list[Value] | FunctionDefinition
+
+    def eval_expr(e: Expression) -> Value
+      # ...
+    ```
+  ]
+
+  - Evaluating an expression like `BinOp("add", IntLit(2), Intlint(3))` should turn into `5`.
+  - Evaluating a function call would run the function and evaluate to the return value.
+  - We store variable values in a type we call the `Environment`.
+
+  #box[
+    ```python
+    type Environment = list[dict[str, Value]] # For variable value lookup
+
+    def eval_var(var: Variable, env: Environment) -> Value
+      value = lookup_var(var.name, env)
+    ```
+  ]
+]
+
+#slide("Parsing Statements (1)")[
   Statements are operations with side-effects or control structures. Usually these are lines in your code.
   #box[
     ```python
@@ -185,6 +219,77 @@
   7. Function definitions: `fun fibonacci() { ... }`
   8. Return statements to exit or return values from functions: `return 10`
 ]
+
+#slide("Parsing Statements (2)")[
+  #box[
+    ```python
+    class Print:
+      expr: Expression
+    ```
+  ]
+  #box[
+    ```python
+    def parse_print(input: str) -> Print
+      # ...
+    ```
+  ]
+  #box[
+    ```python
+    > parse_print("print 5")
+    Print(IntLit(5))
+    ```
+  ]
+]
+
+#slide("Parsing Statements (2)")[
+  #box[
+    ```python
+    class While:
+      condition: Expression
+      block: Block
+    ```
+  ]
+  #box[
+    ```python
+    def parse_while(input: str) -> While
+      # ...
+    ```
+  ]
+  #box[
+    ```python
+    > parse_while("while true { print(0); }")
+    While(
+      BoolLit(True),
+      Block([
+        Print(IntLit(0)
+    ]))
+    ```
+  ]
+]
+
+#slide("Executing Statements")[
+  Similarly to when we evaluate expressions, we'd like to implement *exec_statement*.
+
+  #box[
+    ```python
+    # Top level exec function
+    def exec_statement(statement: Statement, env: Env) -> While:
+      # ...
+
+    # Specifically for print-statements
+    def exec_print(p: Print, env: Env):
+      value = eval_expr(p.expr, env)
+      print(str(value))
+
+    # Alternative version of `Print` called `Shout`
+    def exec_shout(p: Shout, env: Env):
+      value = eval_expr(p.expr, env)
+      print(str(value).upper())
+    ```
+  ]
+]
+
+#slide("Tasks")[]
 
 #slide("Integers and Printing")[
 
