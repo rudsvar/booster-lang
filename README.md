@@ -69,7 +69,7 @@ For example, instead of `print`, the example solution has the `shout` keyword th
    - Implement `eval_int` and test with `python3 tasks/expression_evaluator.py "42"`
    - Implement `parse_shout` and test with `python3 tasks/statement_parser.py "shout 42;"`
    - Implement `exec_shout` and run `python3 tasks/interpreter.py "shout 42;"`
-   - Optional: Implement `parse_bool` and `eval_bool` and test with `python3 tasks/expression_evaluator.py "true"`
+   - Optional: Implement `parse_bool_literal` and `eval_bool` and test with `python3 tasks/expression_evaluator.py "true"`
    - Optional: Implement `parse_string_literal` and `eval_string` and test with `python3 tasks/expression_evaluator.py '"Hello World!"'`
 
 2. **Variable definitions and lookups**
