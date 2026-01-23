@@ -289,10 +289,58 @@
   ]
 ]
 
-#slide("Tasks")[]
+#let task_intro = [
+]
+
+#slide("Tasks")[
+
+  If you clone `https://github.com/rudsvar/booster-lang` you'll find `README.md` and two main directories you need to care about, `solution` and `tasks`.
+  These two are copies of each other, but the latter has function bodies replaced with `NotImplementedError`.
+
+  Your tasks will consist of implementing functions for parsing, evaluating expressions, and executing statements.
+  As you complete tasks, you can run the interpreter on increasingly complex programs.
+
+  The first step will let you run this.
+
+  #box[
+    ```sh
+    $ python3 solution/interpreter.py 'shout 1;'
+    1
+    ```
+  ]
+]
+
+#slide("")[
+  ... and at the end, you can run programs like this!
+  #box[
+    ```js
+    fun fibonacci(x) {
+        if eq x 0 {
+          return 0;
+        }
+        if eq x 1 {
+          return 1;
+        }
+        return add (call fibonacci(sub x 1)) (call fibonacci(sub x 2));
+    }
+
+    let x = call fibonacci(10);
+
+    shout x;
+    ```
+  ]
+]
 
 #slide("Integers and Printing")[
+  See task 1 in `README.md`.
 
+  Navigate to `tasks/expression_parser.py` and look for the `parse_int` function.
+  This function has documentation within triple-quotes (`"""`) that explains what your function should do.
+
+  The `ExpressionParser` extends `BaseParser` which defines lower level parsing functions.
+  Type `self.` to get completion from VSCode and try to find a method that that returns something integer-like.
+
+  Like `README.md` says, you can test your code with `python3 tasks/expression_parser.py "42"`.
 ]
 
 #slide("Variables")[

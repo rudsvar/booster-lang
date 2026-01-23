@@ -33,6 +33,8 @@ class ExpressionParser(BaseParser):
         """
         Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
+        Hint: You can convert a string to an integer with int(my_string)
+
         >>> parser = ExpressionParser("42")
         >>> parser.parse_int()
         42
