@@ -131,14 +131,14 @@
   A parser for this could look something like this.
   #box[
     ```python
-    def parse_int_lit(input: str) -> IntLit:
+    def parse_int_literal(input: str) -> IntLit:
       # ...
     ```
   ]
   We could then use it as follows.
   #box[
     ```python
-    > parse_int_lit("123")
+    > parse_int_literal("123")
     IntLit(123)
     ```
   ]
@@ -332,23 +332,62 @@
 ]
 
 #slide("Integers and Printing")[
-  See task 1 in `README.md`.
+  Our goal is to be able to run the following in our terminal.
+  #footnote([The `$` represents a shell command to run, and the line below is output.])
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "shout 42;"
+    42
+    ```
+  ]
 
-  Navigate to `tasks/expression_parser.py` and look for the `parse_int` function.
-  This function has documentation within triple-quotes (`"""`) that explains what your function should do.
+  This program consists of a `shout` statement that will print the expression `42`, which in this case is just an integer literal.
+  To run this program, we must implement the following functionality.
 
-  The `ExpressionParser` extends `BaseParser` which defines lower level parsing functions.
-  Type `self.` to get completion from VSCode and try to find a method that that returns something integer-like.
+  - `parse_int_literal`
+  - `eval_int`
+  - `eval_int`
+  - `exec_shout`
 
-  Like `README.md` says, you can test your code with `python3 tasks/expression_parser.py "42"`.
+  See task 1 in `README.md` for more information.
 ]
 
 #slide("Variables")[
+  The next step is to be able to define and use variables.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "let x = 10; shout x;"
+    10
+    ```
+  ]
+]
 
+#slide("Binary operations")[
+  We need some way to make more complex expressions and computations.
+  For that, we can use binary operations like addition and multiplication.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "shout add 2 3;"
+    5
+    ```
+  ]
+  You can also combine it with variables.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "let x = 2; shout add x 3;"
+    5
+    ```
+  ]
 ]
 
 #slide("If-statements")[
-
+  To make choices in our program, we can implement if-statements.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "let x = 10; shout x;"
+    10
+    ```
+  ]
 ]
 
 #slide("Assignment")[

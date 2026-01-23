@@ -52,7 +52,10 @@ class ExpressionParser(BaseParser):
         """
         Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
-        Hint: You can convert a string to an integer with int(my_string)
+        Steps:
+        1. Find a parser with `self.parse_*` to parse an appropriate string.
+        2. Convert this string to an integer with `int(my_str)`.
+        3. Wrap the integer in `IntLit(my_int)`.
 
         >>> parser = ExpressionParser("42")
         >>> parser.parse_int_literal()
