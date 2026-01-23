@@ -13,6 +13,12 @@ There are six main parts to the solution directory:
 
 BaseParser provides low-level parsing functions. Use this as a reference for implementing the higher-level parsers.
 
+#### Notes
+
+- Once you parse something, it's removed from the input automatically.
+- Some functions like .parse_symbol() and .parse_keyword() automatically consume trailing whitespace.
+- Use .any() to try multiple alternatives. We commit to the one that first consumes some input, and will not try any others afterwards.
+
 ### Character and String Parsing
 
 | Function | Description |
@@ -28,7 +34,7 @@ BaseParser provides low-level parsing functions. Use this as a reference for imp
 |----------|-------------|
 | .parse_keyword(keyword) | Parse a keyword followed by optional whitespace, fails if followed by alphanumerics. |
 | .parse_symbol(target) | Parse a symbol like "{", "}", "(", ")" followed by optional whitespace. |
-| .parse_constant(constants) | Parse a constant string like "true" or "false". |
+| .parse_constant(constants) | Parse a constant value like true or false. |
 | .parse_one_of_constants(constants) | Try to parse one of several constants. |
 
 ### Whitespace
@@ -45,12 +51,6 @@ BaseParser provides low-level parsing functions. Use this as a reference for imp
 | .optional(parser) | Try to parse something, returning None if it fails without consuming input. |
 | .zero_or_more(parser) | Run a parser zero or more times and return a list of results. |
 | .separated_by(parser, separator) | Parse items separated by a separator like comma-separated lists. |
-
-#### Notes
-
-- Once you parse something, it's removed from the input automatically.
-- Some functions like .parse_symbol() and .parse_keyword() automatically consume trailing whitespace.
-- Use .any() to try multiple alternatives. We commit to the one that first consumes some input, and will not try any others afterwards.
 
 ### Expression Parser
 Parse a single expression:
