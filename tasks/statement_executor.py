@@ -3,7 +3,7 @@ from expression_evaluator import *
 import sys
 
 
-def exec_shout(print_stmt: Shout, env: Env):
+def exec_shout(shout_statement: Shout, env: Env):
     """
     Execute a `shout` statement by evaluating the expression and printing it in uppercase.
 
