@@ -1,4 +1,4 @@
-#set page(width: 20cm, height: 11cm)
+#set page(width: 20cm, height: 12cm)
 
 #let slide(title, body) = [
   #block(breakable: false)[

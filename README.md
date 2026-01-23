@@ -1,5 +1,15 @@
 # Booster Lang
 
+
+## Suggested Setup
+
+- Python
+- Visual Studio Code
+- The `Python` extension
+- The `Black Formatter` extension
+
+## Overview
+
 There are six main parts to the solution directory:
 
 - **BaseParser** pre-implements low-level parsing functions.
