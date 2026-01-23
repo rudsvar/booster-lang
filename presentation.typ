@@ -27,22 +27,20 @@
       #strike[
         #box[
           ```rust
-          let hello = "Hello Booster!";
-          let booster = "Booster!"
-          print(+ hello booster)
-
-          > Hello Booster!
+          $ let hello = "Hello Booster!";
+          $ let booster = "Booster!"
+          $ print(+ hello booster)
+          Hello Booster!
           ```
         ]
       ]
       #colbreak()
       #box[
         ```rust
-        let hello = "Hello Noria!";
-        let noria = "Noria!"
-        print(+ hello noria)
-
-        > Hello Noria!
+        $ let hello = "Hello Noria!";
+        $ let noria = "Noria!"
+        $ print(+ hello noria)
+        Hello Noria!
         ```
       ]]
   ]
@@ -97,10 +95,10 @@
   ]
   A program consists of *expressions* and *statements*.
 
-  We can split up our parsing, evaluation and execution to handle those individually.
+  We can split up parsing, evaluation and execution to handle those two individually.
 ]
 
-#slide("Parsing Expressions (1)")[
+#slide("Parsing Expressions")[
   An expression is something we can *evaluate* or *simplify* to a value, or commonly anything that can be on the right side of a variable definition like `var x = <some expression>`.
 
   Our `Expression` type looks like this. `Lit` is short for Literal, `Fun` for function, `BinOp` for binary operation.
@@ -120,63 +118,63 @@
     ```
   ]
 ]
-#slide("Parsing Expressions (2)")[
-  Basic types like `IntLit` are simple.
-  #box[
-    ```python
-    class IntLit:
-      value: int
-    ```
-  ]
-  A parser for this could look something like this.
-  #box[
-    ```python
-    def parse_int_literal(input: str) -> IntLit:
-      # ...
-    ```
-  ]
-  We could then use it as follows.
-  #box[
-    ```python
-    > parse_int_literal("123")
-    IntLit(123)
-    ```
-  ]
-]
+// #slide("Parsing Expressions (2)")[
+//   Basic types like `IntLit` are simple.
+//   #box[
+//     ```python
+//     class IntLit:
+//       value: int
+//     ```
+//   ]
+//   A parser for this could look something like this.
+//   #box[
+//     ```python
+//     def parse_int_literal(input: str) -> IntLit:
+//       # ...
+//     ```
+//   ]
+//   We could then use it as follows.
+//   #box[
+//     ```python
+//     > parse_int_literal("123")
+//     IntLit(123)
+//     ```
+//   ]
+// ]
 
-#slide("Parsing Expressions (3)")[
-  The `FunCall` (function call) type is slightly more complex.
+// #slide("Parsing Expressions (3)")[
+//   The `FunCall` (function call) type is slightly more complex.
 
-  We care about two things, the name of the function and a list of arguments.
-  #box[
-    ```python
-    class FunCall:
-      name: str
-      args: list[Expression]
-    ```
-  ]
-  We can then define a function to parse this as well.
-  #box[
-    ```python
-    > parse_function_call("foo(1, true)")
-    FunCall("foo", [IntLit(1), BoolLit(True)])
-    ```
-  ]
-]
+//   We care about two things, the name of the function and a list of arguments.
+//   #box[
+//     ```python
+//     class FunCall:
+//       name: str
+//       args: list[Expression]
+//     ```
+//   ]
+//   We can then define a function to parse this as well.
+//   #box[
+//     ```python
+//     > parse_function_call("foo(1, true)")
+//     FunCall("foo", [IntLit(1), BoolLit(True)])
+//     ```
+//   ]
+// ]
 
-#slide("Parsing Expressions (4)")[
-  In general, we want to implement smaller parses that can be combined into this.
-  #box[
-    ```python
-    > parse_expression("add 3 foo(1, true)")
-    BinOp(
-      "add", # Operator
-      IntLit(3), # Operand 1
-      FunCall("foo", [IntLit(1), BoolLit(True)]) # Operand 2
-    )
-    ```
-  ]
-]
+// #slide("Parsing Expressions (4)")[
+//   In general, we want to implement smaller parses that can be combined into this.
+//   #box[
+//     ```python
+//     > parse_expression("add 3 foo(1, true)")
+//     BinOp(
+//       "add", # Operator
+//       IntLit(3), # Operand 1
+//       FunCall("foo", [IntLit(1), BoolLit(True)]) # Operand 2
+//     )
+//     ```
+//   ]
+// ]
 
 #slide("Evaluating Expressions")[
   Once we an expression, we can simplify it to a `Value`.
@@ -185,17 +183,17 @@
     type Value = int | str | bool | list[Value] | FunctionDefinition
 
     def eval_expr(e: Expression) -> Value
-      # ...
     ```
   ]
 
   - Evaluating an expression like `BinOp("add", IntLit(2), Intlint(3))` should turn into `5`.
-  - Evaluating a function call would run the function and evaluate to the return value.
-  - We store variable values in a type we call the `Environment`.
+  - A function call would evaluate to its return value.
+  - We also need an `Environment` to store and look up variable values.
 
   #box[
     ```python
-    type Environment = list[dict[str, Value]] # For variable value lookup
+    # A list of maps from variable names to their values. One map per scope.
+    type Environment = list[dict[str, Value]] # Example: [{'x': 3}]
 
     def eval_var(var: Variable, env: Environment) -> Value
       value = lookup_var(var.name, env)
@@ -203,14 +201,14 @@
   ]
 ]
 
-#slide("Parsing Statements (1)")[
+#slide("Parsing Statements")[
   Statements are operations with side-effects or control structures. Usually these are lines in your code.
   #box[
     ```python
-    type Statement = Print | VarDef | Assignment | Block | If | While | FunDef | Return
+    type Statement = Shout | VarDef | Assignment | Block | If | While | FunDef | Return
     ```
   ]
-  1. Print to print output: `print "Hello!";`
+  1. Print to print output: `shout "Hello!";`
   2. Variable definitions: `let x = 10;`
   3. Assignment to update variables: `x = 20;`
   4. Blocks for grouping statements and creating scopes: `let x = 0; { let y = 2; }`
@@ -220,52 +218,52 @@
   8. Return statements to exit or return values from functions: `return 10`
 ]
 
-#slide("Parsing Statements (2)")[
-  #box[
-    ```python
-    class Print:
-      expr: Expression
-    ```
-  ]
-  #box[
-    ```python
-    def parse_print(input: str) -> Print
-      # ...
-    ```
-  ]
-  #box[
-    ```python
-    > parse_print("print 5")
-    Print(IntLit(5))
-    ```
-  ]
-]
+// #slide("Parsing Statements (2)")[
+//   #box[
+//     ```python
+//     class Print:
+//       expr: Expression
+//     ```
+//   ]
+//   #box[
+//     ```python
+//     def parse_print(input: str) -> Print
+//       # ...
+//     ```
+//   ]
+//   #box[
+//     ```python
+//     > parse_print("print 5")
+//     Print(IntLit(5))
+//     ```
+//   ]
+// ]
 
-#slide("Parsing Statements (2)")[
-  #box[
-    ```python
-    class While:
-      condition: Expression
-      block: Block
-    ```
-  ]
-  #box[
-    ```python
-    def parse_while(input: str) -> While
-      # ...
-    ```
-  ]
-  #box[
-    ```python
-    > parse_while("while true { print(0); }")
-    While(
-      BoolLit(True),
-      Block([
-        Print(IntLit(0)
-    ]))
-    ```
-  ]
-]
+// #slide("Parsing Statements (2)")[
+//   #box[
+//     ```python
+//     class While:
+//       condition: Expression
+//       block: Block
+//     ```
+//   ]
+//   #box[
+//     ```python
+//     def parse_while(input: str) -> While
+//       # ...
+//     ```
+//   ]
+//   #box[
+//     ```python
+//     > parse_while("while true { print(0); }")
+//     While(
+//       BoolLit(True),
+//       Block([
+//         Print(IntLit(0)
+//     ]))
+//     ```
+//   ]
+// ]
 
 #slide("Executing Statements")[
   Similarly to when we evaluate expressions, we'd like to implement *exec_statement*.
@@ -287,9 +285,6 @@
       print(str(value).upper())
     ```
   ]
-]
-
-#let task_intro = [
 ]
 
 #slide("Tasks")[
