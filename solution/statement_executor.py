@@ -8,7 +8,7 @@ def exec_shout(print_stmt: Shout, env: Env):
     Execute a `shout` statement by evaluating the expression and printing it in uppercase.
 
     >>> env: Env = [{}]
-    >>> exec_shout(Shout(expr="hello"), env)
+    >>> exec_shout(Shout(expr=StrLit(value="hello")), env)
     HELLO
     """
     value = eval_expr(print_stmt.expr, env)
@@ -20,7 +20,7 @@ def exec_var_def(var_def: VariableDefinition, env: Env):
     Execute a variable definition by evaluating the expression and storing it in the environment.
 
     >>> env: Env = [{}]
-    >>> exec_var_def(VariableDefinition(var_name="x", expr=42), env)
+    >>> exec_var_def(VariableDefinition(var_name="x", expr=IntLit(value=42)), env)
     >>> env
     [{'x': 42}]
     """
@@ -33,7 +33,7 @@ def exec_assignment(assignment: Assignment, env: Env):
     Execute an assignment by evaluating the expression and assigning it to an existing variable.
 
     >>> env: Env = [{"x": 10}]
-    >>> exec_assignment(Assignment(var_name="x", expr=20), env)
+    >>> exec_assignment(Assignment(var_name="x", expr=IntLit(value=20)), env)
     >>> env
     [{'x': 20}]
     """
@@ -61,7 +61,7 @@ def exec_if(if_stmt: If, env: Env) -> Value | None:
     Execute an if statement by evaluating the condition and executing the appropriate branch.
 
     >>> env: Env = [{}]
-    >>> exec_if(If(condition=True, then_block=Block(statements=[]), else_block=None), env)
+    >>> exec_if(If(condition=BoolLit(value=True), then_block=Block(statements=[]), else_block=None), env)
     """
     condition = eval_expr(if_stmt.condition, env)
     if condition:
@@ -76,8 +76,8 @@ def exec_whilst(whilst_stmt: Whilst, env: Env):
     The condition is re-evaluated after each iteration.
 
     >>> env: Env = [{"x": 2}]
-    >>> body = Block(statements=[Assignment(var_name="x", expr=BinaryOperation(op="sub", e1=Variable(name="x"), e2=1))])
-    >>> loop = Whilst(condition=BinaryOperation(op="neq", e1=Variable(name="x"), e2=0), body=body)
+    >>> body = Block(statements=[Assignment(var_name="x", expr=BinaryOperation(op="sub", e1=Variable(name="x"), e2=IntLit(value=1)))])
+    >>> loop = Whilst(condition=BinaryOperation(op="neq", e1=Variable(name="x"), e2=IntLit(value=0)), body=body)
     >>> exec_whilst(loop, env)
     >>> env
     [{'x': 0}]
@@ -109,7 +109,7 @@ def exec_return(return_stmt: Return, env: Env) -> Value | None:
     If no expression is provided, returns None.
 
     >>> env: Env = [{}]
-    >>> exec_return(Return(expr=42), env)
+    >>> exec_return(Return(expr=IntLit(value=42)), env)
     42
     >>> exec_return(Return(expr=None), env)
     """
@@ -123,7 +123,7 @@ def exec_statement(statement: Statement, env: Env) -> Value | None:
     Executes any kind of statement. Delegates to separate executor functions for each kind.
 
     >>> env: Env = [{}]
-    >>> exec_statement(VariableDefinition(var_name="x", expr=42), env)
+    >>> exec_statement(VariableDefinition(var_name="x", expr=IntLit(value=42)), env)
     >>> env
     [{'x': 42}]
     """
@@ -153,7 +153,7 @@ def exec_program(program: list[Statement], env: Env) -> Value | None:
     Execute a list of statements in order, returning the value of the first statement that returns a value.
 
     >>> env: Env = [{}]
-    >>> program = [VariableDefinition(var_name="x", expr=10), VariableDefinition(var_name="y", expr=20)]
+    >>> program = [VariableDefinition(var_name="x", expr=IntLit(value=10)), VariableDefinition(var_name="y", expr=IntLit(value=20))]
     >>> exec_program(program, env)
     >>> env
     [{'x': 10, 'y': 20}]

@@ -50,31 +50,31 @@ def assign_var(var: str, value: Value, env: Env):
 # Evaluation of expressions
 
 
-def eval_int(i: int) -> Value:
+def eval_int(i: IntLit) -> Value:
     """
     An int cannot be simplified further and can just be returned.
 
-    >>> eval_int(42)
+    >>> eval_int(IntLit(42))
     42
     """
     raise NotImplementedError("eval_int is not implemented")
 
 
-def eval_string_literal(s: str) -> Value:
+def eval_string_literal(s: StrLit) -> Value:
     """
     A string cannot be simplified further and can just be returned.
 
-    >>> eval_string_literal("hello")
+    >>> eval_string_literal(StrLit("hello"))
     'hello'
     """
     raise NotImplementedError("eval_string_literal is not implemented")
 
 
-def eval_bool(b: bool) -> Value:
+def eval_bool(b: BoolLit) -> Value:
     """
     A bool cannot be simplified further and can just be returned.
 
-    >>> eval_bool(True)
+    >>> eval_bool(BoolLit(True))
     True
     """
     raise NotImplementedError("eval_bool is not implemented")
@@ -101,21 +101,21 @@ def eval_binary_operation(binop: BinaryOperation, env: Env) -> Value:
     Evaluate the two operand expressions, and match on the operator to decide what to do.
 
     >>> env: Env = [{}]
-    >>> eval_binary_operation(BinaryOperation(op="add", e1=2, e2=3), env)
+    >>> eval_binary_operation(BinaryOperation(op="add", e1=IntLit(2), e2=IntLit(3)), env)
     5
     """
     raise NotImplementedError("eval_binary_operation is not implemented")
 
 
-def eval_list(list: list[Expression], env: Env) -> Value:
+def eval_list(lst: ListLit, env: Env) -> Value:
     """
     Evaluate each expression in the elements of the list.
 
     >>> env: Env = [{'x': 2}]
-    >>> eval_list([1, Variable('x'), BinaryOperation('add', 1, 2)], env)
+    >>> eval_list(ListLit([IntLit(1), Variable('x'), BinaryOperation('add', IntLit(1), IntLit(2))]), env)
     [1, 2, 3]
     """
-    return [eval_expr(e, env) for e in list]
+    raise NotImplementedError("eval_list is not implemented")
 
 
 def eval_function_call(function_call: FunctionCall, env: Env) -> Value | None:
@@ -127,34 +127,33 @@ def eval_expr(e: Expression, env: Env) -> Value:
     Evaluates any kind of expression. Delegates to separate evaluator functions for each kind.
 
     >>> env: Env = [{}]
-    >>> eval_expr(42, env)
+    >>> eval_expr(IntLit(42), env)
     42
-    >>> eval_expr("hello", env)
+    >>> eval_expr(StrLit("hello"), env)
     'hello'
-    >>> eval_expr(True, env)
+    >>> eval_expr(BoolLit(True), env)
     True
-    >>> eval_expr([1, 2, 3], env)
+    >>> eval_expr(ListLit([IntLit(1), IntLit(2), IntLit(3)]), env)
     [1, 2, 3]
     >>> env: Env = [{"x": 10}]
     >>> eval_expr(Variable(name="x"), env)
     10
-    >>> eval_expr(BinaryOperation(op="add", e1=5, e2=3), env)
+    >>> eval_expr(BinaryOperation(op="add", e1=IntLit(5), e2=IntLit(3)), env)
     8
-    >>> eval_expr(BinaryOperation(op="eq", e1=5, e2=5), env)
+    >>> eval_expr(BinaryOperation(op="eq", e1=IntLit(5), e2=IntLit(5)), env)
     True
     """
     match e:
-        # bool must be first since it's a subclass of int
-        case bool():
-            return eval_bool(e)
-        case int():
+        case IntLit():
             return eval_int(e)
-        case str():
+        case BoolLit():
+            return eval_bool(e)
+        case StrLit():
             return eval_string_literal(e)
+        case ListLit():
+            return eval_list(e, env)
         case Variable():
             return eval_var(e, env)
-        case list():
-            return eval_list(e, env)
         case BinaryOperation():
             return eval_binary_operation(e, env)
         case FunctionCall() as f:

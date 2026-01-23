@@ -17,7 +17,7 @@ class ProgramParserTest(unittest.TestCase):
                         [Return(BinaryOperation("add", Variable("x"), Variable("y")))]
                     ),
                 ),
-                VariableDefinition("x", FunctionCall("foo", [1, 2])),
+                VariableDefinition("x", FunctionCall("foo", [IntLit(1), IntLit(2)])),
             ],
             program,
         )

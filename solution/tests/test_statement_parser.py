@@ -5,11 +5,11 @@ from statement_parser import *
 class StatementParserTest(unittest.TestCase):
     def test_var_decl(self):
         parser = StatementParser("let x = 10;")
-        self.assertEqual(VariableDefinition("x", 10), parser.parse_var_def())
+        self.assertEqual(VariableDefinition("x", IntLit(10)), parser.parse_var_def())
 
     def test_var_decl_bool(self):
         parser = StatementParser("let x = true;")
-        self.assertEqual(VariableDefinition("x", True), parser.parse_var_def())
+        self.assertEqual(VariableDefinition("x", BoolLit(True)), parser.parse_var_def())
 
     def test_var_decl_fail(self):
         parser = StatementParser("let x =")
@@ -36,20 +36,25 @@ class StatementParserTest(unittest.TestCase):
     def test_shout(self):
         parser = StatementParser("shout add 2 a;")
         self.assertEqual(
-            Shout(BinaryOperation("add", 2, Variable("a"))), parser.parse_shout()
+            Shout(BinaryOperation("add", IntLit(2), Variable("a"))),
+            parser.parse_shout(),
         )
 
     def test_if_then(self):
         parser = StatementParser('if b { shout "Yes!"; }')
         self.assertEqual(
-            If(Variable("b"), Block([Shout("Yes!")]), None),
+            If(Variable("b"), Block([Shout(StrLit("Yes!"))]), None),
             parser.parse_if(),
         )
 
     def test_if_then_else(self):
         parser = StatementParser('if b { shout "Yes!"; } else { shout "Nah"; }')
         self.assertEqual(
-            If(Variable("b"), Block([Shout("Yes!")]), Block([Shout("Nah")])),
+            If(
+                Variable("b"),
+                Block([Shout(StrLit("Yes!"))]),
+                Block([Shout(StrLit("Nah"))]),
+            ),
             parser.parse_if(),
         )
 
@@ -58,7 +63,9 @@ class StatementParserTest(unittest.TestCase):
         self.assertEqual(
             Whilst(
                 Variable("b"),
-                Block([Assignment("x", BinaryOperation("sub", Variable("x"), 1))]),
+                Block(
+                    [Assignment("x", BinaryOperation("sub", Variable("x"), IntLit(1)))]
+                ),
             ),
             parser.parse_whilst(),
         )

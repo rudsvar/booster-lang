@@ -52,7 +52,7 @@ class BaseParser:
     'let'
 
     >>> p = BaseParser("def")
-    >>> p.one_of_strings(["abc", "def"])
+    >>> p.parse_one_of_constants(["abc", "def"])
     'def'
 
     Methods with double underscores are not needed for these tasks and can be ignored.
@@ -225,7 +225,7 @@ class BaseParser:
         Useful for symbol like parentheses, brackets and braces.
 
         >>> p = BaseParser('{ }')
-        >>> left_brace = p.parse_token('{')
+        >>> left_brace = p.parse_symbol('{')
         >>> assert p.input == '}'
         >>> left_brace
         '{'
@@ -241,14 +241,14 @@ class BaseParser:
 
         >>> p = BaseParser('let x = ...')
         >>> let = p.parse_keyword('let')
-        >>> assert p.input == 'let'
+        >>> assert p.input == 'x = ...'
         >>> let
         'let'
 
         In this case, parse_symbol would fail irrecoverably since it consumes 'let' from the input, while parse_keyword allows one_of to try more alternatives.
 
         >>> p = BaseParser('lettuce')
-        >>> p.one_of([lambda: p.parse_keyword('let'), lambda: p.parse_keyword('lettuce')])
+        >>> p.any([lambda: p.parse_keyword('let'), lambda: p.parse_keyword('lettuce')])
         'lettuce'
         """
         self_input = self.input
@@ -277,7 +277,7 @@ class BaseParser:
         >>> p = BaseParser('Yes ')
         >>> p.parse_constant('Yes')
         'Yes'
-        >>> assert p.input == ' '
+        >>> assert p.input == ''
         """
         return self.parse_keyword(constant)
 
@@ -307,13 +307,13 @@ class BaseParser:
         >>> p = BaseParser('let')
         >>> let = lambda: p.parse_keyword('let')
         >>> call = lambda: p.parse_keyword('call')
-        >>> p.one_of([let, call])
+        >>> p.any([let, call])
         'let'
 
         >>> p = BaseParser('call')
         >>> let = lambda: p.parse_keyword('let')
         >>> call = lambda: p.parse_keyword('call')
-        >>> p.one_of([let, call])
+        >>> p.any([let, call])
         'call'
         """
         self.has_consumed = False
@@ -335,11 +335,11 @@ class BaseParser:
         Tries to parse one of the provided strings
 
         >>> p = BaseParser('foo')
-        >>> p.one_of_strings(['foo', 'bar'])
+        >>> p.parse_one_of_constants(['foo', 'bar'])
         'foo'
 
         >>> p = BaseParser('bar')
-        >>> p.one_of_strings(['foo', 'bar'])
+        >>> p.parse_one_of_constants(['foo', 'bar'])
         'bar'
         """
         try:

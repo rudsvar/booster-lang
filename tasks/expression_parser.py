@@ -3,9 +3,28 @@ from base_parser import *
 import sys
 from pprint import pprint
 
-type Expression = int | bool | str | Variable | BinaryOperation | list[
-    Expression
-] | FunctionCall
+
+type Expression = IntLit | BoolLit | StrLit | ListLit | Variable | BinaryOperation | FunctionCall
+
+
+@dataclass
+class IntLit:
+    value: int
+
+
+@dataclass
+class BoolLit:
+    value: bool
+
+
+@dataclass
+class StrLit:
+    value: str
+
+
+@dataclass
+class ListLit:
+    elements: list[Expression]
 
 
 @dataclass
@@ -29,7 +48,7 @@ class FunctionCall:
 class ExpressionParser(BaseParser):
     """A parser for expressions that extends `BaseParser`."""
 
-    def parse_int(self) -> int:
+    def parse_int(self) -> IntLit:
         """
         Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
@@ -37,7 +56,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("42")
         >>> parser.parse_int()
-        42
+        IntLit(value=42)
         """
         raise NotImplementedError("parse_int is not implemented")
 
@@ -51,23 +70,23 @@ class ExpressionParser(BaseParser):
         """
         raise NotImplementedError("parse_var is not implemented")
 
-    def parse_string_literal(self) -> str:
+    def parse_string_literal(self) -> StrLit:
         """
         Parses a single string literal like "hello world" followed by whitespace. The input includes quotes (or another character if you want), but the output should not.
 
         >>> parser = ExpressionParser('"hello"')
         >>> parser.parse_string_literal()
-        'hello'
+        StrLit(value='hello')
         """
         raise NotImplementedError("parse_string_literal is not implemented")
 
-    def parse_bool(self) -> bool:
+    def parse_bool(self) -> BoolLit:
         """
         Parses a single boolean value like true or false followed by whitespace. You can choose other names if you want.
 
         >>> parser = ExpressionParser("true")
         >>> parser.parse_bool()
-        True
+        BoolLit(value=True)
         """
         raise NotImplementedError("parse_bool is not implemented")
 
@@ -78,23 +97,23 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("add 2 3")
         >>> parser.parse_binary_operation()
-        BinaryOperation(op='add', e1=2, e2=3)
+        BinaryOperation(op='add', e1=IntLit(value=2), e2=IntLit(value=3))
         """
         raise NotImplementedError("parse_binary_operation is not implemented")
 
-    def parse_list(self) -> list[Expression]:
+    def parse_list(self) -> ListLit:
         """
         Parses expressions separated by comma and surrounded by [ and ], followed by whitespace.
 
         >>> parser = ExpressionParser('[1, a, "abc"]')
         >>> parser.parse_list()
-        [1, Variable(name='a'), 'abc']
+        ListLit(elements=[IntLit(value=1), Variable(name='a'), StrLit(value='abc')])
         """
         _ = self.parse_symbol("[")
         elements = self.separated_by(self.parse_expr, ",")
         _ = self.parse_symbol("]")
         _ = self.parse_whitespace()
-        return elements
+        return ListLit(elements)
 
     def parse_function_call(self) -> FunctionCall:
         """
@@ -102,7 +121,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("call foo(1, 2)")
         >>> parser.parse_function_call()
-        FunctionCall(name='foo', args=[1, 2])
+        FunctionCall(name='foo', args=[IntLit(value=1), IntLit(value=2)])
         """
         raise NotImplementedError("parse_function_call is not implemented")
 
@@ -112,7 +131,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("(42)")
         >>> parser.parse_sub_expr()
-        42
+        IntLit(value=42)
         """
         _ = self.parse_symbol("(")
         e = self.parse_expr()
@@ -125,7 +144,7 @@ class ExpressionParser(BaseParser):
 
         >>> parser = ExpressionParser("42")
         >>> parser.parse_expr()
-        42
+        IntLit(value=42)
         """
         try:
             return self.any(
