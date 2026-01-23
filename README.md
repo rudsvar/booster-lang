@@ -46,16 +46,11 @@ BaseParser provides low-level parsing functions. Use this as a reference for imp
 | .zero_or_more(parser) | Run a parser zero or more times and return a list of results. |
 | .separated_by(parser, separator) | Parse items separated by a separator like comma-separated lists. |
 
-### Notes
+#### Notes
 
 - Once you parse something, it's removed from the input automatically.
 - Some functions like .parse_symbol() and .parse_keyword() automatically consume trailing whitespace.
 - Use .any() to try multiple alternatives. We commit to the one that first consumes some input, and will not try any others afterwards.
-
-## Running Parsers and the Interpreter
-
-Each of the other parsers can be run directly from the command line.
-Note that you might have to use `python` instead of `python3`.
 
 ### Expression Parser
 Parse a single expression:
