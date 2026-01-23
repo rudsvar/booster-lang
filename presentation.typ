@@ -344,9 +344,9 @@
   This program consists of a `shout` statement that will print the expression `42`, which in this case is just an integer literal.
   To run this program, we must implement the following functionality.
 
-  - `parse_int_literal`
+  - `parse_int`
   - `eval_int`
-  - `eval_int`
+  - `parse_shout`
   - `exec_shout`
 
   See task 1 in `README.md` for more information.
@@ -354,17 +354,27 @@
 
 #slide("Variables")[
   The next step is to be able to define and use variables.
+  Instead of `let` you can name the keyword something else.
   #box[
     ```sh
     $ python3 tasks/interpreter.py "let x = 10; shout x;"
     10
     ```
   ]
+
+  Optionally, you can make a `$`-prefix mandatory for variables like `$x`.
+
+  - `parse_var`
+  - `parse_var_def`
+  - `define_var`, `lookup_var`
+  - `eval_var`
+  - `exec_var_def`
 ]
 
 #slide("Binary operations")[
   We need some way to make more complex expressions and computations.
   For that, we can use binary operations like addition and multiplication.
+  You can use symbols or other names if you want.
   #box[
     ```sh
     $ python3 tasks/interpreter.py "shout add 2 3;"
@@ -378,30 +388,83 @@
     5
     ```
   ]
+
+  - `parse_binary_operation`
+  - `eval_binary_operation`
 ]
 
 #slide("If-statements")[
-  To make choices in our program, we can implement if-statements.
+  We can implement if-statements to make choices.
+  You can name `if` something else, like `when`.
   #box[
     ```sh
-    $ python3 tasks/interpreter.py "let x = 10; shout x;"
-    10
+    $ python3 tasks/interpreter.py "if eq 2 2 { shout 1; }"
+    1
     ```
   ]
+
+  - Operator `eq` (equal).
+  - `parse_if`
+  - `exec_if`
 ]
 
 #slide("Assignment")[
+  We need to be able to modify variables after they have been defined.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "let x = 0; x = add x 1; shout x;"
+    1
+    ```
+  ]
 
+  - `parse_assignment`
+  - `assign_var`
+  - `exec_assignment`
 ]
 
 #slide("While-loops")[
+  To repeat code multiple times, we can use while loops.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"
+    0
+    1
+    2
+    .
+    .
+    .
+    9
+    ```
+  ]
 
+  - Operator `neq` (not equal).
+  - `parse_whilst`
+  - `exec_whilst`
 ]
 
 #slide("Function Definitions")[
+  We can define our own functions to reuse code.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "fun double(x) { return add x x; }"
+    ```
+  ]
 
+  - `parse_function_definition`
+  - `exec_function_definition`
 ]
 
 #slide("Function Calls")[
+  To use functions, we need to be able to call them with arguments.
+  #box[
+    ```sh
+    $ python3 tasks/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"
+    5
+    ```
+  ]
 
+  - `parse_function_call`
+  - `eval_function_call`
 ]
+
+= ???
