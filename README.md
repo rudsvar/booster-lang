@@ -1,14 +1,60 @@
 # Booster Lang
 
-There are five main parts to the solution directory:
+There are six main parts to the solution directory:
 
+- **BaseParser** pre-implements low-level parsing functions.
 - **Expression Parser** for parsing expressions and defining types to parse them into.
 - **Statement Parser** for parsing statements and defining types to parse them into.
 - **Expression Evaluator** for evaluating expressions to values.
 - **Statement Executor** for executing statements with side effects.
 - **Interpreter** for parsing and running complete programs.
 
-Each can be run directly from the command line.
+## BaseParser
+
+BaseParser provides low-level parsing functions. Use this as a reference for implementing the higher-level parsers.
+
+### Character and String Parsing
+
+| Function | Description |
+|----------|-------------|
+| .parse_digits() | Parse one or more digits (0-9). |
+| .parse_identifier() | Parse a valid identifier (letters, numbers, underscores). |
+| .parse_string(target) | Parse an exact string and consume it. |
+| .parse_until(target) | Parse characters until target is reached without consuming target. |
+
+### Keyword and Symbol Parsing
+
+| Function | Description |
+|----------|-------------|
+| .parse_keyword(keyword) | Parse a keyword followed by optional whitespace, fails if followed by alphanumerics. |
+| .parse_symbol(target) | Parse a symbol like "{", "}", "(", ")" followed by optional whitespace. |
+| .parse_constant(constants) | Parse a constant string like "true" or "false". |
+| .parse_one_of_constants(constants) | Try to parse one of several constants. |
+
+### Whitespace
+
+| Function | Description |
+|----------|-------------|
+| .parse_whitespace() | Consume and discard all whitespace (spaces, tabs, newlines). |
+
+### Combinators
+
+| Function | Description |
+|----------|-------------|
+| .any(parsers) | Try each parser in order until one succeeds. |
+| .optional(parser) | Try to parse something, returning None if it fails without consuming input. |
+| .zero_or_more(parser) | Run a parser zero or more times and return a list of results. |
+| .separated_by(parser, separator) | Parse items separated by a separator like comma-separated lists. |
+
+### Notes
+
+- Once you parse something, it's removed from the input automatically.
+- Some functions like .parse_symbol() and .parse_keyword() automatically consume trailing whitespace.
+- Use .any() to try multiple alternatives. We commit to the one that first consumes some input, and will not try any others afterwards.
+
+## Running Parsers and the Interpreter
+
+Each of the other parsers can be run directly from the command line.
 Note that you might have to use `python` instead of `python3`.
 
 ### Expression Parser
