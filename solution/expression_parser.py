@@ -48,12 +48,12 @@ class FunctionCall:
 class ExpressionParser(BaseParser):
     """A parser for expressions that extends `BaseParser`."""
 
-    def parse_int(self) -> IntLit:
+    def parse_int_literal(self) -> IntLit:
         """
         Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
         >>> parser = ExpressionParser("42")
-        >>> parser.parse_int()
+        >>> parser.parse_int_literal()
         IntLit(value=42)
         """
         digits = self.parse_digits()
@@ -87,12 +87,12 @@ class ExpressionParser(BaseParser):
         _ = self.parse_whitespace()
         return StrLit(s)
 
-    def parse_bool(self) -> BoolLit:
+    def parse_bool_literal(self) -> BoolLit:
         """
         Parses a single boolean value like true or false followed by whitespace. You can choose other names if you want.
 
         >>> parser = ExpressionParser("true")
-        >>> parser.parse_bool()
+        >>> parser.parse_bool_literal()
         BoolLit(value=True)
         """
         b = self.parse_one_of_constants(["true", "false"])
@@ -168,9 +168,9 @@ class ExpressionParser(BaseParser):
         try:
             return self.any(
                 [
-                    self.parse_int,
+                    self.parse_int_literal,
                     self.parse_string_literal,
-                    self.parse_bool,
+                    self.parse_bool_literal,
                     self.parse_function_call,
                     self.parse_binary_operation,
                     self.parse_sub_expr,

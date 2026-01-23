@@ -13,14 +13,14 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_integer(self):
         parser = ExpressionParser("123")
-        self.assertEqual(IntLit(123), parser.parse_int())
+        self.assertEqual(IntLit(123), parser.parse_int_literal())
 
     def test_integer_fails(self):
         parser = ExpressionParser("abc")
         self.assertRaisesRegex(
             ParseException,
             "Expected some isdigit",
-            lambda: parser.parse_int(),
+            lambda: parser.parse_int_literal(),
         )
 
     def test_var(self):
@@ -41,11 +41,11 @@ class ExpressionParserTest(unittest.TestCase):
 
     def test_bool_true(self):
         parser = ExpressionParser("true")
-        self.assertEqual(BoolLit(True), parser.parse_bool())
+        self.assertEqual(BoolLit(True), parser.parse_bool_literal())
 
     def test_bool_false(self):
         parser = ExpressionParser("false")
-        self.assertEqual(BoolLit(False), parser.parse_bool())
+        self.assertEqual(BoolLit(False), parser.parse_bool_literal())
 
     def test_add(self):
         parser = ExpressionParser("add a 2")

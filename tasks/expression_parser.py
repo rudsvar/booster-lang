@@ -48,14 +48,14 @@ class FunctionCall:
 class ExpressionParser(BaseParser):
     """A parser for expressions that extends `BaseParser`."""
 
-    def parse_int(self) -> IntLit:
+    def parse_int_literal(self) -> IntLit:
         """
         Parses digits using parsers from BaseParser (self.parse_*), converts them to an integer, and consumes whitespace.
 
         Hint: You can convert a string to an integer with int(my_string)
 
         >>> parser = ExpressionParser("42")
-        >>> parser.parse_int()
+        >>> parser.parse_int_literal()
         IntLit(value=42)
         """
         raise NotImplementedError("parse_int is not implemented")
@@ -80,15 +80,15 @@ class ExpressionParser(BaseParser):
         """
         raise NotImplementedError("parse_string_literal is not implemented")
 
-    def parse_bool(self) -> BoolLit:
+    def parse_bool_literal(self) -> BoolLit:
         """
         Parses a single boolean value like true or false followed by whitespace. You can choose other names if you want.
 
         >>> parser = ExpressionParser("true")
-        >>> parser.parse_bool()
+        >>> parser.parse_bool_literal()
         BoolLit(value=True)
         """
-        raise NotImplementedError("parse_bool is not implemented")
+        raise NotImplementedError("parse_bool_literal is not implemented")
 
     def parse_binary_operation(self) -> Expression:
         """
@@ -149,9 +149,9 @@ class ExpressionParser(BaseParser):
         try:
             return self.any(
                 [
-                    self.parse_int,
+                    self.parse_int_literal,
                     self.parse_string_literal,
-                    self.parse_bool,
+                    self.parse_bool_literal,
                     self.parse_function_call,
                     self.parse_binary_operation,
                     self.parse_sub_expr,
