@@ -1,5 +1,6 @@
 from typing import Any
-from statement import Statement, Value, Set, Print, Push, Pop, Sub, Add, Label, Jmp, Jeq, Jlt, Fun, Call, Return, If
+from statement import *
+from parser import debug_log
 
 
 class Interpreter:
@@ -14,9 +15,7 @@ class Interpreter:
     def run(self):
         while self.position < len(self.statements):
             statement = self.statements[self.position]
-            print(
-                f"\033[2;30m{self.position} {statement} | {self.env} | {self.stack}\033[0m"
-            )
+            debug_log(f"{self.position} {statement} | {self.env} | {self.stack}")
             self.position += 1
             self.execute(statement)
 
@@ -133,9 +132,31 @@ class Interpreter:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
+    import os
+
+    parser = argparse.ArgumentParser(description="Run booster-lang programs")
+    parser.add_argument(
+        "input", nargs="?", help="Input file or program string (default: stdin)"
+    )
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    args = parser.parse_args()
+
+    import parser as parser_module
+
+    parser_module.DEBUG = args.debug
+
+    if args.input is None:
+        input_str = __import__("sys").stdin.read()
+    elif os.path.isfile(args.input):
+        with open(args.input, "r") as f:
+            input_str = f.read()
+    else:
+        input_str = args.input
+
     from parser import parse_program
-    program = parse_program(sys.stdin.read())
+
+    program = parse_program(input_str)
     print(program)
     interpreter = Interpreter(program)
     interpreter.run()

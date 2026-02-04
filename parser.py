@@ -1,6 +1,13 @@
 import re
 from statement import *
 
+DEBUG = False
+
+
+def debug_log(msg: str) -> None:
+    if DEBUG:
+        print(f"\033[2;30m{msg}\033[0m")
+
 
 def parse_program(input: str) -> list[Statement]:
     statements: list[Statement] = []
@@ -16,7 +23,7 @@ def parse_value(s: str) -> Value:
 
 
 def parse_statement(tokens: list[str]) -> Statement:
-    print(f"\033[2;30m{tokens}\033[0m")
+    debug_log(str(tokens))
     match tokens:
         case []:
             return Nop()
@@ -33,7 +40,26 @@ def parse_statement(tokens: list[str]) -> Statement:
 
 
 if __name__ == "__main__":
-    import sys
+    import argparse
+    import os
+    from pprint import pprint
 
-    program = parse_program(sys.stdin.read())
-    print(program)
+    parser = argparse.ArgumentParser(description="Parse booster-lang programs")
+    parser.add_argument(
+        "input", nargs="?", help="Input file or program string (default: stdin)"
+    )
+    parser.add_argument("--debug", action="store_true", help="Enable debug logging")
+    args = parser.parse_args()
+
+    DEBUG = args.debug
+
+    if args.input is None:
+        input_str = __import__("sys").stdin.read()
+    elif os.path.isfile(args.input):
+        with open(args.input, "r") as f:
+            input_str = f.read()
+    else:
+        input_str = args.input
+
+    program = parse_program(input_str)
+    pprint(program)
