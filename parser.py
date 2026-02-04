@@ -31,6 +31,8 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Set(x, parse_value(y))
         case ["print", x]:
             return Print(parse_value(x))
+        case ["halt"]:
+            return Halt()
         case ["if", x, op, y, "then", *rest]:
             x = parse_value(x)
             y = parse_value(y)

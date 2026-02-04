@@ -47,6 +47,8 @@ class Interpreter:
                 self.return_(name, value)
             case If(left, op, right, statement):
                 self.exec_if(left, op, right, statement)
+            case Halt():
+                self.position = len(self.statements)
 
     def evaluate_value(self, value: Value) -> int:
         match value:

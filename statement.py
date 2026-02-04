@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-type Statement = Nop | Set | Print | Push | Pop | Sub | Add | Label | Jmp | Jeq | Jlt | Fun | Call | Return | If
+type Statement = Nop | Set | Print | Push | Pop | Sub | Add | Label | Jmp | Jeq | Jlt | Fun | Call | Return | If | Halt
 
 type Value = int | str
 
@@ -92,3 +92,8 @@ class If:
     operator: str
     right: Value
     statement: Statement
+
+
+@dataclass
+class Halt:
+    pass
