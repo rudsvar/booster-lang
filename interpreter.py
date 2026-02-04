@@ -155,8 +155,9 @@ if __name__ == "__main__":
         input_str = args.input
 
     from parser import parse_program
+    from pprint import pprint
 
     program = parse_program(input_str)
-    print(program)
+    pprint(program)
     interpreter = Interpreter(program)
     interpreter.run()
