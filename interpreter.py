@@ -1,7 +1,16 @@
 from dataclasses import dataclass
 from typing import Any
+import sys
+import re
 
-type Statement = Set | Print | Push | Pop | Sub | Add | Label | Jmp | Jeq | Jlt | Fun | Call | Return
+type Statement = Nop | Set | Print | Push | Pop | Sub | Add | Label | Jmp | Jeq | Jlt | Fun | Call | Return | If
+
+type Value = int | str
+
+
+@dataclass
+class Nop:
+    pass
 
 
 @dataclass
@@ -79,6 +88,14 @@ class Return:
     value: Any
 
 
+@dataclass
+class If:
+    left: Value
+    operator: str
+    right: Value
+    statement: Statement
+
+
 class Interpreter:
     statements: list[Statement]
     position: int = 0
@@ -90,14 +107,14 @@ class Interpreter:
 
     def run(self):
         while self.position < len(self.statements):
-            self.step()
+            statement = self.statements[self.position]
+            print(
+                f"\033[2;30m{self.position} {statement} | {self.env} | {self.stack}\033[0m"
+            )
+            self.position += 1
+            self.execute(statement)
 
-    def step(self):
-        statement = self.statements[self.position]
-        print(
-            f"\033[2;30m{self.position} {statement} | {self.env} | {self.stack}\033[0m"
-        )
-        self.position += 1
+    def execute(self, statement):
         match statement:
             case Set(name, value):
                 self.set(name, value)
@@ -123,6 +140,16 @@ class Interpreter:
                 self.call(name, args)
             case Return(name, value):
                 self.return_(name, value)
+            case If(left, op, right, statement):
+                self.exec_if(left, op, right, statement)
+
+    def evaluate_value(self, value: Value) -> int:
+        match value:
+            case str():
+                return self.env[value]
+            case int():
+                return value
+        raise TypeError("Value has invalid type")
 
     def set(self, name: str, value: Any):
         if type(value) == str:
@@ -191,17 +218,46 @@ class Interpreter:
     def return_(self, name: str, value: Any):
         self.position = int(self.stack.pop())
 
+    def exec_if(self, left: Value, op: str, right: Value, statement: Statement):
+        l = self.evaluate_value(left)
+        r = self.evaluate_value(right)
+        apply = {"==": l == r, "<": l < r, ">": l > r}
+        if apply[op]:
+            self.execute(statement)
+
+
+def parse_program(input: str) -> list[Statement]:
+    statements: list[Statement] = []
+    for line in re.split(r"\n|;", input.strip(";")):
+        tokens: list[str] = line.strip().split()
+        statement = parse_statement(tokens)
+        statements.append(statement)
+    return statements
+
+
+def parse_value(s: str) -> Value:
+    return int(s) if s.isdigit() else s
+
+
+def parse_statement(tokens: list[str]) -> Statement:
+    print(f"\033[2;30m{tokens}\033[0m")
+    match tokens:
+        case []:
+            return Nop()
+        case ["set", x, y]:
+            return Set(x, parse_value(y))
+        case ["print", x]:
+            return Print(parse_value(x))
+        case ["if", x, op, y, "then", *rest]:
+            x = parse_value(x)
+            y = parse_value(y)
+            statement = parse_statement(rest)
+            return If(x, op, y, statement)
+    return Nop()
+
 
 if __name__ == "__main__":
-    i = Interpreter(
-        [
-            Call("foo", [3]),
-            Fun("foo", ["n"]),
-            Print("n"),
-            Jeq("n", 0, "exit"),
-            Sub("n", 1),
-            Call("foo", ["n"]),
-            Label("exit"),
-        ]
-    )
-    i.run()
+    program = parse_program(sys.stdin.read())
+    print(program)
+    interpreter = Interpreter(program)
+    interpreter.run()
