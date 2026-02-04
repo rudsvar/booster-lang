@@ -50,7 +50,7 @@ class Interpreter:
             case Halt():
                 self.position = len(self.statements)
 
-    def evaluate_value(self, value: Value) -> int:
+    def eval(self, value: Value) -> int:
         match value:
             case str():
                 return self.env[value]
@@ -59,34 +59,23 @@ class Interpreter:
         raise TypeError("Value has invalid type")
 
     def set(self, name: str, value: Any):
-        if type(value) == str:
-            value = self.env[value]
-        self.env[name] = value
+        self.env[name] = self.eval(value)
 
     def print(self, value: Any):
-        if type(value) == str:
-            print(self.env[value])
-        else:
-            print(value)
+        print(self.eval(value))
 
     def push(self, value: Any):
-        if type(value) == str:
-            value = self.env[value]
-        self.stack.append(value)
+        self.stack.append(self.eval(value))
 
     def pop(self, name: str):
         value = self.stack.pop()
         self.env[name] = value
 
     def sub(self, left: str, right: Any):
-        right = self.env.get(right) or right
-        if type(right) == int:
-            self.env[left] = int(self.env[left]) - right
+        self.env[left] = self.eval(self.env[left]) - self.eval(right)
 
     def add(self, left: str, right: Any):
-        right = self.env.get(right) or right
-        if type(right) == int:
-            self.env[left] = int(self.env[left]) + right
+        self.env[left] = self.eval(self.env[left]) + self.eval(right)
 
     def jmp(self, label: str):
         for position, statement in enumerate(self.statements):
@@ -101,15 +90,11 @@ class Interpreter:
                     pass
 
     def jeq(self, left: Any, right: Any, label: str):
-        l = self.env.get(left) or left
-        r = self.env.get(right) or right
-        if l == r:
+        if self.eval(left) == self.eval(right):
             self.jmp(label)
 
     def jlt(self, left: Any, right: Any, label: str):
-        l = self.env.get(left) or left
-        r = self.env.get(right) or right
-        if l < r:
+        if self.eval(left) < self.eval(right):
             self.jmp(label)
 
     def fun(self, _: str, params: list[str]):
@@ -126,8 +111,8 @@ class Interpreter:
         self.position = int(self.stack.pop())
 
     def exec_if(self, left: Value, op: str, right: Value, statement: Statement):
-        l = self.evaluate_value(left)
-        r = self.evaluate_value(right)
+        l = self.eval(left)
+        r = self.eval(right)
         apply = {"==": l == r, "<": l < r, ">": l > r}
         if apply[op]:
             self.execute(statement)
