@@ -39,7 +39,7 @@ class ParserTests(unittest.TestCase):
 
     def test_parse_halt(self):
         result = parse_program("halt")
-        self.assertEqual(result, [Halt()])
+        self.assertEqual(result, [Exit()])
 
     def test_parse_fun(self):
         result = parse_program("fun add a b")

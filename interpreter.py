@@ -42,7 +42,7 @@ class Interpreter:
                 self.goto(label)
             case If(left, op, right, statement):
                 self.exec_if(left, op, right, statement)
-            case Halt():
+            case Exit():
                 self.position = len(self.statements)
             case Fun(name, params):
                 # Nothing to do. Goto will find it.
@@ -52,15 +52,15 @@ class Interpreter:
             case Return():
                 self.ret()
 
-    def print(self, value: Any):
-        print(self.eval(value))
-
     def eval(self, e: Expression) -> int:
         if type(e) == int:
             return e
         elif type(e) == str:
             return self.env[e]
         raise TypeError(f"Invalid expression: {e}")
+
+    def print(self, value: Any):
+        print(self.eval(value))
 
     def var_def(self, name: str, value: Any):
         self.env[name] = self.eval(value)

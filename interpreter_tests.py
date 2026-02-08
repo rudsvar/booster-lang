@@ -58,7 +58,7 @@ class InterpreterTests(unittest.TestCase):
         self.assertEqual(i.env, {})
 
     def test_halt(self):
-        i = Interpreter([VarDef("x", 1), Halt(), VarDef("x", 2)])
+        i = Interpreter([VarDef("x", 1), Exit(), VarDef("x", 2)])
         i.run()
         self.assertEqual(i.env["x"], 1)
 

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-type Statement = Skip | Print | VarDef | Inc | Dec | Label | Goto | Fun | Call | Return | If | Halt
+type Statement = Skip | Print | VarDef | Inc | Dec | Label | Goto | If | Exit | Fun | Call | Return
 
 """
 An expression can only be a number or a variable.
@@ -56,7 +56,7 @@ class If:
 
 
 @dataclass
-class Halt:
+class Exit:
     pass
 
 

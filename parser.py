@@ -49,7 +49,7 @@ def parse_statement(tokens: list[str]) -> Statement:
             statement = parse_statement(rest)
             return If(x, op, y, statement)
         case ["halt"]:
-            return Halt()
+            return Exit()
         case ["fun", name, *params]:
             return Fun(name, params)
         case ["call", name, *args]:
