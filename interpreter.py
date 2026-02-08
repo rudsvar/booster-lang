@@ -5,12 +5,12 @@ from parser import debug_log
 
 class Interpreter:
     statements: list[Statement]
-    position: int = 0
-    env: dict[str, Any] = {}
-    stack: list[Any] = []
 
     def __init__(self, statements):
         self.statements = statements
+        self.position: int = 0
+        self.env: dict[str, Any] = {}
+        self.stack: list[Any] = []
 
     def run(self):
         while self.position < len(self.statements):
@@ -21,36 +21,36 @@ class Interpreter:
 
     def execute(self, statement):
         match statement:
-            case Set(name, value):
-                self.set(name, value)
+            case Skip():
+                # Do nothing
+                pass
             case Print(value):
+                print(self.eval(value))
                 self.print(value)
-            case Push(value):
-                self.push(value)
-            case Pop(value):
-                self.pop(value)
-            case Sub(left, right):
+            case VarDef(name, value):
+                self.var_def(name, value)
+            case Inc(left, right):
+                self.inc(left, right)
+            case Dec(left, right):
                 self.sub(left, right)
-            case Add(left, right):
-                self.add(left, right)
-            case Jmp(label):
-                self.jmp(label)
-            case Jeq(left, right, label):
-                self.jeq(left, right, label)
-            case Jlt(left, right, label):
-                self.jlt(left, right, label)
+            case Label(_):
+                # We don't need to do anything. Goto will find the label.
+                pass
+            case Goto(label):
+                self.goto(label)
+            case If(left, op, right, statement):
+                self.exec_if(left, op, right, statement)
             case Fun(name, params):
                 self.fun(name, params)
             case Call(name, args):
                 self.call(name, args)
             case Return(name, value):
                 self.return_(name, value)
-            case If(left, op, right, statement):
-                self.exec_if(left, op, right, statement)
             case Halt():
                 self.position = len(self.statements)
 
-    def eval(self, value: Value) -> int:
+    def eval(self, value: Expression) -> int:
+        print(type(value))
         match value:
             case str():
                 return self.env[value]
@@ -58,7 +58,7 @@ class Interpreter:
                 return value
         raise TypeError("Value has invalid type")
 
-    def set(self, name: str, value: Any):
+    def var_def(self, name: str, value: Any):
         self.env[name] = self.eval(value)
 
     def print(self, value: Any):
@@ -74,10 +74,10 @@ class Interpreter:
     def sub(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) - self.eval(right)
 
-    def add(self, left: str, right: Any):
+    def inc(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) + self.eval(right)
 
-    def jmp(self, label: str):
+    def goto(self, label: str):
         for position, statement in enumerate(self.statements):
             match statement:
                 case Label(l) if l == label:
@@ -89,14 +89,6 @@ class Interpreter:
                 case _:
                     pass
 
-    def jeq(self, left: Any, right: Any, label: str):
-        if self.eval(left) == self.eval(right):
-            self.jmp(label)
-
-    def jlt(self, left: Any, right: Any, label: str):
-        if self.eval(left) < self.eval(right):
-            self.jmp(label)
-
     def fun(self, _: str, params: list[str]):
         for param in reversed(params):
             self.pop(param)
@@ -105,12 +97,14 @@ class Interpreter:
         self.push(str(self.position))  # Return addr
         for arg in args:
             self.push(arg)
-        self.jmp(name)
+        self.goto(name)
 
     def return_(self, name: str, value: Any):
         self.position = int(self.stack.pop())
 
-    def exec_if(self, left: Value, op: str, right: Value, statement: Statement):
+    def exec_if(
+        self, left: Expression, op: str, right: Expression, statement: Statement
+    ):
         l = self.eval(left)
         r = self.eval(right)
         apply = {"==": l == r, "<": l < r, ">": l > r}

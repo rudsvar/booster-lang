@@ -1,20 +1,17 @@
 from dataclasses import dataclass
 from typing import Any
 
-type Statement = Nop | Set | Print | Push | Pop | Sub | Add | Label | Jmp | Jeq | Jlt | Fun | Call | Return | If | Halt
+type Statement = Skip | Print | VarDef | Inc | Dec | Label | Goto | Fun | Call | Return | If | Halt
 
-type Value = int | str
+"""
+An expression can only be a number or a variable.
+"""
+type Expression = int | str
 
 
 @dataclass
-class Nop:
+class Skip:
     pass
-
-
-@dataclass
-class Set:
-    name: str
-    value: Any
 
 
 @dataclass
@@ -23,23 +20,19 @@ class Print:
 
 
 @dataclass
-class Push:
+class VarDef:
+    name: str
     value: Any
 
 
 @dataclass
-class Pop:
-    name: str
-
-
-@dataclass
-class Sub:
+class Inc:
     left: str
     right: Any
 
 
 @dataclass
-class Add:
+class Dec:
     left: str
     right: Any
 
@@ -50,22 +43,16 @@ class Label:
 
 
 @dataclass
-class Jmp:
+class Goto:
     label: str
 
 
 @dataclass
-class Jeq:
-    left: Any
-    right: Any
-    label: str
-
-
-@dataclass
-class Jlt:
-    left: Any
-    right: Any
-    label: str
+class If:
+    left: Expression
+    operator: str
+    right: Expression
+    statement: Statement
 
 
 @dataclass
@@ -84,14 +71,6 @@ class Call:
 class Return:
     name: str
     value: Any
-
-
-@dataclass
-class If:
-    left: Value
-    operator: str
-    right: Value
-    statement: Statement
 
 
 @dataclass

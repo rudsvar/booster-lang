@@ -1,25 +1,26 @@
 import unittest
+from parser import *
 from interpreter import *
 
 
-class TestInterpreter(unittest.TestCase):
+class InterpreterTest(unittest.TestCase):
 
     def test_set(self):
-        i = Interpreter([Set("x", 3)])
+        i = Interpreter(parse_program("set x 3"))
         i.run()
-        self.assertEqual(i.env, {"x", 3})
+        self.assertEqual(i.env, {"x": 3})
 
     def test_fibo_globals(self):
         i = Interpreter(
             [
-                Set("lo", 0),
-                Set("hi", 1),
+                VarDef("lo", 0),
+                VarDef("hi", 1),
                 Label("fibo"),
                 Print("lo"),
-                Set("prev_hi", "hi"),
-                Add("hi", "lo"),
-                Set("lo", "prev_hi"),
-                Jlt("hi", 20, "fibo"),
+                VarDef("prev_hi", "hi"),
+                Inc("hi", "lo"),
+                VarDef("lo", "prev_hi"),
+                If("hi", "<", 20, Goto("fibo")),
             ]
         )
         i.run()
