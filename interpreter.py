@@ -28,7 +28,6 @@ class Interpreter:
                 pass
             case Print(value):
                 print(self.eval(value))
-                self.print(value)
             case VarDef(name, value):
                 self.var_def(name, value)
             case Inc(left, right):

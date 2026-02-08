@@ -1,0 +1,6 @@
+label start;
+print 1;
+goto end;
+print 2;
+label end;
+print 3

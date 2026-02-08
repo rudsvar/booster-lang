@@ -48,7 +48,7 @@ def parse_statement(tokens: list[str]) -> Statement:
             y = parse_expr(y)
             statement = parse_statement(rest)
             return If(x, op, y, statement)
-        case ["halt"]:
+        case ["exit"]:
             return Exit()
         case ["fun", name, *params]:
             return Fun(name, params)

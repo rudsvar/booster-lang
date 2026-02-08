@@ -37,8 +37,8 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(len(result), 1)
         self.assertIsInstance(result[0], If)
 
-    def test_parse_halt(self):
-        result = parse_program("halt")
+    def test_parse_exit(self):
+        result = parse_program("exit")
         self.assertEqual(result, [Exit()])
 
     def test_parse_fun(self):
@@ -54,7 +54,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result, [Return()])
 
     def test_parse_multiple_statements(self):
-        result = parse_program("set x 5; print x; halt")
+        result = parse_program("set x 5; print x; exit")
         self.assertEqual(len(result), 3)
 
     def test_parse_error_invalid_statement(self):

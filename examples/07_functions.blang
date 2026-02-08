@@ -1,0 +1,8 @@
+call add 10 5;
+print result;
+exit;
+
+fun add a b;
+  set result a;
+  inc result b;
+  return
