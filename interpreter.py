@@ -68,6 +68,9 @@ class Interpreter:
         evaluated_value = self.eval(value)
         self.env[name] = evaluated_value
 
+    def inc(self, var: str, addend: Expression):
+        self.env[var] = self.env[var] + self.eval(addend)
+
     def dec(self, var: str, subtrahend: Expression):
         self.env[var] = self.env[var] - self.eval(subtrahend)
 
@@ -77,15 +80,28 @@ class Interpreter:
     def swap(self, left: str, right: str):
         self.env[left], self.env[right] = self.env[right], self.env[left]
 
-    def inc(self, var: str, addend: Expression):
-        self.env[var] = self.env[var] + self.eval(addend)
-
     def goto(self, label: str):
         for position, statement in enumerate(self.statements):
             match statement:
                 case Label(l) if l == label:
                     self.position = position
                     break
+
+    def exec_if(
+        self, left: Expression, op: str, right: Expression, statement: Statement
+    ):
+        l = self.eval(left)
+        r = self.eval(right)
+        apply = {
+            "==": l == r,
+            "<": l < r,
+            ">": l > r,
+            "<=": l <= r,
+            ">=": l >= r,
+            "!=": l != r,
+        }
+        if apply[op]:
+            self.execute(statement)
 
     def call(self, name: str, args: list[Expression]):
         # Store return position
@@ -104,22 +120,6 @@ class Interpreter:
 
     def ret(self):
         self.position = self.stack.pop()
-
-    def exec_if(
-        self, left: Expression, op: str, right: Expression, statement: Statement
-    ):
-        l = self.eval(left)
-        r = self.eval(right)
-        apply = {
-            "==": l == r,
-            "<": l < r,
-            ">": l > r,
-            "<=": l <= r,
-            ">=": l >= r,
-            "!=": l != r,
-        }
-        if apply[op]:
-            self.execute(statement)
 
 
 if __name__ == "__main__":
