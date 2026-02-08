@@ -7,6 +7,4 @@ label fib;
   swap a b;
   inc b a;
   if b < 100 then print b;
-  if b < 100 then goto fib;
-
-exit
+  if b < 100 then goto fib

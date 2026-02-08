@@ -1,0 +1,7 @@
+set celsius 20;
+set fahrenheit celsius;
+mul fahrenheit 2;
+inc fahrenheit 32;
+
+print celsius;
+print fahrenheit;

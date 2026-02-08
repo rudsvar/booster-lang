@@ -1,4 +1,3 @@
-from typing import Any
 from statement import *
 from parser import debug_log
 
@@ -33,7 +32,7 @@ class Interpreter:
             case Inc(left, right):
                 self.inc(left, right)
             case Dec(left, right):
-                self.sub(left, right)
+                self.dec(left, right)
             case Mul(left, right):
                 self.mul(left, right)
             case Swap(left, right):
@@ -47,7 +46,7 @@ class Interpreter:
                 self.exec_if(left, op, right, statement)
             case Exit():
                 self.position = len(self.statements)
-            case Fun(name, params):
+            case Fun(name, _):
                 # Nothing to do. Goto will find it.
                 pass
             case Call(name, args):
@@ -62,23 +61,24 @@ class Interpreter:
             return self.env[e]
         raise TypeError(f"Invalid expression: {e}")
 
-    def print(self, value: Any):
+    def print(self, value: Expression):
         print(self.eval(value))
 
-    def var_def(self, name: str, value: Any):
-        self.env[name] = self.eval(value)
+    def var_def(self, name: str, value: Expression):
+        evaluated_value = self.eval(value)
+        self.env[name] = evaluated_value
 
-    def sub(self, left: str, right: Any):
-        self.env[left] = self.eval(self.env[left]) - self.eval(right)
+    def dec(self, var: str, subtrahend: Expression):
+        self.env[var] = self.env[var] - self.eval(subtrahend)
 
-    def mul(self, left: str, right: Any):
-        self.env[left] = self.eval(self.env[left]) * self.eval(right)
+    def mul(self, var: str, multiplier: Expression):
+        self.env[var] = self.env[var] * self.eval(multiplier)
 
     def swap(self, left: str, right: str):
         self.env[left], self.env[right] = self.env[right], self.env[left]
 
-    def inc(self, left: str, right: Any):
-        self.env[left] = self.eval(self.env[left]) + self.eval(right)
+    def inc(self, var: str, addend: Expression):
+        self.env[var] = self.env[var] + self.eval(addend)
 
     def goto(self, label: str):
         for position, statement in enumerate(self.statements):
