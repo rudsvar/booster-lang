@@ -42,6 +42,12 @@ class InterpreterTests(unittest.TestCase):
         i.run()
         self.assertEqual(i.env["x"], 42)
 
+    def test_swap(self):
+        i = Interpreter([VarDef("x", 10), VarDef("y", 20), Swap("x", "y")])
+        i.run()
+        self.assertEqual(i.env["x"], 20)
+        self.assertEqual(i.env["y"], 10)
+
     def test_label(self):
         i = Interpreter([Label("start"), VarDef("x", 1)])
         i.run()

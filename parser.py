@@ -41,6 +41,8 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Dec(x, parse_expr(y))
         case ["mul", x, y]:
             return Mul(x, parse_expr(y))
+        case ["swap", x, y]:
+            return Swap(x, y)
         case ["label", label]:
             return Label(label)
         case ["goto", label]:

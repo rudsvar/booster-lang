@@ -36,6 +36,8 @@ class Interpreter:
                 self.sub(left, right)
             case Mul(left, right):
                 self.mul(left, right)
+            case Swap(left, right):
+                self.swap(left, right)
             case Label(_):
                 # We don't need to do anything. Goto will find the label.
                 pass
@@ -71,6 +73,9 @@ class Interpreter:
 
     def mul(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) * self.eval(right)
+
+    def swap(self, left: str, right: str):
+        self.env[left], self.env[right] = self.env[right], self.env[left]
 
     def inc(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) + self.eval(right)

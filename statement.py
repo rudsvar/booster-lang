@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-type Statement = Skip | Print | VarDef | Inc | Dec | Mul | Label | Goto | If | Exit | Fun | Call | Return
+type Statement = Skip | Print | VarDef | Inc | Dec | Mul | Swap | Label | Goto | If | Exit | Fun | Call | Return
 
 """
 An expression can only be a number or a variable.
@@ -41,6 +41,12 @@ class Dec:
 class Mul:
     left: str
     right: Any
+
+
+@dataclass
+class Swap:
+    left: str
+    right: str
 
 
 @dataclass

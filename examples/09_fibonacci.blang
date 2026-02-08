@@ -4,10 +4,8 @@ print a;
 print b;
 
 label fib;
-  set next a;
-  inc next b;
-  set a b;
-  set b next;
+  swap a b;
+  inc b a;
   if b < 100 then print b;
   if b < 100 then goto fib;
 

@@ -28,6 +28,10 @@ class ParserTests(unittest.TestCase):
         result = parse_program("mul x 3")
         self.assertEqual(result, [Mul("x", 3)])
 
+    def test_parse_swap(self):
+        result = parse_program("swap x y")
+        self.assertEqual(result, [Swap("x", "y")])
+
     def test_parse_label(self):
         result = parse_program("label loop")
         self.assertEqual(result, [Label("loop")])
