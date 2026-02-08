@@ -1,3 +1,0 @@
-if eq 2 2 {
-  shout eq 3 4;
-}

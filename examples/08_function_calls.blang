@@ -1,5 +1,0 @@
-fun add(x, y) {
-  return add x y;
-}
-let z = call add(2, 3);
-shout z;
