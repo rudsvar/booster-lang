@@ -1,12 +1,11 @@
 {
     "editor.suggest.showInlineDetails": true,
     "python.testing.unittestArgs": [
-        "-m",
-        "unittest",
-        "discover",
+        "-v",
         "-s",
-        "solution",
-        "-v"
+        ".",
+        "-p",
+        "tests.py"
     ],
     "python.testing.pytestEnabled": false,
     "python.testing.unittestEnabled": true

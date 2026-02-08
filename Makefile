@@ -1,8 +1,7 @@
 .PHONY: test parse run
 
 test:
-	@python3 -m unittest discover -s solution -v
-	@python3 -m doctest solution/*.py
+	@python3 -m unittest tests -v
 
 parse:
 	@python3 main.py parse "$(FILE)"

@@ -1,4 +1,10 @@
 from statement import *
+import sys
+
+
+@dataclass
+class ParseError(Exception):
+    message: str
 
 
 def parse_program(input: str) -> list[Statement]:
@@ -8,7 +14,9 @@ def parse_program(input: str) -> list[Statement]:
     statements: list[Statement] = []
     for line in input.rstrip(";").split(";"):
         tokens: list[str] = line.strip().split()
+        debug_log(f"Parsing tokens {tokens} ", end="")
         statement = parse_statement(tokens)
+        debug_log(f"into {statement}")
         statements.append(statement)
     return statements
 
@@ -20,7 +28,6 @@ def parse_expr(s: str) -> Expression:
 
 def parse_statement(tokens: list[str]) -> Statement:
     """Pattern matches to convert a line of tokens into a statement."""
-    debug_log(str(tokens))
     match tokens:
         case []:
             return Skip()
@@ -28,10 +35,10 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Print(parse_expr(x))
         case ["set", x, y]:
             return VarDef(x, parse_expr(y))
-        case ["halt"]:
-            return Halt()
         case ["inc", x, y]:
             return Inc(x, parse_expr(y))
+        case ["dec", x, y]:
+            return Dec(x, parse_expr(y))
         case ["label", label]:
             return Label(label)
         case ["goto", label]:
@@ -41,20 +48,24 @@ def parse_statement(tokens: list[str]) -> Statement:
             y = parse_expr(y)
             statement = parse_statement(rest)
             return If(x, op, y, statement)
-        case ["if", x, op, y, "then", *rest]:
-            x = parse_expr(x)
-            y = parse_expr(y)
-            statement = parse_statement(rest)
-            return If(x, op, y, statement)
-    raise ValueError(f"No matches for {tokens}")
+        case ["halt"]:
+            return Halt()
+        case ["fun", name, *params]:
+            return Fun(name, params)
+        case ["call", name, *args]:
+            args = [parse_expr(arg) for arg in args]
+            return Call(name, args)
+        case ["return"]:
+            return Return()
+    raise ParseError(f"No matches for '{" ".join(tokens)}'")
 
 
 DEBUG = False
 
 
-def debug_log(msg: str) -> None:
+def debug_log(msg: str, end=None) -> None:
     if DEBUG:
-        print(f"\033[2;30mtokens={msg}\033[0m")
+        print(f"\033[2;30m{msg}\033[0m", file=sys.stderr, end=end)
 
 
 if __name__ == "__main__":
@@ -79,5 +90,8 @@ if __name__ == "__main__":
     else:
         input_str = args.input
 
-    program = parse_program(input_str)
-    pprint(program)
+    try:
+        program = parse_program(input_str)
+        pprint(program)
+    except ParseError as e:
+        print(e.message)

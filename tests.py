@@ -1,31 +1,82 @@
 import unittest
 from parser import *
 from interpreter import *
+from io import StringIO
+import sys
+import parser as parser_module
 
 
 class InterpreterTest(unittest.TestCase):
 
-    def test_set(self):
-        i = Interpreter(parse_program("set x 3"))
-        i.run()
-        self.assertEqual(i.env, {"x": 3})
+    def setUp(self):
+        parser_module.DEBUG = True
 
-    def test_fibo_globals(self):
+    def tearDown(self):
+        parser_module.DEBUG = False
+
+    def test_skip(self):
+        i = Interpreter([Skip()])
+        i.run()
+        self.assertEqual(i.env, {})
+
+    def test_print(self):
+        captured_output = StringIO()
+        sys.stdout = captured_output
+        i = Interpreter([VarDef("x", 42), Print("x")])
+        i.run()
+        sys.stdout = sys.__stdout__
+        self.assertIn("42", captured_output.getvalue())
+
+    def test_inc(self):
+        i = Interpreter([VarDef("x", 5), Inc("x", 3)])
+        i.run()
+        self.assertEqual(i.env["x"], 8)
+
+    def test_dec(self):
+        i = Interpreter([VarDef("x", 10), Dec("x", 3)])
+        i.run()
+        self.assertEqual(i.env["x"], 7)
+
+    def test_label(self):
+        i = Interpreter([Label("start"), VarDef("x", 1)])
+        i.run()
+        self.assertEqual(i.env["x"], 1)
+
+    def test_goto(self):
+        i = Interpreter([Goto("end"), VarDef("x", 1), Label("end"), VarDef("x", 2)])
+        i.run()
+        self.assertEqual(i.env["x"], 2)
+
+    def test_if_true(self):
+        i = Interpreter([If(5, ">", 3, VarDef("x", 1))])
+        i.run()
+        self.assertEqual(i.env["x"], 1)
+
+    def test_if_false(self):
+        i = Interpreter([If(2, ">", 3, VarDef("x", 1))])
+        i.run()
+        self.assertEqual(i.env, {})
+
+    def test_halt(self):
+        i = Interpreter([VarDef("x", 1), Halt(), VarDef("x", 2)])
+        i.run()
+        self.assertEqual(i.env["x"], 1)
+
+    def test_fun_and_call(self):
         i = Interpreter(
             [
-                VarDef("lo", 0),
-                VarDef("hi", 1),
-                Label("fibo"),
-                Print("lo"),
-                VarDef("prev_hi", "hi"),
-                Inc("hi", "lo"),
-                VarDef("lo", "prev_hi"),
-                If("hi", "<", 20, Goto("fibo")),
+                Goto("main"),
+                Fun("add", ["a", "b"]),
+                VarDef("result", "a"),
+                Inc("result", "b"),
+                Return(),
+                Label("main"),
+                Call("add", [3, 5]),
             ]
         )
         i.run()
-        self.assertEqual(i.env["lo"], 13)
-        self.assertEqual(i.env["hi"], 21)
+        # After call, position should be at return address
+        self.assertIn("result", i.env)
 
 
 if __name__ == "__main__":

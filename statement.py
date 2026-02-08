@@ -56,6 +56,11 @@ class If:
 
 
 @dataclass
+class Halt:
+    pass
+
+
+@dataclass
 class Fun:
     name: str
     params: list[str]
@@ -69,10 +74,4 @@ class Call:
 
 @dataclass
 class Return:
-    name: str
-    value: Any
-
-
-@dataclass
-class Halt:
     pass

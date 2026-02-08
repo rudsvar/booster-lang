@@ -9,13 +9,15 @@ class Interpreter:
     def __init__(self, statements):
         self.statements = statements
         self.position: int = 0
-        self.env: dict[str, Any] = {}
-        self.stack: list[Any] = []
+        self.env: dict[str, int] = {}
+        self.stack: list[int] = []
 
     def run(self):
         while self.position < len(self.statements):
             statement = self.statements[self.position]
-            debug_log(f"{self.position} {statement} | {self.env} | {self.stack}")
+            debug_log(
+                f"Exec {statement} pos={self.position} env={self.env} stack={self.stack}"
+            )
             self.position += 1
             self.execute(statement)
 
@@ -40,36 +42,28 @@ class Interpreter:
                 self.goto(label)
             case If(left, op, right, statement):
                 self.exec_if(left, op, right, statement)
-            case Fun(name, params):
-                self.fun(name, params)
-            case Call(name, args):
-                self.call(name, args)
-            case Return(name, value):
-                self.return_(name, value)
             case Halt():
                 self.position = len(self.statements)
-
-    def eval(self, value: Expression) -> int:
-        print(type(value))
-        match value:
-            case str():
-                return self.env[value]
-            case int():
-                return value
-        raise TypeError("Value has invalid type")
-
-    def var_def(self, name: str, value: Any):
-        self.env[name] = self.eval(value)
+            case Fun(name, params):
+                # Nothing to do. Goto will find it.
+                pass
+            case Call(name, args):
+                self.call(name, args)
+            case Return():
+                self.ret()
 
     def print(self, value: Any):
         print(self.eval(value))
 
-    def push(self, value: Any):
-        self.stack.append(self.eval(value))
+    def eval(self, e: Expression) -> int:
+        if type(e) == int:
+            return e
+        elif type(e) == str:
+            return self.env[e]
+        raise TypeError(f"Invalid expression: {e}")
 
-    def pop(self, name: str):
-        value = self.stack.pop()
-        self.env[name] = value
+    def var_def(self, name: str, value: Any):
+        self.env[name] = self.eval(value)
 
     def sub(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) - self.eval(right)
@@ -83,24 +77,24 @@ class Interpreter:
                 case Label(l) if l == label:
                     self.position = position
                     break
-                case Fun(name, _) if name == label:
+
+    def call(self, name: str, args: list[Expression]):
+        # Store return position
+        self.stack.append(self.position)
+        # Find the function we're calling
+        for position, statement in enumerate(self.statements):
+            match statement:
+                case Fun(name, params) if name:
+                    # Go to function position
                     self.position = position
+                    # Bind args to params
+                    for p, a in zip(params, args):
+                        a = self.eval(a)
+                        self.var_def(p, a)
                     break
-                case _:
-                    pass
 
-    def fun(self, _: str, params: list[str]):
-        for param in reversed(params):
-            self.pop(param)
-
-    def call(self, name: str, args: list[Any]):
-        self.push(str(self.position))  # Return addr
-        for arg in args:
-            self.push(arg)
-        self.goto(name)
-
-    def return_(self, name: str, value: Any):
-        self.position = int(self.stack.pop())
+    def ret(self):
+        self.position = self.stack.pop()
 
     def exec_if(
         self, left: Expression, op: str, right: Expression, statement: Statement
@@ -135,10 +129,14 @@ if __name__ == "__main__":
     else:
         input_str = args.input
 
-    from parser import parse_program
+    from parser import parse_program, ParseError
     from pprint import pprint
 
-    program = parse_program(input_str)
-    pprint(program)
-    interpreter = Interpreter(program)
-    interpreter.run()
+    try:
+        program = parse_program(input_str)
+        pprint(program)
+        interpreter = Interpreter(program)
+        interpreter.run()
+    except ParseError as e:
+        print(f"Parse error: {e.message}", file=__import__("sys").stderr)
+        __import__("sys").exit(1)
