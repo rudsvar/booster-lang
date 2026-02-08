@@ -1,6 +1,8 @@
 from statement import *
 from parser import debug_log
 
+type Value = int
+
 
 class Interpreter:
     statements: list[Statement]
@@ -8,7 +10,7 @@ class Interpreter:
     def __init__(self, statements):
         self.statements = statements
         self.position: int = 0
-        self.env: dict[str, int] = {}
+        self.env: dict[str, Value] = {}
         self.stack: list[int] = []
         self.labels: dict[str, int] = {}
         self.functions: dict[str, tuple[Fun, int]] = {}
@@ -62,7 +64,7 @@ class Interpreter:
             case Return():
                 self.ret()
 
-    def eval(self, e: Expression) -> int:
+    def eval(self, e: Expression) -> Value:
         if type(e) == int:
             return e
         elif type(e) == str:
