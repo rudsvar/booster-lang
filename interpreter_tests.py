@@ -6,7 +6,7 @@ import sys
 import parser as parser_module
 
 
-class InterpreterTest(unittest.TestCase):
+class InterpreterTests(unittest.TestCase):
 
     def setUp(self):
         parser_module.DEBUG = True
