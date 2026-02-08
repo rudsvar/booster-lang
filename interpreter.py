@@ -10,6 +10,14 @@ class Interpreter:
         self.position: int = 0
         self.env: dict[str, int] = {}
         self.stack: list[int] = []
+        self.labels: dict[str, int] = {}
+        self.functions: dict[str, tuple[Fun, int]] = {}
+        for position, statement in enumerate(self.statements):
+            match statement:
+                case Label(name):
+                    self.labels[name] = position
+                case Fun(name, _) as fun:
+                    self.functions[name] = (fun, position)
 
     def run(self):
         while self.position < len(self.statements):
@@ -81,11 +89,7 @@ class Interpreter:
         self.env[left], self.env[right] = self.env[right], self.env[left]
 
     def goto(self, label: str):
-        for position, statement in enumerate(self.statements):
-            match statement:
-                case Label(l) if l == label:
-                    self.position = position
-                    break
+        self.position = self.labels[label]
 
     def exec_if(
         self, left: Expression, op: str, right: Expression, statement: Statement
@@ -104,19 +108,12 @@ class Interpreter:
             self.execute(statement)
 
     def call(self, name: str, args: list[Expression]):
-        # Store return position
         self.stack.append(self.position)
-        # Find the function we're calling
-        for position, statement in enumerate(self.statements):
-            match statement:
-                case Fun(name, params) if name:
-                    # Go to function position
-                    self.position = position
-                    # Bind args to params
-                    for p, a in zip(params, args):
-                        a = self.eval(a)
-                        self.var_def(p, a)
-                    break
+        fun, position = self.functions[name]
+        self.position = position
+        for p, a in zip(fun.params, args):
+            a = self.eval(a)
+            self.var_def(p, a)
 
     def ret(self):
         self.position = self.stack.pop()
