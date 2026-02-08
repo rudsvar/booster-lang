@@ -34,6 +34,8 @@ class Interpreter:
                 self.inc(left, right)
             case Dec(left, right):
                 self.sub(left, right)
+            case Mul(left, right):
+                self.mul(left, right)
             case Label(_):
                 # We don't need to do anything. Goto will find the label.
                 pass
@@ -66,6 +68,9 @@ class Interpreter:
 
     def sub(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) - self.eval(right)
+
+    def mul(self, left: str, right: Any):
+        self.env[left] = self.eval(self.env[left]) * self.eval(right)
 
     def inc(self, left: str, right: Any):
         self.env[left] = self.eval(self.env[left]) + self.eval(right)
@@ -100,7 +105,14 @@ class Interpreter:
     ):
         l = self.eval(left)
         r = self.eval(right)
-        apply = {"==": l == r, "<": l < r, ">": l > r}
+        apply = {
+            "==": l == r,
+            "<": l < r,
+            ">": l > r,
+            "<=": l <= r,
+            ">=": l >= r,
+            "!=": l != r,
+        }
         if apply[op]:
             self.execute(statement)
 
@@ -133,7 +145,6 @@ if __name__ == "__main__":
 
     try:
         program = parse_program(input_str)
-        pprint(program)
         interpreter = Interpreter(program)
         interpreter.run()
     except ParseError as e:

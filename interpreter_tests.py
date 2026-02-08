@@ -37,6 +37,11 @@ class InterpreterTests(unittest.TestCase):
         i.run()
         self.assertEqual(i.env["x"], 7)
 
+    def test_mul(self):
+        i = Interpreter([VarDef("x", 6), Mul("x", 7)])
+        i.run()
+        self.assertEqual(i.env["x"], 42)
+
     def test_label(self):
         i = Interpreter([Label("start"), VarDef("x", 1)])
         i.run()

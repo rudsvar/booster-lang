@@ -39,6 +39,8 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Inc(x, parse_expr(y))
         case ["dec", x, y]:
             return Dec(x, parse_expr(y))
+        case ["mul", x, y]:
+            return Mul(x, parse_expr(y))
         case ["label", label]:
             return Label(label)
         case ["goto", label]:

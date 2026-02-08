@@ -24,6 +24,10 @@ class ParserTests(unittest.TestCase):
         result = parse_program("dec x 2")
         self.assertEqual(result, [Dec("x", 2)])
 
+    def test_parse_mul(self):
+        result = parse_program("mul x 3")
+        self.assertEqual(result, [Mul("x", 3)])
+
     def test_parse_label(self):
         result = parse_program("label loop")
         self.assertEqual(result, [Label("loop")])
