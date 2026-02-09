@@ -1,176 +1,127 @@
 # Booster Lang
 
+A workshop to create a small interpreted language.
+Tasks are further down.
 
 ## Suggested Setup
 
-- Python
+Install the following to get started quickly.
+
+- Python 3.11+
 - Visual Studio Code
 - The `Python` extension
 - The `Black Formatter` extension
 
 ## Overview
 
-There are six main parts to the solution directory:
+- [statement.py](statement.py): Statement and expression definitions.
+- [parser.py](parser.py): Parses source into statements; splits by semicolon then whitespace.
+- [interpreter.py](interpreter.py): Executes statements with a single global environment.
+- [parser_tests.py](parser_tests.py): Unit tests for parsing.
+- [interpreter_tests.py](interpreter_tests.py): Unit tests for execution.
+- [examples/](examples/): Sample programs used by tests.
 
-- **BaseParser** pre-implements low-level parsing functions.
-- **Expression Parser** for parsing expressions and defining types to parse them into.
-- **Statement Parser** for parsing statements and defining types to parse them into.
-- **Expression Evaluator** for evaluating expressions to values.
-- **Statement Executor** for executing statements with side effects.
-- **Interpreter** for parsing and running complete programs.
+## Examples
 
-## BaseParser
+Parse or run a short program:
 
-BaseParser provides low-level parsing functions. Use this as a reference for implementing the higher-level parsers.
-
-#### Notes
-
-- Once you parse something, it's removed from the input automatically.
-- Some functions like .parse_symbol() and .parse_keyword() automatically consume trailing whitespace.
-- Use .any() to try multiple alternatives. We commit to the one that first consumes some input, and will not try any others afterwards.
-
-### Character and String Parsing
-
-| Function | Description |
-|----------|-------------|
-| .parse_digits() | Parse one or more digits (0-9). |
-| .parse_identifier() | Parse a valid identifier (letters, numbers, underscores). |
-| .parse_string(target) | Parse an exact string and consume it. |
-| .parse_until(target) | Parse characters until target is reached without consuming target. |
-
-### Keyword and Symbol Parsing
-
-| Function | Description |
-|----------|-------------|
-| .parse_keyword(keyword) | Parse a keyword followed by optional whitespace, fails if followed by alphanumerics. |
-| .parse_symbol(target) | Parse a symbol like "{", "}", "(", ")" followed by optional whitespace. |
-| .parse_constant(constants) | Parse a constant value like true or false. |
-| .parse_one_of_constants(constants) | Try to parse one of several constants. |
-
-### Whitespace
-
-| Function | Description |
-|----------|-------------|
-| .parse_whitespace() | Consume and discard all whitespace (spaces, tabs, newlines). |
-
-### Combinators
-
-| Function | Description |
-|----------|-------------|
-| .any(parsers) | Try each parser in order until one succeeds. |
-| .optional(parser) | Try to parse something, returning None if it fails without consuming input. |
-| .zero_or_more(parser) | Run a parser zero or more times and return a list of results. |
-| .separated_by(parser, separator) | Parse items separated by a separator like comma-separated lists. |
-
-### Expression Parser
-Parse a single expression:
 ```bash
-python3 solution/expression_parser.py "42"
-python3 solution/expression_parser.py "add 2 3"
-python3 solution/expression_parser.py "[1, 2, 3]"
+python3 parser.py "print 42;"
+python3 interpreter.py "set x 5; print x;"
 ```
 
-### Statement Parser
-Parse a single statement:
+Parse or run a program from a file:
+
 ```bash
-python3 solution/statement_parser.py "let x = 5;"
-python3 solution/statement_parser.py "shout x;"
-python3 solution/statement_parser.py "if true { let y = 10; }"
+python3 parser.py examples/fibonacci.blang
+python3 interpreter.py examples/fibonacci.blang
 ```
 
-### Expression Evaluator
-Evaluate a single expression:
-```bash
-python3 solution/expression_evaluator.py "42"
-python3 solution/expression_evaluator.py "add 2 3"
-python3 solution/expression_evaluator.py "[1, 2, 3]"
-python3 solution/expression_evaluator.py 'add "hello" " world"'
-python3 solution/expression_evaluator.py "add [1, 2] [3, 4]"
+Get usage information:
+
+```
+python3 parser.py --help
+python3 interpreter.py --help
 ```
 
-### Statement Executor
-Execute a single statement:
-```bash
-python3 solution/statement_executor.py "let x = 5;"
-python3 solution/statement_executor.py "shout x;"
-python3 solution/statement_executor.py "if true { let y = 10; shout y; }"
-```
+Enable debug logs:
 
-### Interpreter
-Parse and execute a program:
 ```bash
-python3 solution/interpreter.py examples/fibonacci.blang
-python3 solution/interpreter.py "let x = 5; shout x;"
+python3 parser.py --debug "print 42;"
+python3 interpreter.py --debug "set x 5; print x"
 ```
 
 ## Tasks
 
-The tasks will mostly switch between the five main parts to continuously extend the language as you implement it.
-You will implement predefined functions in the expression parser, expression evaluator, statement parser, and statement executor to extend the interpreter.
+Follow the statement order in [parser.py](parser.py). Each task has a parser change and a matching interpreter change.
 
-In any of the following tasks, you can rename keywords, switch out symbols, or change the behavior, as long as it don't cause ambiguity for the parser.
-Just remember to modify the test commands accordingly.
-For example, instead of `print`, the example solution has the `shout` keyword that prints a stringified uppercase version of the input.
-
-1. **Print integers and basic types**
-   
-   Run: `python3 tasks/interpreter.py "shout 42;"`
-   
-   - Implement `parse_int` and test with `python3 tasks/expression_parser.py "42"`
-   - Implement `eval_int` and test with `python3 tasks/expression_evaluator.py "42"`
-   - Implement `parse_shout` and test with `python3 tasks/statement_parser.py "shout 42;"`
-   - Implement `exec_shout` and run `python3 tasks/interpreter.py "shout 42;"`
-   - Optional: Implement `parse_bool_literal` and `eval_bool` and test with `python3 tasks/expression_evaluator.py "true"`
-   - Optional: Implement `parse_string_literal` and `eval_string` and test with `python3 tasks/expression_evaluator.py '"Hello World!"'`
-
-2. **Variable definitions and lookups**
-   
-   Run: `python3 tasks/interpreter.py "let x = 10; shout x;"`
-   
-   - Implement `parse_var` and test with `python3 tasks/expression_parser.py "x"`
-   - Implement `parse_var_def` and test with `python3 tasks/statement_parser.py "let x = 10;"`
-   - Implement `define_var`, `lookup_var`, `eval_var`, and `exec_var_def` and run `python3 tasks/interpreter.py "let x = 10; shout x;"`
-
-3. **Binary operations**
-   
-   Run: `python3 tasks/interpreter.py "shout add 2 3;"`
-   
-   - Implement `parse_binary_operation` and test with `python3 tasks/expression_parser.py "add 2 3"`
-   - Implement `eval_binary_operation` and run `python3 tasks/expression_evaluator.py "add 2 3"`
-   - Or execute with `python3 tasks/interpreter.py "shout add 2 3;"`
-   - Optional: Add more operators such as `<` (less than).
-
-4. **Blocks and scoping**
-   
-   Run: `python3 tasks/interpreter.py "let x = 10; { let y = 20; shout x; }"`
-   
-   - Implement `parse_block` and test with `python3 tasks/statement_parser.py "{ let x = 10; shout x; }"`
-   - Implement `exec_block` and run `python3 tasks/interpreter.py "{ let x = 10; shout x; }"`
-
-5. **Conditionals**
-   
-   Run: `python3 tasks/interpreter.py "if eq 2 2 { shout eq 3 4; }"`
-   
-   - Implement the operator `eq` or `==` that checks if two values are equal and test with `python3 tasks/expression_evaluator.py "eq 2 2"`
-   - Implement `parse_if` and test with `python3 tasks/statement_parser.py "if eq 2 3 { shout \"True!\"; }"`
-   - Implement `exec_if` and run `python3 tasks/interpreter.py "if eq 2 3 { shout \"True!\"; }"`
-   - Optional: Implement parsing an optional `else`-block after the if.
-
-6. **Loops and variable assignment**
-   
-   Run: `python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
-   
-   - Implement the operator `neq` or `!=` that checks if two values inequal and test with `python3 tasks/expression_evaluator.py "neq 2 3"`
-   - Implement `parse_assignment` and test with `python3 tasks/statement_parser.py "x = add x 1;"`
-   - Implement `assign_var` and `exec_assignment` and test with `python3 tasks/interpreter.py "let x = 0; x = add x 1; shout x;"`
-   - Implement `parse_whilst` and test with `python3 tasks/statement_parser.py "whilst neq x 10 { shout x; }"`
-   - Implement `exec_whilst` and test with `python3 tasks/interpreter.py "let x = 0; whilst neq x 10 { shout x; x = add x 1; }"`
-
-7. **Functions**
-   
-   Run: `python3 tasks/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`
-   
-   - Implement `parse_function_call` and test with `python3 tasks/expression_parser.py "call add(2, 3)"`
-   - Implement `parse_function_definition` and test with `python3 tasks/statement_parser.py "fun add(x, y) { return x y; }"`
-   - Implement `eval_function_call`, `exec_function_definition` and run `python3 tasks/expression_evaluator.py "call add(2, 3)"`
-   - Or execute the full program `python3 tasks/interpreter.py "fun add(x, y) { return add x y; } let z = call add(2, 3); shout z;"`
+1. **Skip**
+	- Parser: accept an empty list of tokens and return `Skip()`.
+	- Interpreter: do nothing.
+	- Parser example: `python3 parser.py ";"`
+	- Interpreter example: `python3 interpreter.py ";"`
+2. **Print**
+	- Parser: `print <expr>` to `Print`.
+	- Interpreter: evaluate and print the expression.
+	- Parser example: `python3 parser.py "print 42;"`
+	- Interpreter example: `python3 interpreter.py "print 42;"`
+3. **VarDef**
+	- Parser: `set <name> <expr>` to `VarDef`.
+	- Interpreter: assign in `env`.
+	- Parser example: `python3 parser.py "set x 5;"`
+	- Interpreter example: `python3 interpreter.py "set x 5; print x;"`
+4. **Inc**
+	- Parser: `inc <name> <expr>` to `Inc`.
+	- Interpreter: add evaluated value.
+	- Parser example: `python3 parser.py "inc x 2;"`
+	- Interpreter example: `python3 interpreter.py "set x 1; inc x 2; print x;"`
+5. **Dec**
+	- Parser: `dec <name> <expr>` to `Dec`.
+	- Interpreter: subtract evaluated value.
+	- Parser example: `python3 parser.py "dec x 2;"`
+	- Interpreter example: `python3 interpreter.py "set x 5; dec x 2; print x;"`
+6. **Mul**
+	- Parser: `mul <name> <expr>` to `Mul`.
+	- Interpreter: multiply by evaluated value.
+	- Parser example: `python3 parser.py "mul x 7;"`
+	- Interpreter example: `python3 interpreter.py "set x 6; mul x 7; print x;"`
+7. **Swap**
+	- Parser: `swap <left> <right>` to `Swap`.
+	- Interpreter: exchange values.
+	- Parser example: `python3 parser.py "swap a b;"`
+	- Interpreter example: `python3 interpreter.py "set a 1; set b 2; swap a b; print a; print b;"`
+8. **Label**
+	- Parser: `label <name>` to `Label`.
+	- Interpreter: record labels at startup.
+	- Parser example: `python3 parser.py "label start;"`
+	- Interpreter example: `python3 interpreter.py "label start; print 1;"`
+9. **Goto**
+	- Parser: `goto <label>` to `Goto`.
+	- Interpreter: jump to label position.
+	- Parser example: `python3 parser.py "goto end;"`
+	- Interpreter example: `python3 interpreter.py "goto end; print 1; label end; print 2;"`
+10. **If**
+	- Parser: `if <left> <op> <right> then <statement>` to `If`.
+	- Interpreter: execute statement when condition is true.
+	- Parser example: `python3 parser.py "if 2 < 3 then print 1;"`
+	- Interpreter example: `python3 interpreter.py "if 2 < 3 then print 1;"`
+11. **Exit**
+	- Parser: `exit` to `Exit`.
+	- Interpreter: stop execution.
+	- Parser example: `python3 parser.py "exit;"`
+	- Interpreter example: `python3 interpreter.py "print 1; exit; print 2;"`
+12. **Proc**
+	- Parser: `proc <name> <param...>` to `Proc`.
+	- Interpreter: record procedures at startup.
+	- Parser example: `python3 parser.py "proc noop;"`
+	- Interpreter example: `python3 interpreter.py "proc noop; return;"`
+13. **Call**
+	- Parser: `call <name> <arg...>` to `Call`.
+	- Interpreter: set args, jump into procedure.
+	- Parser example: `python3 parser.py "call add 2 3;"`
+	- Interpreter example: `python3 interpreter.py "proc add a b; set result a; inc result b; return; call add 2 3; print result;"`
+14. **Return**
+	- Parser: `return` to `Return`.
+	- Interpreter: pop return address and jump back.
+	- Parser example: `python3 parser.py "return;"`
+	- Interpreter example: `python3 interpreter.py "proc one; set result 1; return; call one; print result;"`
