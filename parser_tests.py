@@ -56,9 +56,9 @@ class ParserTests(unittest.TestCase):
         result = parse_program("exit")
         self.assertEqual(result, [Exit()])
 
-    def test_parse_fun(self):
-        result = parse_program("fun add a b")
-        self.assertEqual(result, [Fun("add", ["a", "b"])])
+    def test_parse_proc(self):
+        result = parse_program("proc add a b")
+        self.assertEqual(result, [Proc("add", ["a", "b"])])
 
     def test_parse_call(self):
         result = parse_program("call add 3 5")

@@ -53,8 +53,8 @@ def parse_statement(tokens: list[str]) -> Statement:
             return If(x, op, y, statement)
         case ["exit"]:
             return Exit()
-        case ["fun", name, *params]:
-            return Fun(name, params)
+        case ["proc", name, *params]:
+            return Proc(name, params)
         case ["call", name, *args]:
             args = [parse_expr(arg) for arg in args]
             return Call(name, args)

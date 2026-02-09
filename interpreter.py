@@ -12,8 +12,8 @@ class Interpreter:
     stack: list[int]
     # For storing label positions
     labels: dict[str, int]
-    # For storing function definitions
-    functions: dict[str, tuple[Fun, int]]
+    # For storing procedures
+    procedures: dict[str, tuple[Proc, int]]
     # The statements of the program
     program: list[Statement]
     # The position in the program
@@ -26,19 +26,19 @@ class Interpreter:
         self.env = {}
         self.stack = []
         self.labels = {}
-        self.functions = {}
-        # Pre-process the program to find all labels and functions
+        self.procedures = {}
+        # Pre-process the program to find all labels and procedures
         for position, statement in enumerate(self.program):
             match statement:
                 case Label(name):
                     self.labels[name] = position
-                case Fun(name, _) as fun:
-                    self.functions[name] = (fun, position)
+                case Proc(name, _) as proc:
+                    self.procedures[name] = (proc, position)
                 case _:
                     pass
 
     def __repr__(self):
-        return f"Interpreter(pos={self.position}, env={self.env}, stack={self.stack}, labels={self.labels}, functions={self.functions})"
+        return f"Interpreter(pos={self.position}, env={self.env}, stack={self.stack}, labels={self.labels}, procs={self.procedures})"
 
     def run(self):
         while self.position < len(self.program):
@@ -73,7 +73,7 @@ class Interpreter:
                 self.exec_if(left, op, right, statement)
             case Exit():
                 self.position = len(self.program)
-            case Fun(name, _):
+            case Proc(name, _):
                 # Nothing to do. Goto will find it.
                 pass
             case Call(name, args):
@@ -128,9 +128,9 @@ class Interpreter:
 
     def call(self, name: str, args: list[Expression]):
         self.stack.append(self.position)
-        fun, position = self.functions[name]
+        proc, position = self.procedures[name]
         self.position = position
-        for p, a in zip(fun.params, args):
+        for p, a in zip(proc.params, args):
             a = self.eval(a)
             self.var_def(p, a)
 

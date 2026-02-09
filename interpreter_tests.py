@@ -73,11 +73,11 @@ class InterpreterTests(unittest.TestCase):
         i.run()
         self.assertEqual(i.env["x"], 1)
 
-    def test_fun_and_call(self):
+    def test_proc_and_call(self):
         i = Interpreter(
             [
                 Goto("main"),
-                Fun("add", ["a", "b"]),
+                Proc("add", ["a", "b"]),
                 VarDef("result", "a"),
                 Inc("result", "b"),
                 Return(),

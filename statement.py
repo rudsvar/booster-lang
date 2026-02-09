@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Any
 
-type Statement = Skip | Print | VarDef | Inc | Dec | Mul | Swap | Label | Goto | If | Exit | Fun | Call | Return
+type Statement = Skip | Print | VarDef | Inc | Dec | Mul | Swap | Label | Goto | If | Exit | Proc | Call | Return
 
 """
 An expression can only be a number or a variable.
@@ -73,7 +73,7 @@ class Exit:
 
 
 @dataclass
-class Fun:
+class Proc:
     name: str
     params: list[str]
 
