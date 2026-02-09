@@ -9,10 +9,10 @@ import parser as parser_module
 class InterpreterTests(unittest.TestCase):
 
     def setUp(self):
-        parser_module.DEBUG = True
+        parser_module.debug = True
 
     def tearDown(self):
-        parser_module.DEBUG = False
+        parser_module.debug = False
 
     def test_skip(self):
         i = Interpreter([Skip()])

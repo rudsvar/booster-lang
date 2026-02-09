@@ -14,9 +14,8 @@ def parse_program(input: str) -> list[Statement]:
     statements: list[Statement] = []
     for line in input.rstrip(";").split(";"):
         tokens: list[str] = line.strip().split()
-        debug_log(f"Parsing tokens {tokens} ", end="")
         statement = parse_statement(tokens)
-        debug_log(f"into {statement}")
+        debug_log(f"     parser.py | parse_statement({tokens}) = {statement}")
         statements.append(statement)
     return statements
 
@@ -61,14 +60,15 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Call(name, args)
         case ["return"]:
             return Return()
-    raise ParseError(f"No matches for '{" ".join(tokens)}'")
+        case _:
+            raise ParseError(f"No matches for '{" ".join(tokens)}'")
 
 
-DEBUG = False
+debug = False
 
 
-def debug_log(msg: str, end=None) -> None:
-    if DEBUG:
+def debug_log(msg: str, end: str | None = None) -> None:
+    if debug:
         print(f"\033[2;30m{msg}\033[0m", file=sys.stderr, end=end)
 
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
 
-    DEBUG = args.debug
+    debug = args.debug
 
     if args.input is None:
         input_str = __import__("sys").stdin.read()

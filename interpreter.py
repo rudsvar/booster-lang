@@ -4,33 +4,50 @@ from parser import debug_log
 type Value = int
 
 
+@dataclass
 class Interpreter:
-    statements: list[Statement]
+    # Variables and their values
+    env: dict[str, Value]
+    # For storing return indices
+    stack: list[int]
+    # For storing label positions
+    labels: dict[str, int]
+    # For storing function definitions
+    functions: dict[str, tuple[Fun, int]]
+    # The statements of the program
+    program: list[Statement]
+    # The position in the program
+    position: int
 
-    def __init__(self, statements):
-        self.statements = statements
-        self.position: int = 0
-        self.env: dict[str, Value] = {}
-        self.stack: list[int] = []
-        self.labels: dict[str, int] = {}
-        self.functions: dict[str, tuple[Fun, int]] = {}
-        for position, statement in enumerate(self.statements):
+    def __init__(self, program: list[Statement]):
+        # Initialize interpreter state
+        self.program = program
+        self.position = 0
+        self.env = {}
+        self.stack = []
+        self.labels = {}
+        self.functions = {}
+        # Pre-process the program to find all labels and functions
+        for position, statement in enumerate(self.program):
             match statement:
                 case Label(name):
                     self.labels[name] = position
                 case Fun(name, _) as fun:
                     self.functions[name] = (fun, position)
+                case _:
+                    pass
+
+    def __repr__(self):
+        return f"Interpreter(pos={self.position}, env={self.env}, stack={self.stack}, labels={self.labels}, functions={self.functions})"
 
     def run(self):
-        while self.position < len(self.statements):
-            statement = self.statements[self.position]
-            debug_log(
-                f"Exec {statement} pos={self.position} env={self.env} stack={self.stack}"
-            )
+        while self.position < len(self.program):
+            statement = self.program[self.position]
+            debug_log(f"interpreter.py | execute({statement}) in {self}")
             self.position += 1
             self.execute(statement)
 
-    def execute(self, statement):
+    def execute(self, statement: Statement):
         match statement:
             case Skip():
                 # Do nothing
@@ -55,7 +72,7 @@ class Interpreter:
             case If(left, op, right, statement):
                 self.exec_if(left, op, right, statement)
             case Exit():
-                self.position = len(self.statements)
+                self.position = len(self.program)
             case Fun(name, _):
                 # Nothing to do. Goto will find it.
                 pass
@@ -134,7 +151,7 @@ if __name__ == "__main__":
 
     import parser as parser_module
 
-    parser_module.DEBUG = args.debug
+    parser_module.debug = args.debug
 
     if args.input is None:
         input_str = __import__("sys").stdin.read()
@@ -145,7 +162,6 @@ if __name__ == "__main__":
         input_str = args.input
 
     from parser import parse_program, ParseError
-    from pprint import pprint
 
     try:
         program = parse_program(input_str)

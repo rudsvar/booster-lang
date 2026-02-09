@@ -1,8 +1,15 @@
 import unittest
 from parser import *
+import parser as parser_module
 
 
 class ParserTests(unittest.TestCase):
+
+    def setUp(self):
+        parser_module.debug = True
+
+    def tearDown(self):
+        parser_module.debug = False
 
     def test_parse_skip(self):
         result = parse_program("")
