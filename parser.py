@@ -98,4 +98,4 @@ if __name__ == "__main__":
         program = parse_program(input_str)
         pprint(program)
     except ParseError as e:
-        print(e.message)
+        print(f"Parser error: {e.message}")

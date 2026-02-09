@@ -5,6 +5,11 @@ type Value = int
 
 
 @dataclass
+class InterpretError(Exception):
+    message: str
+
+
+@dataclass
 class Interpreter:
     # Variables and their values
     env: dict[str, Value]
@@ -168,5 +173,6 @@ if __name__ == "__main__":
         interpreter = Interpreter(program)
         interpreter.run()
     except ParseError as e:
-        print(f"Parse error: {e.message}", file=__import__("sys").stderr)
-        __import__("sys").exit(1)
+        print(f"Parser error: {e.message}")
+    except KeyError as e:
+        print(f"Undefined variable: {e}")
