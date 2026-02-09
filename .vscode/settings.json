@@ -1,5 +1,6 @@
 {
     "editor.suggest.showInlineDetails": true,
+    "python.analysis.typeCheckingMode": "strict",
     "python.testing.unittestArgs": [
         "-v",
         "-s",
