@@ -147,6 +147,44 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  Undefined variable: 'x'
 	  ```
 
+4. **Inc**: The `inc` statement lets us increment the value of an existing variable by a specified amount.
+
+	- **parser.py**: Add a case for `inc` in `parse_statement` that expects the keyword `inc` followed by a variable name and an expression. It should return an `Inc` statement object containing the variable name and the expression.
+	  
+	  ```
+	  $ python3 parser.py "inc x 5;"
+	  [Inc(var='x', expr=5)]
+	  $ python3 parser.py "inc y x;"
+	  [Inc(var='y', expr='x')]
+	  ```
+
+	- **interpreter.py**: Add a case for `Inc(var, expr)` in `execute_statement` that evaluates the expression, retrieves the current value of the variable from the environment, adds them together, and stores the result back in the environment under the same variable name.
+	  
+	  ```
+	  $ python3 interpreter.py "let x 10; inc x 5; print x;"
+	  15
+	  $ python3 interpreter.py "let y 20; inc y x; print y;"
+	  Undefined variable: 'x'
+	  ```
+
+5. Optional: **Dec**, **Mul**, or other operations. Like `inc`, you can add statements for decrementing a variable (`dec`), multiplying a variable by an expression (`mul`), or any other operation you can think of. The process is the same: add a case in the parser to create the appropriate statement object, and add a case in the interpreter to evaluate it and update the environment.
+
+6. **Swap**: A `swap` statement that takes two variable names and swaps their values in the environment.
+
+	- **parser.py**: Add a case for `swap` in `parse_statement` that expects the keyword `swap` followed by two variable names. It should return a `Swap` statement object containing the two variable names.
+	  
+	  ```
+	  $ python3 parser.py "swap x y;"
+	  [Swap(var1='x', var2='y')]
+	  ```
+
+	- **interpreter.py**: Add a case for `Swap(var1, var2)` in `execute_statement` that retrieves the current values of both variables from the environment, swaps them, and stores the results back in the environment under their respective variable names.
+	  
+	  ```
+	  $ python3 interpreter.py "let x 10; let y 20; swap x y; print x; print y;"
+	  20
+	  10
+	  ```
 
 ## Glossary
 
