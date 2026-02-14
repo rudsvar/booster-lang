@@ -45,22 +45,22 @@ class Interpreter:
     def __repr__(self):
         return f"Interpreter(pos={self.position}, env={self.env}, stack={self.stack}, labels={self.labels}, procs={self.procedures})"
 
-    def run(self):
+    def execute_program(self):
         while self.position < len(self.program):
             statement = self.program[self.position]
             debug_log(f"interpreter.py | execute({statement}) in {self}")
             self.position += 1
-            self.execute(statement)
+            self.execute_statement(statement)
 
-    def execute(self, statement: Statement):
+    def execute_statement(self, statement: Statement):
         match statement:
             case Skip():
                 # Do nothing
                 pass
-            case Print(value):
-                print(self.eval(value))
-            case VarDef(name, value):
-                self.var_def(name, value)
+            case Print(expr):
+                print(self.eval_expr(expr))
+            case VarDef(name, expr):
+                self.var_def(name, expr)
             case Inc(left, right):
                 self.inc(left, right)
             case Dec(left, right):
@@ -86,7 +86,7 @@ class Interpreter:
             case Return():
                 self.ret()
 
-    def eval(self, e: Expression) -> Value:
+    def eval_expr(self, e: Expression) -> Value:
         if type(e) == int:
             return e
         elif type(e) == str:
@@ -94,20 +94,20 @@ class Interpreter:
         raise TypeError(f"Invalid expression: {e}")
 
     def print(self, value: Expression):
-        print(self.eval(value))
+        print(self.eval_expr(value))
 
     def var_def(self, name: str, value: Expression):
-        evaluated_value = self.eval(value)
+        evaluated_value = self.eval_expr(value)
         self.env[name] = evaluated_value
 
     def inc(self, var: str, addend: Expression):
-        self.env[var] = self.env[var] + self.eval(addend)
+        self.env[var] = self.env[var] + self.eval_expr(addend)
 
     def dec(self, var: str, subtrahend: Expression):
-        self.env[var] = self.env[var] - self.eval(subtrahend)
+        self.env[var] = self.env[var] - self.eval_expr(subtrahend)
 
     def mul(self, var: str, multiplier: Expression):
-        self.env[var] = self.env[var] * self.eval(multiplier)
+        self.env[var] = self.env[var] * self.eval_expr(multiplier)
 
     def swap(self, left: str, right: str):
         self.env[left], self.env[right] = self.env[right], self.env[left]
@@ -118,8 +118,8 @@ class Interpreter:
     def exec_if(
         self, left: Expression, op: str, right: Expression, statement: Statement
     ):
-        l = self.eval(left)
-        r = self.eval(right)
+        l = self.eval_expr(left)
+        r = self.eval_expr(right)
         apply = {
             "==": l == r,
             "<": l < r,
@@ -129,14 +129,14 @@ class Interpreter:
             "!=": l != r,
         }
         if apply[op]:
-            self.execute(statement)
+            self.execute_statement(statement)
 
     def call(self, name: str, args: list[Expression]):
         self.stack.append(self.position)
         proc, position = self.procedures[name]
         self.position = position
         for p, a in zip(proc.params, args):
-            a = self.eval(a)
+            a = self.eval_expr(a)
             self.var_def(p, a)
 
     def ret(self):
@@ -171,7 +171,7 @@ if __name__ == "__main__":
     try:
         program = parse_program(input_str)
         interpreter = Interpreter(program)
-        interpreter.run()
+        interpreter.execute_program()
     except ParseError as e:
         print(f"Parser error: {e.message}")
     except KeyError as e:
