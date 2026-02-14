@@ -1,5 +1,5 @@
-set celsius 20;
-set fahrenheit celsius;
+let celsius 20;
+let fahrenheit celsius;
 mul fahrenheit 2;
 inc fahrenheit 32;
 

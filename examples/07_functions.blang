@@ -3,6 +3,6 @@ print result;
 exit;
 
 proc add a b;
-  set result a;
+  let result a;
   inc result b;
   return

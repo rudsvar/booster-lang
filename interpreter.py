@@ -55,36 +55,52 @@ class Interpreter:
     def execute_statement(self, statement: Statement):
         match statement:
             case Skip():
-                # Do nothing
                 pass
             case Print(expr):
                 print(self.eval_expr(expr))
-            case VarDef(name, expr):
-                self.var_def(name, expr)
+            case Let(name, expr):
+                evaluated_value = self.eval_expr(expr)
+                self.env[name] = evaluated_value
             case Inc(left, right):
-                self.inc(left, right)
+                self.env[left] = self.env[left] + self.eval_expr(right)
             case Dec(left, right):
-                self.dec(left, right)
+                self.env[left] = self.env[left] - self.eval_expr(right)
             case Mul(left, right):
-                self.mul(left, right)
+                self.env[left] = self.env[left] * self.eval_expr(right)
             case Swap(left, right):
-                self.swap(left, right)
+                self.env[left], self.env[right] = self.env[right], self.env[left]
             case Label(_):
                 # We don't need to do anything. Goto will find the label.
                 pass
             case Goto(label):
-                self.goto(label)
+                self.position = self.labels[label]
             case If(left, op, right, statement):
-                self.exec_if(left, op, right, statement)
+                l = self.eval_expr(left)
+                r = self.eval_expr(right)
+                apply = {
+                    "==": l == r,
+                    "<": l < r,
+                    ">": l > r,
+                    "<=": l <= r,
+                    ">=": l >= r,
+                    "!=": l != r,
+                }
+                if apply[op]:
+                    self.execute_statement(statement)
             case Exit():
                 self.position = len(self.program)
             case Proc(name, _):
                 # Nothing to do. Goto will find it.
                 pass
             case Call(name, args):
-                self.call(name, args)
+                self.stack.append(self.position)
+                proc, position = self.procedures[name]
+                self.position = position
+                for p, a in zip(proc.params, args):
+                    evaluated_value = self.eval_expr(a)
+                    self.env[p] = evaluated_value
             case Return():
-                self.ret()
+                self.position = self.stack.pop()
 
     def eval_expr(self, e: Expression) -> Value:
         if type(e) == int:
@@ -92,55 +108,6 @@ class Interpreter:
         elif type(e) == str:
             return self.env[e]
         raise TypeError(f"Invalid expression: {e}")
-
-    def print(self, value: Expression):
-        print(self.eval_expr(value))
-
-    def var_def(self, name: str, value: Expression):
-        evaluated_value = self.eval_expr(value)
-        self.env[name] = evaluated_value
-
-    def inc(self, var: str, addend: Expression):
-        self.env[var] = self.env[var] + self.eval_expr(addend)
-
-    def dec(self, var: str, subtrahend: Expression):
-        self.env[var] = self.env[var] - self.eval_expr(subtrahend)
-
-    def mul(self, var: str, multiplier: Expression):
-        self.env[var] = self.env[var] * self.eval_expr(multiplier)
-
-    def swap(self, left: str, right: str):
-        self.env[left], self.env[right] = self.env[right], self.env[left]
-
-    def goto(self, label: str):
-        self.position = self.labels[label]
-
-    def exec_if(
-        self, left: Expression, op: str, right: Expression, statement: Statement
-    ):
-        l = self.eval_expr(left)
-        r = self.eval_expr(right)
-        apply = {
-            "==": l == r,
-            "<": l < r,
-            ">": l > r,
-            "<=": l <= r,
-            ">=": l >= r,
-            "!=": l != r,
-        }
-        if apply[op]:
-            self.execute_statement(statement)
-
-    def call(self, name: str, args: list[Expression]):
-        self.stack.append(self.position)
-        proc, position = self.procedures[name]
-        self.position = position
-        for p, a in zip(proc.params, args):
-            a = self.eval_expr(a)
-            self.var_def(p, a)
-
-    def ret(self):
-        self.position = self.stack.pop()
 
 
 if __name__ == "__main__":

@@ -1,5 +1,5 @@
-set a 0;
-set b 1;
+let a 0;
+let b 1;
 print a;
 print b;
 

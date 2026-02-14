@@ -32,8 +32,8 @@ def parse_statement(tokens: list[str]) -> Statement:
             return Skip()
         case ["print", x]:
             return Print(parse_expr(x))
-        case ["set", x, y]:
-            return VarDef(x, parse_expr(y))
+        case ["let", x, y]:
+            return Let(x, parse_expr(y))
         case ["inc", x, y]:
             return Inc(x, parse_expr(y))
         case ["dec", x, y]:

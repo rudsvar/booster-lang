@@ -20,8 +20,8 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result, [Print(42)])
 
     def test_parse_set(self):
-        result = parse_program("set x 5")
-        self.assertEqual(result, [VarDef("x", 5)])
+        result = parse_program("let x 5")
+        self.assertEqual(result, [Let("x", 5)])
 
     def test_parse_inc(self):
         result = parse_program("inc x 3")
@@ -69,7 +69,7 @@ class ParserTests(unittest.TestCase):
         self.assertEqual(result, [Return()])
 
     def test_parse_multiple_statements(self):
-        result = parse_program("set x 5; print x; exit")
+        result = parse_program("let x 5; print x; exit")
         self.assertEqual(len(result), 3)
 
     def test_parse_error_invalid_statement(self):
