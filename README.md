@@ -127,7 +127,25 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  Undefined variable: 'x'
 	  ```
 
-3. **Let**
+3. **Let**: The `let` statement allows us to create variables and assign values to them.
+
+	- **parser.py**: Add a case for `let` in `parse_statement` that expects the keyword `let` followed by a variable name and an expression. It should return a `Let` statement object containing the variable name and the expression.
+	  
+	  ```
+	  $ python3 parser.py "let x 10;"
+	  [Let(var='x', expr=10)]
+	  $ python3 parser.py "let y x;"
+	  [Let(var='y', expr='x')]
+	  ```
+
+	- **interpreter.py**: Add a case for `Let(var, expr)` in `execute_statement` that evaluates the expression and stores the result in the environment under the given variable name.
+	  
+	  ```
+	  $ python3 interpreter.py "let x 10; print x;"
+	  10
+	  $ python3 interpreter.py "let y x; print y;"
+	  Undefined variable: 'x'
+	  ```
 
 
 ## Glossary
