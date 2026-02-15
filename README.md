@@ -205,6 +205,7 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 9. **If**: The `if` statement conditionally executes a statement based on a comparison.
 
 	- **parser.py**: Add a case for `if` in `parse_statement` that expects the pattern `if <expr> <operator> <expr> then <statement>`. It should return an `If` statement object containing the left expression, operator, right expression, and the statement to execute if the condition is true.
+	**Hint**: Use `*rest` in the match pattern to capture everything after `then`, then pass `rest` to `parse_statement`.
 
 	  ```
 	  $ python3 parser.py "if 5 > 3 then print 1;"
@@ -218,6 +219,17 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  1
 	  $ python3 interpreter.py "if 2 > 3 then print 1;"
 	  (no output)
+	  ```
+
+	Optional: Support multiple statements in `if` by separating them with commas: `if x > 0 then print x, inc x 1`. To do this:
+	- Change `If.statement` to `If.statements: list[Statement]` in `statement.py`.
+	- In the parser, join `rest` back into a string separated by spaces, split by `,`, and parse each part as a statement.
+	- In the interpreter, loop over the statements list instead of executing a single statement.
+
+	  ```
+	  $ python3 interpreter.py "let x 10; if x > 5 then print x, dec x 3, print x;"
+	  10
+	  7
 	  ```
 
 10. **Exit**: The `exit` statement terminates the program immediately.
