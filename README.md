@@ -57,17 +57,13 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 
 0. **Run the tests to see what needs to be done**.
 
-	In Visual Studio Code, open the Testing panel (click the beaker icon in the left sidebar). You should see the tests for `1_parser_tests.py` and `2_interpreter_tests.py`.
+	In Visual Studio Code, open the Testing panel (click the beaker icon in the left sidebar). You should see the tests for `a_parser_tests.py` and `b_interpreter_tests.py`.
 
-	Run all tests by clicking the play button at the top of the Testing panel. You'll see which tests are failing. Each failing test corresponds to a task below that needs to be implemented.
+	Run all tests by clicking the play button at the top of the Testing panel. You'll see which tests are failing.
+	Each failing test corresponds to a task below that needs to be implemented.
+	You can update the test cases if you modify the syntax or behavior of statements.
 
-	As you complete each task, re-run the tests to see your progress. When all tests pass, you're done!
-
-	**Tip**: You can also run tests from the command line:
-	```bash
-	python3 parser_tests.py
-	python3 interpreter_tests.py
-	```
+	As you complete each task, re-run the tests to see your progress.
 
 1. **Skip**: The simplest statement we can add is a `skip` statement that does nothing.
 
@@ -293,6 +289,30 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  42
 	  99
 	  ```
+
+14. **Extend the language**: Add your own statements! Here are some ideas to get you started:
+
+	- **read_int**: Read an integer from user input into a variable. Add a `ReadInt` statement with a variable name, parse `read_int x`, and in the interpreter use `int(input())` to read from stdin.
+
+	  ```
+	  read_int x;
+	  print x;
+	  ```
+
+	- **repeat**: Repeat a statement a given number of times. Add a `Repeat` statement with an expression and a nested statement, parse `repeat <expr> <statement>` (similar to how `if` nests a statement after `then`).
+
+	  ```
+	  repeat 3 print 42;
+	  ```
+
+	- **print_string**: Print a string literal. Add a `PrintString` statement with a string field, and parse `print_string hello` where the token is kept as-is (no `parse_expr`).
+
+	  ```
+	  print_string hello;
+	  print_string world;
+	  ```
+
+	By now you know the pattern: define a dataclass in `statement.py`, add a match case in `parser.py`, add a match case in `interpreter.py`, and write tests.
 
 ## Glossary
 
