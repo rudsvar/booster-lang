@@ -58,17 +58,17 @@ class Interpreter:
                 pass
             case Print(expr):
                 print(self.eval_expr(expr))
-            case Let(name, expr):
+            case Let(var, expr):
                 evaluated_value = self.eval_expr(expr)
-                self.env[name] = evaluated_value
-            case Inc(left, right):
-                self.env[left] = self.env[left] + self.eval_expr(right)
-            case Dec(left, right):
-                self.env[left] = self.env[left] - self.eval_expr(right)
-            case Mul(left, right):
-                self.env[left] = self.env[left] * self.eval_expr(right)
-            case Swap(left, right):
-                self.env[left], self.env[right] = self.env[right], self.env[left]
+                self.env[var] = evaluated_value
+            case Inc(var, expr):
+                self.env[var] = self.env[var] + self.eval_expr(expr)
+            case Dec(var, expr):
+                self.env[var] = self.env[var] - self.eval_expr(expr)
+            case Mul(var, expr):
+                self.env[var] = self.env[var] * self.eval_expr(expr)
+            case Swap(var1, var2):
+                self.env[var1], self.env[var2] = self.env[var2], self.env[var1]
             case Label(_):
                 # We don't need to do anything. Goto will find the label.
                 pass

@@ -16,37 +16,37 @@ class Skip:
 
 @dataclass
 class Print:
-    value: Any
+    expr: Expression
 
 
 @dataclass
 class Let:
-    name: str
-    value: Any
+    var: str
+    expr: Any
 
 
 @dataclass
 class Inc:
-    left: str
-    right: Any
+    var: str
+    expr: Any
 
 
 @dataclass
 class Dec:
-    left: str
-    right: Any
+    var: str
+    expr: Any
 
 
 @dataclass
 class Mul:
-    left: str
-    right: Any
+    var: str
+    expr: Any
 
 
 @dataclass
 class Swap:
-    left: str
-    right: str
+    var1: str
+    var2: str
 
 
 @dataclass
