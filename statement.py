@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Any
 
 type Statement = Skip | Print | Let | Inc | Dec | Mul | Swap | Label | Goto | If | Exit | Proc | Call | Return
 
@@ -22,25 +21,25 @@ class Print:
 @dataclass
 class Let:
     var: str
-    expr: Any
+    expr: Expression
 
 
 @dataclass
 class Inc:
     var: str
-    expr: Any
+    expr: Expression
 
 
 @dataclass
 class Dec:
     var: str
-    expr: Any
+    expr: Expression
 
 
 @dataclass
 class Mul:
     var: str
-    expr: Any
+    expr: Expression
 
 
 @dataclass
@@ -81,7 +80,7 @@ class Proc:
 @dataclass
 class Call:
     name: str
-    args: list[Any]
+    args: list[Expression]
 
 
 @dataclass
