@@ -1,0 +1,7 @@
+let first 1;
+let second 2;
+print first;
+print second;
+swap first second;
+print first;
+print second;

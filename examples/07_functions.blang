@@ -1,8 +1,0 @@
-call add 10 5;
-print result;
-exit;
-
-proc add a b;
-  let result a;
-  inc result b;
-  return

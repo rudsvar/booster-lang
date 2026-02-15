@@ -1,0 +1,5 @@
+let x 100;
+dec x 25;
+print x;
+mul x 3;
+print x;

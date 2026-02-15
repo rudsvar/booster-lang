@@ -1,0 +1,6 @@
+goto skip;
+print 1;
+print 2;
+print 3;
+label skip;
+print 4;

@@ -1,4 +1,4 @@
-call factorial 5;
+call factorial 10;
 print result;
 exit;
 

@@ -1,0 +1,9 @@
+goto main;
+
+proc double n;
+mul n 2;
+print n;
+return;
+
+label main;
+call double 21;

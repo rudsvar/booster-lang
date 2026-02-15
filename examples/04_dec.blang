@@ -1,3 +1,0 @@
-let x 10;
-dec x 3;
-print x

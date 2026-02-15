@@ -1,0 +1,6 @@
+let x 1;
+print x;
+let x 2;
+print x;
+let y x;
+print y;
