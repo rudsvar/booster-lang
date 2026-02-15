@@ -57,10 +57,11 @@ class Interpreter:
             case Skip():
                 pass
             case Print(expr):
-                print(self.eval_expr(expr))
+                value = self.eval_expr(expr)
+                print(value)
             case Let(var, expr):
-                evaluated_value = self.eval_expr(expr)
-                self.env[var] = evaluated_value
+                value = self.eval_expr(expr)
+                self.env[var] = value
             case Inc(var, expr):
                 self.env[var] = self.env[var] + self.eval_expr(expr)
             case Dec(var, expr):
@@ -97,8 +98,8 @@ class Interpreter:
                 proc, position = self.procedures[name]
                 self.position = position
                 for p, a in zip(proc.params, args):
-                    evaluated_value = self.eval_expr(a)
-                    self.env[p] = evaluated_value
+                    value = self.eval_expr(a)
+                    self.env[p] = value
             case Return():
                 self.position = self.stack.pop()
 

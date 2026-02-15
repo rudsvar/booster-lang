@@ -1,5 +1,8 @@
 from dataclasses import dataclass
 
+"""
+Statements are "actions" that our programs in language can perform.
+"""
 type Statement = Skip | Print | Let | Inc | Dec | Mul | Swap | Label | Goto | If | Exit | Proc | Call | Return
 
 """

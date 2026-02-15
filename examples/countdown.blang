@@ -3,4 +3,4 @@ let n 5;
 label countdown;
   print n;
   dec n 1;
-  if n >= 0 then goto countdown;
+  if n > 0 then goto countdown;

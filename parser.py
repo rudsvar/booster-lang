@@ -30,16 +30,23 @@ def parse_statement(tokens: list[str]) -> Statement:
     match tokens:
         case []:
             return Skip()
+        case ["#", *rest]:
+            return Skip()
         case ["print", x]:
-            return Print(parse_expr(x))
+            e = parse_expr(x)
+            return Print(e)
         case ["let", x, y]:
-            return Let(x, parse_expr(y))
+            e = parse_expr(y)
+            return Let(x, e)
         case ["inc", x, y]:
-            return Inc(x, parse_expr(y))
+            e = parse_expr(y)
+            return Inc(x, e)
         case ["dec", x, y]:
-            return Dec(x, parse_expr(y))
+            e = parse_expr(y)
+            return Dec(x, e)
         case ["mul", x, y]:
-            return Mul(x, parse_expr(y))
+            e = parse_expr(y)
+            return Mul(x, e)
         case ["swap", x, y]:
             return Swap(x, y)
         case ["label", label]:
