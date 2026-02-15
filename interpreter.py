@@ -115,9 +115,7 @@ if __name__ == "__main__":
     import os
 
     parser = argparse.ArgumentParser(description="Run booster-lang programs")
-    parser.add_argument(
-        "input", nargs="?", help="Input file or program string (default: stdin)"
-    )
+    parser.add_argument("input", help="Input file or program string")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     args = parser.parse_args()
 
@@ -125,9 +123,7 @@ if __name__ == "__main__":
 
     parser_module.debug = args.debug
 
-    if args.input is None:
-        input_str = __import__("sys").stdin.read()
-    elif os.path.isfile(args.input):
+    if os.path.isfile(args.input):
         with open(args.input, "r") as f:
             input_str = f.read()
     else:
