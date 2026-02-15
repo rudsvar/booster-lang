@@ -7,7 +7,7 @@ Tasks are further down.
 
 Install the following to get started quickly.
 
-- Python 3.11+
+- **Python 3.10+** (required for pattern matching and union type syntax)
 - Visual Studio Code
 - The `Python` extension
 - The `Black Formatter` extension
@@ -55,39 +55,19 @@ python3 interpreter.py "print 42;" --debug
 
 Follow the statement order in [parser.py](parser.py). Each task has a parser change and a matching interpreter change.
 
-0. **Familiarize yourself with the existing code**.
-	Take a look at `statement.py`, `parser.py`, and `interpreter.py` and run the examples above to understand the structure of the program. 
-	- **statement.py**: Defines a union type called `Statement` that represents all possible statements in the language.
-	
-		It also defines types for each statement and data they contain. For example, the `Print` statement has a field for the expression to print.
+0. **Run the tests to see what needs to be done**.
 
-		`Expression` is another union type that can be either an integer literal or a variable name (string).
-		To keep the language simple, we only allow these two by default.
+	In Visual Studio Code, open the Testing panel (click the beaker icon in the left sidebar). You should see the tests for `1_parser_tests.py` and `2_interpreter_tests.py`.
 
-	- **parser.py**: Parses source code into statements.
+	Run all tests by clicking the play button at the top of the Testing panel. You'll see which tests are failing. Each failing test corresponds to a task below that needs to be implemented.
 
-		`if __name__ == "__main__"` is the entry point for parsing. It reads the source code (either from a string argument or a file), then calls `parse_program` to convert it into a list of statements.
-	
-		``parse_program`` first splits the input by semicolons to get individual statements, then splits each statement by whitespace into tokens. For example, the input `print 42; let x 10` would be split into `['print 42', 'let x 10']`, and those are split into tokens like `['print', '42']` and `['let', 'x', '10']`.
+	As you complete each task, re-run the tests to see your progress. When all tests pass, you're done!
 
-		`parse_statement` will then match on the list on tokens to turn it into a `Statement` object. Your tasks will involve extending `parse_statement` to handle new statement types.
-
-		`parse_expression` is a helper function that takes a token and determines if it's an integer literal or a variable name, returning the appropriate expression type.
-
-	- **interpreter.py**: Executes statements and tracks the program state.
-
-		The `Interpreter` needs some way of keeping track of state such as variables and their values, as well as the line we are executing. Not all of the fields are used immediately, but will become useful as we make progress.
-
-		Like previously, `if __name__ == "__main__"` is the entry point for execution. It reads the source code, parses it into statements, initializes the `Interpreter` and then runs it.
-
-		`__init__` initializes the interpreter's state by creating an empty environment (`env`) for variables, setting the `position` to 0, and so on. It also reads through the statement to find label and procedure statements that we'll need later.
-
-		`execute_program` continues executing statements until we reach the end of the program. It calls `execute_statement` on the current statement and increments the position.
-
-		`execute_statement` takes a statement and performs the appropriate action based on its type. For example, if it's a `Print` statement, it evaluates the expression to print and prints it.
-		Your tasks will involve extending `execute_statement` to handle new statement types and update the interpreter's state accordingly.
-
-		`eval_expr` is a helper function that takes an expression and evaluates it to a value. For integer literals, it returns the integer. For variable names, it looks up the variable in the environment and returns its value.
+	**Tip**: You can also run tests from the command line:
+	```bash
+	python3 parser_tests.py
+	python3 interpreter_tests.py
+	```
 
 1. **Skip**: The simplest statement we can add is a `skip` statement that does nothing.
 
@@ -109,8 +89,8 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 2. **Print**: The `print` statement lets us produce output from our program.
 
 	- **parser.py**: Add a case for `print` in `parse_statement` that expects the keyword `print` followed by an expression (either an integer literal or a variable name). It should return a `Print` statement object containing the expression.
-	You can turn the second token into an `Expression` with `parse_expression`, which will handle both integer literals and variable names.
-	  
+	You can turn the second token into an `Expression` with `parse_expr`, which will handle both integer literals and variable names.
+
 	  ```
 	  $ python3 parser.py "print 42;"
 	  [Print(expr=42)]
@@ -118,8 +98,8 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  [Print(expr='x')]
 	  ```
 
-	- **interpreter.py**: Add a case for `Print(expr)` in `execute_statement` that evaluates the expression and prints the result.
-	  
+	- **interpreter.py**: Add a case for `Print(expr)` in `execute_statement` that evaluates the expression with `eval_expr` and prints the result.
+
 	  ```
 	  $ python3 interpreter.py "print 42;"
 	  42
@@ -130,7 +110,7 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 3. **Let**: The `let` statement allows us to create variables and assign values to them.
 
 	- **parser.py**: Add a case for `let` in `parse_statement` that expects the keyword `let` followed by a variable name and an expression. It should return a `Let` statement object containing the variable name and the expression.
-	  
+
 	  ```
 	  $ python3 parser.py "let x 10;"
 	  [Let(var='x', expr=10)]
@@ -139,7 +119,7 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  ```
 
 	- **interpreter.py**: Add a case for `Let(var, expr)` in `execute_statement` that evaluates the expression and stores the result in the environment under the given variable name.
-	  
+
 	  ```
 	  $ python3 interpreter.py "let x 10; print x;"
 	  10
@@ -150,7 +130,7 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 4. **Inc**: The `inc` statement lets us increment the value of an existing variable by a specified amount.
 
 	- **parser.py**: Add a case for `inc` in `parse_statement` that expects the keyword `inc` followed by a variable name and an expression. It should return an `Inc` statement object containing the variable name and the expression.
-	  
+
 	  ```
 	  $ python3 parser.py "inc x 5;"
 	  [Inc(var='x', expr=5)]
@@ -159,7 +139,7 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 	  ```
 
 	- **interpreter.py**: Add a case for `Inc(var, expr)` in `execute_statement` that evaluates the expression, retrieves the current value of the variable from the environment, adds them together, and stores the result back in the environment under the same variable name.
-	  
+
 	  ```
 	  $ python3 interpreter.py "let x 10; inc x 5; print x;"
 	  15
@@ -172,18 +152,146 @@ Follow the statement order in [parser.py](parser.py). Each task has a parser cha
 6. **Swap**: A `swap` statement that takes two variable names and swaps their values in the environment.
 
 	- **parser.py**: Add a case for `swap` in `parse_statement` that expects the keyword `swap` followed by two variable names. It should return a `Swap` statement object containing the two variable names.
-	  
+
 	  ```
 	  $ python3 parser.py "swap x y;"
 	  [Swap(var1='x', var2='y')]
 	  ```
 
 	- **interpreter.py**: Add a case for `Swap(var1, var2)` in `execute_statement` that retrieves the current values of both variables from the environment, swaps them, and stores the results back in the environment under their respective variable names.
-	  
+
 	  ```
 	  $ python3 interpreter.py "let x 10; let y 20; swap x y; print x; print y;"
 	  20
 	  10
+	  ```
+
+7. **Label**: Labels mark positions in the code that can be jumped to with `goto`.
+
+	- **parser.py**: Add a case for `label` in `parse_statement` that expects the keyword `label` followed by a label name. It should return a `Label` statement object containing the label name.
+
+	  ```
+	  $ python3 parser.py "label loop;"
+	  [Label(name='loop')]
+	  ```
+
+	- **interpreter.py**: Add a case for `Label(name)` in `execute_statement` that does nothing (use `pass`). Labels are processed during initialization in `__init__` to build the `labels` dict mapping label names to positions.
+
+	  ```
+	  $ python3 interpreter.py "label start;" --debug
+	  (You'll see the Label statement being executed in the debug output)
+	  ```
+
+8. **Goto**: The `goto` statement jumps to a labeled position in the code.
+
+	- **parser.py**: Add a case for `goto` in `parse_statement` that expects the keyword `goto` followed by a label name. It should return a `Goto` statement object containing the label name.
+
+	  ```
+	  $ python3 parser.py "goto end;"
+	  [Goto(label='end')]
+	  ```
+
+	- **interpreter.py**: Add a case for `Goto(label)` in `execute_statement` that sets `self.position` to the position of the label (looked up in `self.labels`).
+
+	  ```
+	  $ python3 interpreter.py "goto end; print 1; label end; print 2;"
+	  2
+	  (skips printing 1)
+
+	  $ python3 interpreter.py "let x 0; label loop; print x; inc x 1; goto loop;"
+	  0
+	  1
+	  2
+	  ...
+	  (infinite loop - press Ctrl+C to stop)
+	  ```
+
+9. **If**: The `if` statement conditionally executes a statement based on a comparison.
+
+	- **parser.py**: Add a case for `if` in `parse_statement` that expects the pattern `if <expr> <operator> <expr> then <statement>`. It should return an `If` statement object containing the left expression, operator, right expression, and the statement to execute if the condition is true.
+
+	  ```
+	  $ python3 parser.py "if 5 > 3 then print 1;"
+	  [If(left=5, operator='>', right=3, statement=Print(expr=1))]
+	  ```
+
+	- **interpreter.py**: Add a case for `If(left, operator, right, statement)` in `execute_statement` that evaluates both expressions, applies the comparison operator (==, <, >, <=, >=, !=), and executes the nested statement if the condition is true.
+
+	  ```
+	  $ python3 interpreter.py "if 5 > 3 then print 1;"
+	  1
+	  $ python3 interpreter.py "if 2 > 3 then print 1;"
+	  (no output)
+	  ```
+
+10. **Exit**: The `exit` statement terminates the program immediately.
+
+	- **parser.py**: Add a case for `exit` in `parse_statement` that expects just the keyword `exit`. It should return an `Exit` statement object.
+
+	  ```
+	  $ python3 parser.py "exit;"
+	  [Exit()]
+	  ```
+
+	- **interpreter.py**: Add a case for `Exit()` in `execute_statement` that sets `self.position` to the length of the program, effectively ending execution.
+
+	  ```
+	  $ python3 interpreter.py "print 1; exit; print 2;"
+	  1
+	  (exits before printing 2)
+	  ```
+
+11. **Proc**: Procedures are reusable blocks of code with parameters.
+
+	- **parser.py**: Add a case for `proc` in `parse_statement` that expects the keyword `proc` followed by a procedure name and zero or more parameter names. It should return a `Proc` statement object containing the procedure name and list of parameters.
+
+	  ```
+	  $ python3 parser.py "proc add a b;"
+	  [Proc(name='add', params=['a', 'b'])]
+	  ```
+
+	- **interpreter.py**: Add a case for `Proc(name, params)` in `execute_statement` that does nothing (use `pass`). Procedures are processed during initialization in `__init__` to build the `procedures` dict.
+
+	  ```
+	  $ python3 interpreter.py "proc add a b;" --debug
+	  (You'll see the Proc statement being executed in the debug output)
+	  ```
+
+12. **Call**: The `call` statement invokes a procedure with arguments.
+
+	- **parser.py**: Add a case for `call` in `parse_statement` that expects the keyword `call` followed by a procedure name and zero or more argument expressions. It should return a `Call` statement object containing the procedure name and list of arguments.
+
+	  ```
+	  $ python3 parser.py "call add 3 5;"
+	  [Call(name='add', args=[3, 5])]
+	  ```
+
+	- **interpreter.py**: Add a case for `Call(name, args)` in `execute_statement` that:
+	  1. Pushes the current position onto the call stack
+	  2. Looks up the procedure in `self.procedures` to get its position
+	  3. Sets `self.position` to the procedure's position
+	  4. Evaluates each argument and binds it to the corresponding parameter in the environment
+
+	  ```
+	  $ python3 interpreter.py "goto main; proc add a b; let result a; inc result b; return; label main; call add 3 5; print result;"
+	  8
+	  ```
+
+13. **Return**: The `return` statement exits a procedure and returns to the caller.
+
+	- **parser.py**: Add a case for `return` in `parse_statement` that expects just the keyword `return`. It should return a `Return` statement object.
+
+	  ```
+	  $ python3 parser.py "return;"
+	  [Return()]
+	  ```
+
+	- **interpreter.py**: Add a case for `Return()` in `execute_statement` that pops a position from the call stack and sets `self.position` to that value, returning control to the caller.
+
+	  ```
+	  $ python3 interpreter.py "goto main; proc greet; print 42; return; label main; call greet; print 99;"
+	  42
+	  99
 	  ```
 
 ## Glossary
