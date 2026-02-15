@@ -12,7 +12,7 @@ def parse_program(input: str) -> list[Statement]:
     Splits the source code into "lines" by semicolon, and each line into tokens by whitespace.
     """
     statements: list[Statement] = []
-    for line in input.rstrip(";").split(";"):
+    for line in input.removesuffix(";").split(";"):
         tokens: list[str] = line.strip().split()
         statement = parse_statement(tokens)
         debug_log(f"     parser.py | parse_statement({tokens}) = {statement}")
