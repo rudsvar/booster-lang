@@ -22,6 +22,19 @@ class InterpreterTests(unittest.TestCase):
     def test_print(self):
         captured_output = StringIO()
         sys.stdout = captured_output
+        i = Interpreter([Print(42)])
+        i.execute_program()
+        sys.stdout = sys.__stdout__
+        self.assertIn("42", captured_output.getvalue())
+
+    def test_let(self):
+        i = Interpreter([Let("x", 42)])
+        i.execute_program()
+        self.assertEqual(i.env["x"], 42)
+
+    def test_print_var(self):
+        captured_output = StringIO()
+        sys.stdout = captured_output
         i = Interpreter([Let("x", 42), Print("x")])
         i.execute_program()
         sys.stdout = sys.__stdout__

@@ -15,11 +15,15 @@ class ParserTests(unittest.TestCase):
         result = parse_program("")
         self.assertEqual(result, [Skip()])
 
-    def test_parse_print(self):
+    def test_parse_print_int(self):
         result = parse_program("print 42")
         self.assertEqual(result, [Print(42)])
 
-    def test_parse_set(self):
+    def test_parse_print_var(self):
+        result = parse_program("print x")
+        self.assertEqual(result, [Print("x")])
+
+    def test_parse_let(self):
         result = parse_program("let x 5")
         self.assertEqual(result, [Let("x", 5)])
 
