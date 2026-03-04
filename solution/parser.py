@@ -30,9 +30,43 @@ def parse_statement(tokens: list[str]) -> Statement:
     match tokens:
         case []:
             return Skip()
+        case ["#", *_]:
+            return Skip()
         case ["print", x]:
             e = parse_expr(x)
             return Print(e)
+        case ["let", x, y]:
+            e = parse_expr(y)
+            return Let(x, e)
+        case ["inc", x, y]:
+            e = parse_expr(y)
+            return Inc(x, e)
+        case ["dec", x, y]:
+            e = parse_expr(y)
+            return Dec(x, e)
+        case ["mul", x, y]:
+            e = parse_expr(y)
+            return Mul(x, e)
+        case ["swap", x, y]:
+            return Swap(x, y)
+        case ["label", label]:
+            return Label(label)
+        case ["goto", label]:
+            return Goto(label)
+        case ["if", x, op, y, "then", *rest]:
+            x = parse_expr(x)
+            y = parse_expr(y)
+            statement = parse_statement(rest)
+            return If(x, op, y, statement)
+        case ["exit"]:
+            return Exit()
+        case ["proc", name, *params]:
+            return Proc(name, params)
+        case ["call", name, *args]:
+            args = [parse_expr(arg) for arg in args]
+            return Call(name, args)
+        case ["return"]:
+            return Return()
         case _:
             raise ParseError(f"No matches for '{" ".join(tokens)}'")
 

@@ -59,30 +59,49 @@ class Interpreter:
             case Print(expr):
                 value = self.eval_expr(expr)
                 print(value)
-            case Let(_var, _expr):
-                raise NotImplementedError("let")
-            case Inc(_var, _expr):
-                raise NotImplementedError("inc")
-            case Dec(_var, _expr):
-                raise NotImplementedError("dec")
-            case Mul(_var, _expr):
-                raise NotImplementedError("mul")
-            case Swap(_var1, _var2):
-                raise NotImplementedError("swap")
-            case Label(_name):
-                raise NotImplementedError("label")
-            case Goto(_label):
-                raise NotImplementedError("goto")
-            case If(_left, _op, _right, _statement):
-                raise NotImplementedError("if")
+            case Let(var, expr):
+                value = self.eval_expr(expr)
+                self.env[var] = value
+            case Inc(var, expr):
+                self.env[var] = self.env[var] + self.eval_expr(expr)
+            case Dec(var, expr):
+                self.env[var] = self.env[var] - self.eval_expr(expr)
+            case Mul(var, expr):
+                self.env[var] = self.env[var] * self.eval_expr(expr)
+            case Swap(var1, var2):
+                self.env[var1], self.env[var2] = self.env[var2], self.env[var1]
+            case Label(_):
+                # We don't need to do anything. Goto will find the label.
+                pass
+            case Goto(label):
+                self.position = self.labels[label]
+            case If(left, op, right, statement):
+                l = self.eval_expr(left)
+                r = self.eval_expr(right)
+                apply = {
+                    "==": l == r,
+                    "<": l < r,
+                    ">": l > r,
+                    "<=": l <= r,
+                    ">=": l >= r,
+                    "!=": l != r,
+                }
+                if apply[op]:
+                    self.execute_statement(statement)
             case Exit():
-                raise NotImplementedError("exit")
-            case Proc(_name, _params):
-                raise NotImplementedError("proc")
-            case Call(_name, _args):
-                raise NotImplementedError("call")
+                self.position = len(self.program)
+            case Proc(name, _):
+                # Nothing to do. Goto will find it.
+                pass
+            case Call(name, args):
+                self.stack.append(self.position)
+                proc, position = self.procedures[name]
+                self.position = position
+                for p, a in zip(proc.params, args):
+                    value = self.eval_expr(a)
+                    self.env[p] = value
             case Return():
-                raise NotImplementedError("return")
+                self.position = self.stack.pop()
 
     def eval_expr(self, e: Expression) -> Value:
         if type(e) == int:

@@ -21,5 +21,5 @@ jobs:
       - name: Install dependencies
         run: python3 -m pip install --upgrade pip
 
-      - name: Run unit tests
-        run: make test
+      - name: Run solution tests
+        run: make solution-test
