@@ -32,6 +32,12 @@
       ```
     ]
   ]
+  #pad(y: 1em)[
+    1. Install Python: https://www.python.org/downloads/
+    2. Install Visual Studio Code: https://code.visualstudio.com/
+    3. Install the Python plugin
+    4. Clone https://github.com/rudsvar/booster-lang
+  ]
 ]
 
 #slide("Where do we start?")[
@@ -58,7 +64,7 @@
   We use Python as a *host language* to make our own.
 ]
 
-#slide("Steps of Interpreting")[
+#slide("Interpreting in three steps")[
 
   We start by defining some classes to represent our program.
 
@@ -88,7 +94,7 @@
   ]
 ]
 
-#slide("What would this language look like?")[
+#slide("What will our language look like?")[
 
   To keep it simple enough for a workshop, we're keeping the syntax and functionality fairly limited.
 
