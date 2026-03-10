@@ -22,7 +22,7 @@
 
 #slide("Make a Programming Language!")[
   with Rudi Blaha Svartveit
-  #pad(y: 3em)[
+  #pad(y: 2em)[
     #box[
       ```rust
       $ let hello = "Hello Booster!";
@@ -32,17 +32,19 @@
       ```
     ]
   ]
-  #pad(y: 1em)[
-    1. Install Python: https://www.python.org/downloads/
-    2. Install Visual Studio Code: https://code.visualstudio.com/
-    3. Install the Python plugin
-    4. Clone https://github.com/rudsvar/booster-lang
-  ]
+  #text(fill: rgb("#555555"))[
+      *Preparation*
+
+      1. Install Python: https://www.python.org/downloads/
+      2. Install Visual Studio Code: https://code.visualstudio.com/
+      3. Install the Python plugin
+      4. Clone https://github.com/rudsvar/booster-lang
+    ]
 ]
 
-#slide("Where do we start?")[
-  We need to make a program that can run another program.
-  #pad(y: 3em)[
+#slide("How do we start?")[
+  We need to make a program that runs another program.
+  #pad(y: 4em)[
     #columns(2)[
       Just like Python's interpreter can run Python programs ...
       #box(color: "#d1e8d5")[
@@ -61,42 +63,39 @@
       ]
     ]
   ]
-  We use Python as a *host language* to make our own.
 ]
 
 #slide("Interpreting in three steps")[
-
-  We start by defining some classes to represent our program.
-
-  #box[
-    ```python
-    class Program:
-      statements: list[Statement]
-    ```
-  ]
-
-  We then *parse* the source code, turning it into a model we can work with.
-
-  #box[
-    ```python
-    def parse_program(input: str) -> Program:
-      # ...
-    ```
-  ]
-
-  Once we have parsed a program, we can *execute* it.
-
-  #box[
-    ```python
-    def execute_program(program: Program):
-      # ...
-    ```
-  ]
+  #grid(columns: (1fr, 1fr), row-gutter: 3em,
+    align(horizon)[Define types that represent the program,],
+    box[
+      ```python
+      type Statement = Print | Let | ...
+      type Program = list[Statement]
+      ```
+    ],
+    align(horizon)[then *parse* the code into the types we defined,],
+    box[
+      ```python
+      def parse_program(code: str) -> Program:
+        for line in code.split(';'):
+          # ...
+      ```
+    ],
+    align(horizon)[and finally *execute* the program.],
+    box[
+      ```python
+      def execute_program(program: Program):
+        for statement in program.statement:
+          # ...
+      ```
+    ],
+  )
 ]
 
 #slide("What will our language look like?")[
 
-  To keep it simple enough for a workshop, we're keeping the syntax and functionality fairly limited.
+  We keep the syntax and functionality a bit limited to make it simple enough for a workshop.
 
   #pad(y: 3em)[
     #columns(2)[
