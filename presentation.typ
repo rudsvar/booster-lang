@@ -86,7 +86,7 @@
     box[
       ```python
       def execute_program(program: Program):
-        for statement in program.statement:
+        for statement in program:
           # ...
       ```
     ],
